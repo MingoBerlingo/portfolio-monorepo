@@ -6,12 +6,14 @@ Thank you for your interest in contributing to the Saiver Monorepo! This guide w
 
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
+
    ```bash
    git clone https://github.com/yourusername/saiver-monorepo.git
    cd saiver-monorepo
    ```
 
 3. **Install dependencies**:
+
    ```bash
    pnpm install
    ```
@@ -35,6 +37,7 @@ Thank you for your interest in contributing to the Saiver Monorepo! This guide w
 ### Making Changes
 
 1. **Create a new branch**:
+
    ```bash
    git checkout -b feature/my-awesome-feature
    ```
@@ -42,6 +45,7 @@ Thank you for your interest in contributing to the Saiver Monorepo! This guide w
 2. **Make your changes** following our coding standards
 
 3. **Test your changes**:
+
    ```bash
    pnpm test
    pnpm lint
@@ -65,6 +69,7 @@ We follow the [Conventional Commits](https://conventionalcommits.org/) specifica
 ```
 
 **Types:**
+
 - `feat` - New feature
 - `fix` - Bug fix
 - `docs` - Documentation changes
@@ -74,6 +79,7 @@ We follow the [Conventional Commits](https://conventionalcommits.org/) specifica
 - `chore` - Maintenance tasks
 
 **Examples:**
+
 - `feat(web): add user authentication`
 - `fix(types): correct user interface definition`
 - `docs: update installation instructions`
@@ -94,6 +100,7 @@ We follow the [Conventional Commits](https://conventionalcommits.org/) specifica
 ## 🎨 Code Style
 
 We use:
+
 - **ESLint** for JavaScript/TypeScript linting
 - **Prettier** for code formatting
 - **TypeScript** for type safety
@@ -111,6 +118,7 @@ Run formatting: `pnpm format`
 1. **Ensure tests pass**: `pnpm test`
 2. **Update documentation** if needed
 3. **Create a Pull Request** with:
+
    - Clear title and description
    - Reference to related issues
    - Screenshots/demos if applicable
@@ -121,6 +129,7 @@ Run formatting: `pnpm format`
 ## 🐛 Reporting Issues
 
 When reporting issues, please include:
+
 - **Environment details** (Node.js version, OS, etc.)
 - **Steps to reproduce** the issue
 - **Expected vs actual behavior**
@@ -129,6 +138,7 @@ When reporting issues, please include:
 ## 💡 Feature Requests
 
 For new features:
+
 - **Open an issue** first to discuss the feature
 - **Provide use cases** and examples
 - **Consider backward compatibility**
@@ -136,6 +146,7 @@ For new features:
 ## ❓ Questions
 
 If you have questions:
+
 - Check existing issues and documentation
 - Open a discussion on GitHub
 - Ask in our community channels

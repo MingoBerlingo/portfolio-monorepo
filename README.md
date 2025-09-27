@@ -23,17 +23,20 @@ This monorepo is organized into:
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd saiver-monorepo
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Start development services**
+
    ```bash
    docker-compose up -d
    ```
@@ -79,6 +82,7 @@ saiver-monorepo/
 ### Adding New Packages
 
 To add a new application:
+
 ```bash
 mkdir apps/my-new-app
 cd apps/my-new-app
@@ -86,6 +90,7 @@ pnpm init
 ```
 
 To add a new shared package:
+
 ```bash
 mkdir packages/my-new-package
 cd packages/my-new-package
@@ -115,6 +120,7 @@ Stop services: `docker-compose down`
 ## 📝 Code Style
 
 The project uses:
+
 - **ESLint** for linting
 - **Prettier** for code formatting
 - **TypeScript** for type safety
