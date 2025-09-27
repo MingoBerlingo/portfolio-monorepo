@@ -8,7 +8,7 @@ This monorepo is organized into:
 
 - **`apps/`** - Application packages
   - **`web/`** - SvelteKit web application with Storybook
-  - **`cms/`** - Content management system (coming soon)
+  - **`cms/`** - Payload CMS for content management
 - **`packages/`** - Shared libraries and utilities
   - **`types/`** - Shared TypeScript type definitions
 
@@ -62,6 +62,10 @@ This monorepo is organized into:
 - `pnpm web:dev` - Start web app development server
 - `pnpm web:build` - Build web application
 - `pnpm web:storybook` - Start Storybook development server
+- `pnpm cms:dev` - Start Payload CMS development server
+- `pnpm cms:build` - Build CMS application
+- `pnpm cms:start` - Start CMS in production mode
+- `pnpm cms:generate:types` - Generate TypeScript types for CMS
 
 ## 🛠️ Development
 
@@ -71,10 +75,10 @@ This monorepo is organized into:
 saiver-monorepo/
 ├── apps/
 │   ├── web/                 # SvelteKit application
-│   └── cms/                 # CMS application
+│   └── cms/                 # Payload CMS application
 ├── packages/
 │   └── types/              # Shared TypeScript types
-├── docker-compose.yml      # Development services
+├── docker-compose.yml      # Development services (MongoDB)
 ├── pnpm-workspace.yaml    # PNPM workspace configuration
 └── package.json           # Root package configuration
 ```
@@ -107,7 +111,7 @@ pnpm init
 
 The project includes a Docker Compose setup for development dependencies:
 
-- **MongoDB** - Database service (port 27017)
+- **MongoDB** - Database service for Payload CMS (port 27017)
 
 Start services: `docker-compose up -d`
 Stop services: `docker-compose down`

@@ -7,6 +7,8 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=saiver-cms
 
 volumes:
   mongo_data:
