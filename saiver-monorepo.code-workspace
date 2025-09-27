@@ -1,0 +1,33 @@
+{
+  "folders": [
+    {
+      "name": "🏠 Root",
+      "path": "."
+    },
+    {
+      "name": "🌐 Web App",
+      "path": "./apps/web"
+    },
+    {
+      "name": "📝 CMS",
+      "path": "./apps/cms"
+    },
+    {
+      "name": "📦 Types",
+      "path": "./packages/types"
+    }
+  ],
+  "settings": {
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.workspaceSymbols.scope": "allOpenProjects"
+  },
+  "extensions": {
+    "recommendations": [
+      "svelte.svelte-vscode",
+      "ms-vscode.vscode-typescript-next",
+      "esbenp.prettier-vscode",
+      "ms-vscode.vscode-eslint",
+      "bradlc.vscode-tailwindcss"
+    ]
+  }
+}

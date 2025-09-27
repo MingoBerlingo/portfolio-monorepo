@@ -1,0 +1,45 @@
+{
+  "name": "saiver-monorepo",
+  "version": "1.0.0",
+  "description": "A modern monorepo built with PNPM workspaces, featuring SvelteKit applications and shared packages",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm run --parallel --filter './apps/*' dev",
+    "build": "pnpm run --recursive build",
+    "test": "pnpm run --recursive test",
+    "lint": "pnpm run --recursive lint",
+    "format": "pnpm run --recursive format",
+    "clean": "pnpm run --recursive clean && rm -rf node_modules/.cache",
+    "web:dev": "pnpm --filter web dev",
+    "web:build": "pnpm --filter web build",
+    "web:preview": "pnpm --filter web preview",
+    "web:storybook": "pnpm --filter web storybook",
+    "web:build-storybook": "pnpm --filter web build-storybook",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "keywords": [
+    "monorepo",
+    "pnpm",
+    "svelte",
+    "sveltekit",
+    "storybook",
+    "typescript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.17"
+  }
+}
