@@ -139,10 +139,6 @@ The project uses:
 6. Push to the branch: `git push origin feature/amazing-feature`
 7. Open a Pull Request
 
-## 📄 License
-
-This project is licensed under the ISC License - see the LICENSE file for details.
-
 ## 🔗 Links
 
 - [SvelteKit Documentation](https://kit.svelte.dev/)
