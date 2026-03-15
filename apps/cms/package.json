@@ -19,6 +19,7 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
   },
   "dependencies": {
+    "@saiver/types": "workspace:*",
     "@payloadcms/db-mongodb": "3.57.0",
     "@payloadcms/next": "3.57.0",
     "@payloadcms/payload-cloud": "3.57.0",

@@ -10,7 +10,7 @@ This monorepo is organized into:
   - **`web/`** - SvelteKit web application with Storybook
   - **`cms/`** - Payload CMS for content management
 - **`packages/`** - Shared libraries and utilities
-  - **`types/`** - Shared TypeScript type definitions
+  - **`types/`** - Shared TypeScript type definitions (auto-generated from Payload CMS)
 
 ## 🚀 Getting Started
 
@@ -65,7 +65,25 @@ This monorepo is organized into:
 - `pnpm cms:dev` - Start Payload CMS development server
 - `pnpm cms:build` - Build CMS application
 - `pnpm cms:start` - Start CMS in production mode
-- `pnpm cms:generate:types` - Generate TypeScript types for CMS
+- `pnpm cms:generate:types` - Generate TypeScript types from CMS collections into the shared `@saiver/types` package
+
+## 🔄 Shared Types
+
+The `packages/types` package contains TypeScript types that are **auto-generated from Payload CMS collections**. This ensures the web frontend always has accurate, up-to-date types matching the CMS schema.
+
+**How it works:**
+
+1. Payload CMS generates `packages/types/payload-types.ts` directly (configured via `outputFile` and `declare: false` in `payload.config.ts`)
+2. `packages/types/index.ts` re-exports only the types needed by the frontend (`Post`, `Media`, `User`)
+3. The web app imports them as `import type { Post } from '@saiver/types'`
+
+**When to regenerate:** after adding or modifying fields in any CMS collection (`apps/cms/src/collections/`), run:
+
+```bash
+pnpm cms:generate:types
+```
+
+> **Note:** Do not manually edit `packages/types/payload-types.ts` — it will be overwritten on the next generation.
 
 ## 🛠️ Development
 
