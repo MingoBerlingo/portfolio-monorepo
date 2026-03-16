@@ -1,1 +1,1 @@
-export type { Post, Media, User } from './payload-types'
+export type { Post, Media, User, Profile } from './payload-types'
