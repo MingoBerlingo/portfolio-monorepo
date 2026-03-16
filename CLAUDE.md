@@ -4,7 +4,7 @@
 
 PNPM monorepo with two apps and a shared types package:
 
-- **`apps/web`** — SvelteKit frontend (Svelte 5, Tailwind CSS 4, Cloudflare adapter)
+- **`apps/web`** — SvelteKit frontend (Svelte 5, Tailwind CSS 4, static adapter for GitHub Pages)
 - **`apps/cms`** — Payload CMS on Next.js 15 (MongoDB, Lexical rich text editor)
 - **`packages/types`** — Auto-generated TypeScript types from Payload collections
 
@@ -41,9 +41,16 @@ Always regenerate types after modifying any collection in `apps/cms/src/collecti
 - **CMS**: spaces, trailing commas, no semicolons
 - ESLint configs are per-app (Svelte for web, Next.js for CMS)
 
+## Deployment
+
+- Web app is fully prerendered at build time (`adapter-static`) and deployed to GitHub Pages
+- CMS must be running during `pnpm build` so pages can fetch data at build time
+- Rich text HTML is sanitized with `sanitize-html` in server load functions
+
 ## Architecture Notes
 
 - Web server utilities live in `apps/web/src/lib/server/`
 - CMS collections are in `apps/cms/src/collections/`
+- Rich text uses async HTML conversion (`afterRead` hook) — not `lexicalHTMLField` — to properly resolve images
 - Storybook is configured in the web app (`pnpm --filter web storybook`)
 - CI runs lint, type-check, test, and build on Node 18.x and 20.x
