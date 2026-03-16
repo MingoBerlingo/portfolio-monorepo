@@ -1,11 +1,5 @@
 import type { GlobalConfig } from 'payload'
-
-const validateUrl = (val: string | null | undefined) => {
-  if (val && !/^https?:\/\//.test(val)) {
-    return 'Please enter a valid URL'
-  }
-  return true
-}
+import { linkFields } from '../fields/link'
 
 export const Profile: GlobalConfig = {
   slug: 'profile',
@@ -36,36 +30,12 @@ export const Profile: GlobalConfig = {
     {
       name: 'github',
       type: 'group',
-      fields: [
-        {
-          name: 'label',
-          type: 'text',
-          required: true,
-        },
-        {
-          name: 'url',
-          type: 'text',
-          required: true,
-          validate: validateUrl,
-        },
-      ],
+      fields: linkFields,
     },
     {
       name: 'linkedin',
       type: 'group',
-      fields: [
-        {
-          name: 'label',
-          type: 'text',
-          required: true,
-        },
-        {
-          name: 'url',
-          type: 'text',
-          required: true,
-          validate: validateUrl,
-        },
-      ],
+      fields: linkFields,
     },
   ],
 }

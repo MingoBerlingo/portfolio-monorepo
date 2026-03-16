@@ -18,19 +18,26 @@
 	</div>
 </section>
 
-<h2 class="mb-10 text-4xl font-bold text-gray-900">Posts</h2>
-<ul>
-	{#each data.posts as post (post.id)}
-		<div class="mb-5">
-			<div class="mb-2">
-				<h2 class="text-2xl font-bold text-gray-900">{post.title}</h2>
-				<p class="text-sm text-gray-500">{post.id}</p>
-			</div>
-
-			<div class="prose">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized server-side -->
-				{@html post.contentHtml}
-			</div>
-		</div>
+<h2 class="mb-10 text-4xl font-bold text-gray-900">Projects</h2>
+<ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+	{#each data.projects as project (project.id)}
+		<li>
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- prerendered static links -->
+			<a href="/projects/{project.slug}" class="group block overflow-hidden rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+				{#if typeof project.featuredImage === 'object' && project.featuredImage?.url}
+					<img
+						src={project.featuredImage.url}
+						alt={project.featuredImage.alt}
+						width={project.featuredImage.width ?? undefined}
+						height={project.featuredImage.height ?? undefined}
+						class="aspect-video w-full object-cover"
+					/>
+				{/if}
+				<div class="p-4">
+					<h3 class="text-lg font-semibold text-gray-900 group-hover:text-blue-600">{project.title}</h3>
+					<p class="mt-1 text-sm text-gray-500">{new Date(project.year).getFullYear()}</p>
+				</div>
+			</a>
+		</li>
 	{/each}
 </ul>

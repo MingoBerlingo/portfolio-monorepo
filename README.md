@@ -74,8 +74,8 @@ The `packages/types` package contains TypeScript types that are **auto-generated
 **How it works:**
 
 1. Payload CMS generates `packages/types/payload-types.ts` directly (configured via `outputFile` and `declare: false` in `payload.config.ts`)
-2. `packages/types/index.ts` re-exports only the types needed by the frontend (`Post`, `Media`, `User`)
-3. The web app imports them as `import type { Post } from '@saiver/types'`
+2. `packages/types/index.ts` re-exports only the types needed by the frontend (`Project`, `Media`, `User`)
+3. The web app imports them as `import type { Project } from '@saiver/types'`
 
 **When to regenerate:** after adding or modifying fields in any CMS collection (`apps/cms/src/collections/`), run:
 

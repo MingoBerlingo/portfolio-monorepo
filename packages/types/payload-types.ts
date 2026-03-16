@@ -69,7 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
-    post: Post;
+    project: Project;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -78,7 +78,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    post: PostSelect<false> | PostSelect<true>;
+    project: ProjectSelect<false> | ProjectSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -164,11 +164,18 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "post".
+ * via the `definition` "project".
  */
-export interface Post {
+export interface Project {
   id: string;
   title: string;
+  slug: string;
+  isFeatured: boolean;
+  isMinor: boolean;
+  featuredImage: string | Media;
+  year: string;
+  client?: string | null;
+  role?: string | null;
   content?: {
     root: {
       type: string;
@@ -184,6 +191,19 @@ export interface Post {
     };
     [k: string]: unknown;
   } | null;
+  links?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  collaborators?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
   contentHtml?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -204,8 +224,8 @@ export interface PayloadLockedDocument {
         value: string | Media;
       } | null)
     | ({
-        relationTo: 'post';
-        value: string | Post;
+        relationTo: 'project';
+        value: string | Project;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -291,11 +311,31 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "post_select".
+ * via the `definition` "project_select".
  */
-export interface PostSelect<T extends boolean = true> {
+export interface ProjectSelect<T extends boolean = true> {
   title?: T;
+  slug?: T;
+  isFeatured?: T;
+  isMinor?: T;
+  featuredImage?: T;
+  year?: T;
+  client?: T;
+  role?: T;
   content?: T;
+  links?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  collaborators?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
   contentHtml?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -345,10 +385,12 @@ export interface Profile {
   github: {
     label: string;
     url: string;
+    id?: string | null;
   };
   linkedin: {
     label: string;
     url: string;
+    id?: string | null;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -367,12 +409,14 @@ export interface ProfileSelect<T extends boolean = true> {
     | {
         label?: T;
         url?: T;
+        id?: T;
       };
   linkedin?:
     | T
     | {
         label?: T;
         url?: T;
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;
