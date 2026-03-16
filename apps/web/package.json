@@ -26,13 +26,14 @@
 		"@storybook/addon-svelte-csf": "^5.0.8",
 		"@storybook/addon-vitest": "^9.1.8",
 		"@storybook/sveltekit": "^9.1.8",
-		"@sveltejs/adapter-cloudflare": "^7.0.0",
+		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"@tailwindcss/forms": "^0.5.9",
 		"@tailwindcss/typography": "^0.5.15",
 		"@tailwindcss/vite": "^4.0.0",
 		"@types/node": "^22",
+		"@types/sanitize-html": "^2.16.1",
 		"@vitest/browser": "^3.2.3",
 		"eslint": "^9.22.0",
 		"eslint-config-prettier": "^10.0.1",
@@ -54,6 +55,7 @@
 		"vitest-browser-svelte": "^0.1.0"
 	},
 	"dependencies": {
-		"@saiver/types": "workspace:*"
+		"@saiver/types": "workspace:*",
+		"sanitize-html": "^2.17.1"
 	}
 }

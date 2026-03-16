@@ -12,7 +12,11 @@
 				<h2 class="text-2xl font-bold text-gray-900">{post.title}</h2>
 				<p class="text-sm text-gray-500">{post.id}</p>
 			</div>
-			{@html post.contentHtml}
+
+			<div class="prose">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized server-side -->
+				{@html post.contentHtml}
+			</div>
 		</div>
 	{/each}
 </ul>
