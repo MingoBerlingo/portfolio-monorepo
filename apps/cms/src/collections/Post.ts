@@ -1,10 +1,37 @@
 import type { CollectionConfig } from 'payload'
-import { lexicalHTMLField } from '@payloadcms/richtext-lexical'
+import {
+  convertLexicalToHTMLAsync,
+  defaultHTMLConvertersAsync,
+} from '@payloadcms/richtext-lexical/html-async'
+import type { SerializedEditorState } from 'lexical'
 
 export const Post: CollectionConfig = {
   slug: 'post',
   access: {
     read: () => true,
+  },
+  hooks: {
+    afterRead: [
+      async ({ doc, req }) => {
+        if (!doc.content) return doc
+
+        const html = await convertLexicalToHTMLAsync({
+          data: doc.content as SerializedEditorState,
+          converters: defaultHTMLConvertersAsync,
+          disableContainer: true,
+          populate: async ({ collectionSlug, id, select }) => {
+            const relatedDoc = await req.payload.findByID({
+              collection: collectionSlug as any,
+              id,
+              select,
+            })
+            return relatedDoc
+          },
+        })
+
+        return { ...doc, contentHtml: html }
+      },
+    ],
   },
   fields: [
     {
@@ -16,9 +43,13 @@ export const Post: CollectionConfig = {
       name: 'content',
       type: 'richText',
     },
-    lexicalHTMLField({
-      htmlFieldName: 'contentHtml',
-      lexicalFieldName: 'content',
-    }),
+    {
+      name: 'contentHtml',
+      type: 'text',
+      admin: { hidden: true },
+      hooks: {
+        beforeChange: [() => undefined],
+      },
+    },
   ],
 }
