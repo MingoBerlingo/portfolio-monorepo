@@ -8,7 +8,7 @@
 </script>
 
 <article>
-	<a href="/" class="mb-6 inline-block text-sm text-blue-600 hover:underline">&larr; Back to projects</a>
+	<a href="/" class="mb-6 inline-block text-sm text-primary hover:underline">&larr; Back to projects</a>
 
 	{#if typeof project.featuredImage === 'object' && project.featuredImage?.url}
 		<img
@@ -20,9 +20,9 @@
 		/>
 	{/if}
 
-	<h1 class="text-4xl font-bold text-gray-900">{project.title}</h1>
+	<h1 class="font-display text-2xl font-bold text-foreground-1">{project.title}</h1>
 
-	<div class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-500">
+	<div class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-foreground-4">
 		<span>{year}</span>
 		{#if project.client}
 			<span>Client: {project.client}</span>
@@ -31,12 +31,12 @@
 			<span>Role: {project.role}</span>
 		{/if}
 		{#if project.isFeatured}
-			<span class="text-amber-600 font-medium">Featured</span>
+			<span class="text-warning-dark font-medium">Featured</span>
 		{/if}
 	</div>
 
 	{#if project.collaborators?.length}
-		<div class="mt-4 text-sm text-gray-600">
+		<div class="mt-4 text-sm text-foreground-3">
 			<span class="font-medium">Collaborators:</span>
 			{project.collaborators.map((c) => c.name).join(', ')}
 		</div>
@@ -46,7 +46,7 @@
 		<div class="mt-3 flex flex-wrap gap-3">
 			{#each project.links as link}
 				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external URL -->
-				<a href={link.url} class="text-sm text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">{link.label}</a>
+				<a href={link.url} class="text-sm text-primary hover:underline" target="_blank" rel="noopener noreferrer">{link.label}</a>
 			{/each}
 		</div>
 	{/if}

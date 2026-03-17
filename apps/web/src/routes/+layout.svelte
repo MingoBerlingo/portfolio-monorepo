@@ -10,6 +10,6 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
-<div class="container mx-auto p-4">
+<div class="container mx-auto p-6 bg-background text-foreground-1">
 	{@render children?.()}
 </div>
