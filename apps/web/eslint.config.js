@@ -39,6 +39,10 @@ export default defineConfig(
 				parser: ts.parser,
 				svelteConfig
 			}
+		},
+		rules: {
+			// All pages are prerendered static HTML — links are plain <a> tags at runtime
+			'svelte/no-navigation-without-resolve': 'off'
 		}
 	}
 );
