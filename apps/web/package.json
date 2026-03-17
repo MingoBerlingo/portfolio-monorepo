@@ -56,6 +56,7 @@
 	},
 	"dependencies": {
 		"@saiver/types": "workspace:*",
+		"carbon-icons-svelte": "^13.9.0",
 		"sanitize-html": "^2.17.1"
 	}
 }

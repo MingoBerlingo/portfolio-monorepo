@@ -111,6 +111,9 @@ importers:
       '@saiver/types':
         specifier: workspace:*
         version: link:../../packages/types
+      carbon-icons-svelte:
+        specifier: ^13.9.0
+        version: 13.9.0
       sanitize-html:
         specifier: ^2.17.1
         version: 2.17.1
@@ -2666,6 +2669,9 @@ packages:
 
   caniuse-lite@1.0.30001745:
     resolution: {integrity: sha512-ywt6i8FzvdgrrrGbr1jZVObnVv6adj+0if2/omv9cmR2oiZs30zL4DIyaptKcbOrBdOIc74QTMoJvSE2QHh5UQ==}
+
+  carbon-icons-svelte@13.9.0:
+    resolution: {integrity: sha512-+5bd/94B1mRt0sdCTADLfy5ArJRxtz5gZdIZBF3EYJPHnWbJUD5/y/S7Q/QoOSzco+B7MSsgezqIQYpmvBYK5w==}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -8436,6 +8442,8 @@ snapshots:
   callsites@3.1.0: {}
 
   caniuse-lite@1.0.30001745: {}
+
+  carbon-icons-svelte@13.9.0: {}
 
   ccount@2.0.1: {}
 

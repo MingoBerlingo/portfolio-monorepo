@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '$lib/components/Icon.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -8,9 +9,9 @@
 </script>
 
 <article>
-	<a href="/" class="mb-6 inline-block text-sm text-primary hover:underline"
-		>&larr; Back to projects</a
-	>
+	<a href="/" class="mb-6 flex items-center gap-2 text-sm text-primary hover:underline">
+		<Icon name="arrow-left" fill="currentColor" size={16} /> Back to projects
+	</a>
 
 	{#if typeof project.featuredImage === 'object' && project.featuredImage?.url}
 		<img
