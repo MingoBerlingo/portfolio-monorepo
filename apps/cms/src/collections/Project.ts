@@ -68,6 +68,9 @@ export const Project: CollectionConfig = {
           defaultValue: false,
         },
       ],
+      admin: {
+        position: 'sidebar',
+      },
     },
     {
       name: 'featuredImage',
