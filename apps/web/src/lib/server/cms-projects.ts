@@ -1,5 +1,6 @@
 import type { Project } from '@saiver/types';
 import { cmsQuery, type PaginatedResponse } from './cms-client';
+import { localizeImage, localizeHtmlImages } from './cms-images';
 
 const PROJECTS_QUERY = `
 	query Projects($limit: Int, $page: Int, $sort: String) {
@@ -61,6 +62,23 @@ const PROJECT_BY_SLUG_QUERY = `
 	}
 `;
 
+async function localizeProjectImages(project: Project): Promise<Project> {
+	const result = { ...project };
+
+	if (typeof result.featuredImage === 'object' && result.featuredImage?.url) {
+		result.featuredImage = {
+			...result.featuredImage,
+			url: await localizeImage(result.featuredImage.url)
+		};
+	}
+
+	if (result.contentHtml) {
+		result.contentHtml = await localizeHtmlImages(result.contentHtml);
+	}
+
+	return result;
+}
+
 export async function getProjects(
 	options: { limit?: number; page?: number; sort?: string } = {}
 ): Promise<PaginatedResponse<Project>> {
@@ -74,7 +92,8 @@ export async function getProjects(
 		PROJECTS_QUERY,
 		variables
 	);
-	return data.Projects;
+	const docs = await Promise.all(data.Projects.docs.map(localizeProjectImages));
+	return { ...data.Projects, docs };
 }
 
 export async function getProjectBySlug(slug: string): Promise<Project> {
@@ -85,5 +104,5 @@ export async function getProjectBySlug(slug: string): Promise<Project> {
 	if (!project) {
 		throw new Error(`Project not found: ${slug}`);
 	}
-	return project;
+	return localizeProjectImages(project);
 }
