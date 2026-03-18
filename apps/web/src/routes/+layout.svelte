@@ -14,7 +14,7 @@
 
 <div class="min-h-screen bg-background text-foreground-1">
 	<Header />
-	<main class="container mx-auto p-6 pt-20">
+	<main class="p-6 pt-20">
 		{@render children?.()}
 	</main>
 </div>
