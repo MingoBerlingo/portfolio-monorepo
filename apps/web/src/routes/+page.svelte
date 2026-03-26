@@ -10,7 +10,7 @@
 >
 	<!-- CV Link -->
 	<div
-		class="absolute top-0 left-0 m-5 w-fit rounded-full bg-surface-3 px-5 py-3 font-display text-xl md:m-10"
+		class="absolute top-0 left-0 m-5 w-fit rounded-full bg-surface-3 px-4 py-1.5 font-display text-xl md:m-10 md:px-5 md:py-3"
 	>
 		CV
 	</div>
