@@ -5,14 +5,33 @@
 	const profile = $page.data.profile;
 </script>
 
-<section class="flex flex-col gap-8 rounded-xl bg-surface-1 p-10">
-	<AsciiMorph />
+<section
+	class="relative container mx-auto grid gap-8 rounded-xl bg-surface-1 p-5 sm:min-h-[60dvh] md:p-10 lg:grid-cols-2"
+>
+	<!-- CV Link -->
+	<div
+		class="absolute top-0 left-0 m-5 w-fit rounded-full bg-surface-3 px-5 py-3 font-display text-xl md:m-10"
+	>
+		CV
+	</div>
 
-	<h1 class="text-2xl">
-		Hi! I’m Alessandro Quets.<br />I’m a Digital Designer & Frontend<br />Developer based in Milan
-		🇮🇹
-	</h1>
+	<!-- Introduction -->
+	<div class="order-last flex flex-col justify-end lg:order-first">
+		<h1 class="font-display text-xl leading-[1.1] sm:text-2xl lg:text-[2.8cqw]">
+			<span class="sm:whitespace-nowrap">Hi! I’m Alessandro Quets.</span>
+			<br />
+			<span class="text-foreground-4 sm:whitespace-nowrap">I’m a Digital Designer & Frontend </span>
+			<br class="hidden sm:block" />
+			<span class="text-foreground-4 sm:whitespace-nowrap">Developer based in Lecco 🇮🇹</span>
+		</h1>
+	</div>
+
+	<!-- ASCII animation -->
+	<AsciiMorph class="mt-5 md:mt-0" />
 </section>
+
+<!-- Divider -->
+<div class="h-80"></div>
 
 <div class="mt-10 text-center">
 	<h1 class="font-display text-2xl text-foreground-1">{profile.name} {profile.surname}</h1>

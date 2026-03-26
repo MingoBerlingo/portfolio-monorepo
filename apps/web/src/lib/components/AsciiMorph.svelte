@@ -8,18 +8,25 @@
 	 */
 	import { untrack } from 'svelte';
 	import { defaultFrames } from './ascii-frames';
+	import { cn } from '$lib/utils/cn';
 
 	interface Props {
 		frames?: string[][];
 		interval?: number; // ms between auto-cycling to the next frame
 		frameDelay?: number; // ms between each animation step during a morph
+		class?: string;
 	}
 
-	let { frames = defaultFrames, interval = 3000, frameDelay = 20 }: Props = $props();
+	let {
+		frames = defaultFrames,
+		interval = 3000,
+		frameDelay = 20,
+		class: className
+	}: Props = $props();
 
 	let containerEl: HTMLPreElement | undefined = $state();
 	let lines: string[] = $state([]);
-	let canvasSize = { x: 60, y: 22 };
+	let canvasSize = { x: 41, y: 19 };
 	let currentIndex = $state(0);
 	let animationTimeout: ReturnType<typeof setTimeout> | undefined;
 	let cycleInterval: ReturnType<typeof setInterval> | undefined;
@@ -183,10 +190,15 @@
 	});
 </script>
 
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_click_events_have_key_events -->
-<pre
-	bind:this={containerEl}
-	class="cursor-pointer text-center font-mono text-md leading-tight text-foreground-2 select-none sm:text-lg"
-	role="img"
-	aria-label="Animated ASCII art showcasing design skills"
-	onclick={morphNextFrame}>{lines.join('\n')}</pre>
+<div class="flex h-full items-center justify-center">
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_click_events_have_key_events -->
+	<pre
+		bind:this={containerEl}
+		class={cn(
+			'cursor-pointer rounded-xl text-center font-mono text-[3cqw] leading-tight font-normal text-foreground-2 select-none sm:text-[2.2cqw] lg:text-[1.7cqw]',
+			className
+		)}
+		role="img"
+		aria-label="Animated ASCII art showcasing design skills"
+		onclick={morphNextFrame}>{lines.join('\n')}</pre>
+</div>
