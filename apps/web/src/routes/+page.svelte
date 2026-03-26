@@ -17,7 +17,7 @@
 
 	<!-- Introduction -->
 	<div class="order-last flex flex-col justify-end lg:order-first">
-		<h1 class="font-display text-xl leading-[1.1] sm:text-2xl lg:text-[2.8cqw]">
+		<h1 class="font-display text-2xl leading-[1.1] xl:text-4xl">
 			<span class="sm:whitespace-nowrap">Hi! I’m Alessandro Quets.</span>
 			<br />
 			<span class="text-foreground-4 sm:whitespace-nowrap">I’m a Digital Designer & Frontend </span>
@@ -27,7 +27,7 @@
 	</div>
 
 	<!-- ASCII animation -->
-	<AsciiMorph class="mt-5 md:mt-0" />
+	<AsciiMorph class="mt-8 md:mt-0" />
 </section>
 
 <!-- Divider -->
