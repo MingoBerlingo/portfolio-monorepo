@@ -33,7 +33,7 @@
 <svelte:window onscroll={handleScroll} />
 
 <header
-	class={cn('fixed top-0 left-0 z-50 w-full px-6 py-5 transition-transform duration-300', {
+	class={cn('fixed top-0 left-0 z-50 w-full px-6 py-5 transition-transform motion-base', {
 		'-translate-y-full': hidden && !menuOpen,
 		'translate-y-0': !hidden || menuOpen
 	})}
@@ -64,12 +64,12 @@
 			aria-expanded={menuOpen}
 		>
 			<span
-				class={cn('block h-0.5 w-5 bg-foreground-1 transition-all duration-300', {
+				class={cn('block h-0.5 w-5 bg-foreground-1 transition-all motion-base', {
 					'translate-y-[4px] rotate-45': menuOpen
 				})}
 			></span>
 			<span
-				class={cn('block h-0.5 w-5 bg-foreground-1 transition-all duration-300', {
+				class={cn('block h-0.5 w-5 bg-foreground-1 transition-all motion-base', {
 					'-translate-y-[4px] -rotate-45': menuOpen
 				})}
 			></span>

@@ -255,6 +255,12 @@
 	}
 }
 
+/* Motion tokens used by interactive transitions */
+:root {
+	--motion-duration-interactive: 300ms;
+	--motion-ease-interactive: cubic-bezier(0, 0, 0.2, 1);
+}
+
 @keyframes fade-in {
 	from {
 		opacity: 0;
@@ -268,6 +274,11 @@
 
 @utility animate-fade-in {
 	animation: fade-in 0.3s ease-out both;
+}
+
+@utility motion-base {
+	transition-duration: var(--motion-duration-interactive);
+	transition-timing-function: var(--motion-ease-interactive);
 }
 
 /* Disable scroll when .no-doc-scroll is present (eg. when modals are open) */

@@ -8,10 +8,6 @@
 	const parsedYear = new Date(project.year);
 	const year = Number.isNaN(parsedYear.getTime()) ? project.year : String(parsedYear.getFullYear());
 	const collaborators = project.collaborators?.map((c) => c.name).join(', ');
-	const collaboratorsCount = project.collaborators?.length ?? 0;
-	const teamLabel = collaboratorsCount
-		? `${collaboratorsCount} collaborator${collaboratorsCount > 1 ? 's' : ''}`
-		: 'Solo';
 
 	function isVideoAsset(
 		asset: { mimeType?: string | null; url?: string | null } | null | undefined
@@ -25,16 +21,15 @@
 
 <article class="mx-auto max-w-5xl space-y-10 pb-20">
 	<section class="space-y-5 pt-8" aria-label="Project intro">
-		<p class="text-base text-foreground-2">{project.client ?? 'Project'} • {year}</p>
+		<p class="text-base text-foreground-2">{project.shortTitle} • {year}</p>
 		<h1 class="md:text-6xl max-w-4xl text-4xl tracking-tight text-foreground-1 sm:text-5xl">
-			{project.title}
+			{project.tagline}
 		</h1>
-		{#if project.role}
-			<p class="max-w-4xl text-lg text-foreground-3 md:text-xl">
-				A {project.role.toLowerCase()} project crafted to make the core experience clearer, faster, and
-				easier to navigate.
-			</p>
-		{/if}
+
+		<p class="max-w-4xl text-lg text-foreground-3 md:text-xl">
+			{project.introduction}
+		</p>
+
 		{#if project.links?.length}
 			<div class="flex flex-wrap gap-3 pt-1">
 				{#each project.links as link (link.url)}
@@ -85,35 +80,33 @@
 			{#if project.role}
 				<div>
 					<dt class="text-base text-foreground-3">Role</dt>
-					<dd class="mt-1 text-xl text-foreground-1">{project.role}</dd>
+					<dd class="mt-1 text-lg text-foreground-1">{project.role}</dd>
 				</div>
 			{/if}
-			<div>
-				<dt class="text-base text-foreground-3">Timeline</dt>
-				<dd class="mt-1 text-xl text-foreground-1">{year}</dd>
-			</div>
-			<div>
-				<dt class="text-base text-foreground-3">Team</dt>
-				<dd class="mt-1 text-xl text-foreground-1">{teamLabel}</dd>
-			</div>
+			{#if project.platform}
+				<div>
+					<dt class="text-base text-foreground-3">Platform</dt>
+					<dd class="mt-1 text-lg text-foreground-1">{project.platform}</dd>
+				</div>
+			{/if}
 			{#if project.client}
 				<div>
 					<dt class="text-base text-foreground-3">Client</dt>
-					<dd class="mt-1 text-xl text-foreground-1">{project.client}</dd>
+					<dd class="mt-1 text-lg text-foreground-1">{project.client}</dd>
 				</div>
 			{/if}
+			<div>
+				<dt class="text-base text-foreground-3">Year</dt>
+				<dd class="mt-1 text-lg text-foreground-1">{year}</dd>
+			</div>
 		</dl>
 	</section>
 
 	{#if project.contentHtml}
-		<section id="overview" class="space-y-5 pt-2">
-			<p class="text-sm tracking-wide text-primary">Overview</p>
-			<h2 class="max-w-4xl text-3xl leading-tight tracking-tight text-foreground-1 sm:text-4xl">
-				{project.title}
-			</h2>
+		<section id="overview" class="pt-2">
 			<div
 				id="content"
-				class="prose max-w-none md:prose-lg prose-headings:tracking-tight prose-headings:text-foreground-1 prose-p:leading-relaxed prose-p:text-foreground-2"
+				class="prose max-w-none md:prose-lg prose-headings:font-normal prose-headings:tracking-tight prose-headings:text-foreground-1 prose-h1:mb-3 prose-h1:text-sm prose-h1:tracking-normal prose-h1:text-primary prose-h2:mt-0 prose-h2:mb-5 prose-h2:text-3xl sm:prose-h2:text-4xl prose-p:leading-relaxed prose-p:text-foreground-2"
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized server-side -->
 				{@html project.contentHtml}
@@ -124,7 +117,7 @@
 	{#if collaborators}
 		<section class="border-t border-border pt-8" aria-label="Collaborators">
 			<p class="text-base text-foreground-3">Collaborators</p>
-			<p class="mt-2 text-xl text-foreground-1">{collaborators}</p>
+			<p class="mt-2 text-lg text-foreground-1">{collaborators}</p>
 		</section>
 	{/if}
 </article>

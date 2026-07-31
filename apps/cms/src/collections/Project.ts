@@ -45,6 +45,27 @@ export const Project: CollectionConfig = {
       required: true,
     },
     {
+      name: 'shortTitle',
+      type: 'text',
+      required: true,
+      maxLength: 80,
+    },
+    {
+      name: 'tagline',
+      type: 'text',
+      required: true,
+      maxLength: 160,
+    },
+    {
+      name: 'introduction',
+      type: 'textarea',
+      required: true,
+      maxLength: 280,
+      admin: {
+        rows: 4,
+      },
+    },
+    {
       name: 'slug',
       type: 'text',
       required: true,
@@ -108,6 +129,10 @@ export const Project: CollectionConfig = {
         },
         {
           name: 'role',
+          type: 'text',
+        },
+        {
+          name: 'platform',
           type: 'text',
         },
       ],

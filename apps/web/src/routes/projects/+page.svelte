@@ -3,6 +3,25 @@
 
 	let { data }: PageProps = $props();
 
+	type MediaAsset = {
+		url?: string | null;
+		alt?: string | null;
+		width?: number | null;
+		height?: number | null;
+		mimeType?: string | null;
+	};
+
+	function getCoverAsset(project: {
+		videoCover?: MediaAsset | string | null;
+		featuredImage?: MediaAsset | string | null;
+	}): MediaAsset | null {
+		if (typeof project.videoCover === 'object' && project.videoCover?.url)
+			return project.videoCover;
+		if (typeof project.featuredImage === 'object' && project.featuredImage?.url)
+			return project.featuredImage;
+		return null;
+	}
+
 	function isVideoAsset(
 		asset: { mimeType?: string | null; url?: string | null } | null | undefined
 	) {
@@ -11,45 +30,72 @@
 		if (mimeType.startsWith('video/')) return true;
 		return /\.(mp4|webm|ogg|mov)$/i.test(asset.url);
 	}
+
+	function formatYear(value: string | Date | null | undefined) {
+		if (!value) return '';
+		const parsed = new Date(value);
+		if (Number.isNaN(parsed.getTime())) return String(value);
+		return String(parsed.getFullYear());
+	}
 </script>
 
-<h1 class="mb-10 font-display text-2xl text-foreground-1">Projects</h1>
-<ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-	{#each data.projects as project (project.id)}
-		<li>
-			<a
-				href="/projects/{project.slug}"
-				class="group block overflow-hidden rounded-lg border border-border transition-all hover:border-border-contrast hover:shadow-lg"
-			>
-				{#if typeof project.videoCover === 'object' && project.videoCover?.url && isVideoAsset(project.videoCover)}
-					<video
-						src={project.videoCover.url}
-						poster={typeof project.featuredImage === 'object' && project.featuredImage?.url
-							? project.featuredImage.url
-							: undefined}
-						muted
-						loop
-						playsinline
-						preload="metadata"
-						class="aspect-video w-full object-cover"
-					></video>
-				{:else if typeof project.featuredImage === 'object' && project.featuredImage?.url}
-					<img
-						src={project.featuredImage.url}
-						alt={project.featuredImage.alt}
-						width={project.featuredImage.width ?? undefined}
-						height={project.featuredImage.height ?? undefined}
-						loading="lazy"
-						class="aspect-video w-full object-cover"
-					/>
-				{/if}
-				<div class="p-4">
-					<h3 class="text-lg text-foreground-1 group-hover:text-primary">
-						{project.title}
-					</h3>
-					<p class="mt-1 text-sm text-foreground-4">{new Date(project.year).getFullYear()}</p>
-				</div>
-			</a>
-		</li>
-	{/each}
-</ul>
+<section class="mx-auto max-w-7xl px-2 py-4 pb-10" aria-labelledby="projects-heading">
+	<h1 id="projects-heading" class="sr-only">Projects</h1>
+	<ul class="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+		{#each data.projects as project (project.id)}
+			{@const coverAsset = getCoverAsset(project)}
+			{@const year = formatYear(project.year)}
+			<li class="list-none">
+				<a href="/projects/{project.slug}" class="group block">
+					<div class="overflow-clip rounded-xl border border-border bg-surface-1">
+						<div class="bg-white ring-primary/30 group-focus-visible:ring-2 dark:bg-surface-1">
+							{#if coverAsset?.url && isVideoAsset(coverAsset)}
+								<video
+									src={coverAsset.url}
+									poster={typeof project.featuredImage === 'object' && project.featuredImage?.url
+										? project.featuredImage.url
+										: undefined}
+									autoplay
+									muted
+									loop
+									playsinline
+									preload="metadata"
+									class="block aspect-video w-full object-cover transition-transform motion-base group-hover:scale-110 group-focus-visible:scale-110"
+								></video>
+							{:else if coverAsset?.url}
+								<img
+									src={coverAsset.url}
+									alt={coverAsset.alt ?? `${project.title} cover`}
+									width={coverAsset.width ?? undefined}
+									height={coverAsset.height ?? undefined}
+									loading="lazy"
+									class="block aspect-video w-full object-cover transition-transform motion-base group-hover:scale-110 group-focus-visible:scale-110"
+								/>
+							{:else}
+								<div class="block aspect-video w-full bg-surface-2" aria-hidden="true"></div>
+							{/if}
+						</div>
+					</div>
+					<div
+						class="mt-2 flex flex-col items-start gap-1 text-sm leading-snug text-foreground-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3.5"
+					>
+						<p class="m-0 flex items-center gap-2 sm:flex-1">
+							<span
+								class="h-1.5 w-0 shrink-0 rounded-full bg-foreground-1 opacity-0 transition-all motion-base group-hover:w-3 group-hover:opacity-100 group-focus-visible:w-3 group-focus-visible:opacity-100"
+							></span>
+							<span
+								class="transition-colors motion-base group-hover:text-foreground-1 group-focus-visible:text-foreground-1"
+								>{project.tagline}</span
+							>
+						</p>
+						<p
+							class="mr-2 whitespace-nowrap transition-colors motion-base group-hover:text-foreground-1 group-focus-visible:text-foreground-1 sm:shrink-0"
+						>
+							{project.shortTitle}{year ? ` • ${year}` : ''}
+						</p>
+					</div>
+				</a>
+			</li>
+		{/each}
+	</ul>
+</section>

@@ -129,6 +129,9 @@ importers:
       sanitize-html:
         specifier: ^2.17.1
         version: 2.17.1
+      sv-agentation:
+        specifier: ^0.4.0
+        version: 0.4.0(react@19.1.0)(svelte@5.39.6)
       tailwind-merge:
         specifier: ^3.5.0
         version: 3.5.0
@@ -1382,6 +1385,11 @@ packages:
     resolution: {integrity: sha512-3DSP7QpmTGYU9bN/yljP0PIao4tNIQtsR4ycauWNSawxs/GQCZtSmAPcLRnCm6qpqsDDjUtKjO/1Ej8FRp0m0w==}
     peerDependencies:
       yjs: '>=13.5.22'
+
+  '@lucide/svelte@1.28.0':
+    resolution: {integrity: sha512-C1Ge84KW2z4q44/WDIEo/2KC2jby5u6mSlta7q+p6g7u0ld8sC/w1fMBiSswF+4bxAl9jlzzaVTpp79qqkiy5g==}
+    peerDependencies:
+      svelte: ^5
 
   '@mdx-js/react@3.1.1':
     resolution: {integrity: sha512-f++rKLQgUVYDAtECQ6fn/is15GkEH9+nZPM3MS0RcxVqoTfawHvDlSCH7JbMhAM6uJ32v3eXLvLmLvjGu7PTQw==}
@@ -2641,6 +2649,11 @@ packages:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
 
+  bippy@0.5.43:
+    resolution: {integrity: sha512-Tvu7b1M7+d8b9/YHaCeODEsi2CgbuoBql+dWSBrNnCuqJ1gMUeY3i0r+319hvjjl5GVBP6FFWxrKnq3fhZER0w==}
+    peerDependencies:
+      react: '>=17.0.1'
+
   body-scroll-lock@4.0.0-beta.0:
     resolution: {integrity: sha512-a7tP5+0Mw3YlUJcGAKUqIBkYYGlYxk2fnCasq/FUph1hadxlTRjF+gAcZksxANnaMnALjxEddmSi/H3OR8ugcQ==}
 
@@ -2992,6 +3005,9 @@ packages:
 
   electron-to-chromium@1.5.224:
     resolution: {integrity: sha512-kWAoUu/bwzvnhpdZSIc6KUyvkI1rbRXMT0Eq8pKReyOyaPZcctMli+EgvcN1PAvwVc7Tdo4Fxi2PsLNDU05mdg==}
+
+  element-source@0.0.5:
+    resolution: {integrity: sha512-04NFHxgZ3SLgvMmcPIMsx8bvbIvZZ2F2xNtxiBByACNXFiTJWU8ujz5M1PIVbBuKyKLwmXbPJsu2V2qRNhdXGQ==}
 
   emoji-regex@9.2.2:
     resolution: {integrity: sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==}
@@ -4914,6 +4930,11 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  sv-agentation@0.4.0:
+    resolution: {integrity: sha512-Wy26LFdv37WBqrMcSb+kiOWH0uod0rXRx13oTkPewUYmHECWLcvFD40cjcWJlnqblIJRjk4rNqZmyVXvGPpOiQ==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   svelte-ast-print@0.4.2:
     resolution: {integrity: sha512-hRHHufbJoArFmDYQKCpCvc0xUuIEfwYksvyLYEQyH+1xb5LD5sM/IthfooCdXZQtOIqXz6xm7NmaqdfwG4kh6w==}
@@ -6907,6 +6928,10 @@ snapshots:
       lexical: 0.35.0
       yjs: 13.6.27
 
+  '@lucide/svelte@1.28.0(svelte@5.39.6)':
+    dependencies:
+      svelte: 5.39.6
+
   '@mdx-js/react@3.1.1(@types/react@19.1.14)(react@19.1.0)':
     dependencies:
       '@types/mdx': 2.0.13
@@ -8476,6 +8501,10 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
+  bippy@0.5.43(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+
   body-scroll-lock@4.0.0-beta.0: {}
 
   bowser@2.12.1: {}
@@ -8799,6 +8828,12 @@ snapshots:
       gopd: 1.2.0
 
   electron-to-chromium@1.5.224: {}
+
+  element-source@0.0.5(react@19.1.0):
+    dependencies:
+      bippy: 0.5.43(react@19.1.0)
+    transitivePeerDependencies:
+      - react
 
   emoji-regex@9.2.2: {}
 
@@ -11114,6 +11149,14 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  sv-agentation@0.4.0(react@19.1.0)(svelte@5.39.6):
+    dependencies:
+      '@lucide/svelte': 1.28.0(svelte@5.39.6)
+      element-source: 0.0.5(react@19.1.0)
+      svelte: 5.39.6
+    transitivePeerDependencies:
+      - react
 
   svelte-ast-print@0.4.2(svelte@5.39.6):
     dependencies:

@@ -2,6 +2,7 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import Header from '$lib/components/Header.svelte';
+	import { Agentation } from 'sv-agentation';
 
 	import type { LayoutProps } from './$types';
 
@@ -17,4 +18,7 @@
 	<main class="p-6 pt-20">
 		{@render children?.()}
 	</main>
+	{#if import.meta.env.DEV}
+		<Agentation />
+	{/if}
 </div>

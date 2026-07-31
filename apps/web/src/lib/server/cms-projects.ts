@@ -9,6 +9,9 @@ const PROJECTS_QUERY = `
 				id
 				slug
 				title
+				shortTitle
+				tagline
+				introduction
 				year
 				featuredImage {
 					url
@@ -43,11 +46,15 @@ const PROJECT_BY_SLUG_QUERY = `
 				id
 				slug
 				title
+				shortTitle
+				tagline
+				introduction
 				year
 				isFeatured
 				isMinor
 				client
 				role
+				platform
 				featuredImage {
 					url
 					alt
