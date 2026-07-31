@@ -173,6 +173,10 @@ export interface Project {
   isFeatured: boolean;
   isMinor: boolean;
   featuredImage: string | Media;
+  /**
+   * Optional short looping video (MP4 or WebM only) used as a project cover.
+   */
+  videoCover?: (string | null) | Media;
   year: string;
   client?: string | null;
   role?: string | null;
@@ -319,6 +323,7 @@ export interface ProjectSelect<T extends boolean = true> {
   isFeatured?: T;
   isMinor?: T;
   featuredImage?: T;
+  videoCover?: T;
   year?: T;
   client?: T;
   role?: T;

@@ -16,6 +16,13 @@ const PROJECTS_QUERY = `
 					width
 					height
 				}
+				videoCover {
+					url
+					alt
+					width
+					height
+					mimeType
+				}
 			}
 			totalDocs
 			totalPages
@@ -47,6 +54,13 @@ const PROJECT_BY_SLUG_QUERY = `
 					width
 					height
 				}
+				videoCover {
+					url
+					alt
+					width
+					height
+					mimeType
+				}
 				links {
 					label
 					url
@@ -72,6 +86,13 @@ async function localizeProjectImages(project: Project): Promise<Project> {
 		};
 	}
 
+	if (typeof result.videoCover === 'object' && result.videoCover?.url) {
+		result.videoCover = {
+			...result.videoCover,
+			url: await localizeImage(result.videoCover.url)
+		};
+	}
+
 	if (result.contentHtml) {
 		result.contentHtml = await localizeHtmlImages(result.contentHtml);
 	}
@@ -88,10 +109,7 @@ export async function getProjects(
 		sort: options.sort ?? '-year'
 	};
 
-	const data = await cmsQuery<{ Projects: PaginatedResponse<Project> }>(
-		PROJECTS_QUERY,
-		variables
-	);
+	const data = await cmsQuery<{ Projects: PaginatedResponse<Project> }>(PROJECTS_QUERY, variables);
 	const docs = await Promise.all(data.Projects.docs.map(localizeProjectImages));
 	return { ...data.Projects, docs };
 }

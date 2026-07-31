@@ -5,6 +5,7 @@ import {
   defaultHTMLConvertersAsync,
 } from '@payloadcms/richtext-lexical/html-async'
 import type { SerializedEditorState } from 'lexical'
+import { validateVideoCover } from '../validators/videoCover'
 
 export const Project: CollectionConfig = {
   slug: 'project',
@@ -77,6 +78,15 @@ export const Project: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       required: true,
+    },
+    {
+      name: 'videoCover',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Optional short looping video (MP4 or WebM only) used as a project cover.',
+      },
+      validate: validateVideoCover,
     },
     {
       type: 'row',
