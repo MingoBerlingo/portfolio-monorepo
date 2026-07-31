@@ -20,9 +20,63 @@ export const Project: CollectionConfig = {
       async ({ doc, req }) => {
         if (!doc.content) return doc
 
+        const converters = ({ defaultConverters }: { defaultConverters: typeof defaultHTMLConvertersAsync }) => ({
+          ...defaultConverters,
+          upload: async (args: any) => {
+            const uploadNode = args.node as {
+              value?: unknown
+              relationTo?: string
+            }
+
+            let uploadDoc: {
+              url?: string
+              mimeType?: string
+              filename?: string
+              width?: number
+              height?: number
+              alt?: string
+            } | null | undefined
+
+            if (typeof uploadNode.value !== 'object' || uploadNode.value === null) {
+              if (!args.populate || !uploadNode.relationTo || !uploadNode.value) {
+                return ''
+              }
+
+              uploadDoc = await args.populate({
+                id: uploadNode.value as string,
+                collectionSlug: uploadNode.relationTo,
+              })
+            } else {
+              uploadDoc = uploadNode.value as typeof uploadDoc
+            }
+
+            if (!uploadDoc?.url || !uploadDoc.mimeType) {
+              return ''
+            }
+
+            if (uploadDoc.mimeType.startsWith('video/')) {
+              const width = uploadDoc.width ? ` width="${uploadDoc.width}"` : ''
+              const height = uploadDoc.height ? ` height="${uploadDoc.height}"` : ''
+              const poster = typeof doc.featuredImage === 'object' && doc.featuredImage?.url
+                ? ` poster="${doc.featuredImage.url}"`
+                : ''
+
+              return `
+                <video src="${uploadDoc.url}"${poster}${width}${height} preload="metadata" autoplay muted loop playsinline></video>
+              `
+            }
+
+            if (typeof defaultConverters.upload === 'function') {
+              return defaultConverters.upload(args)
+            }
+
+            return ''
+          },
+        })
+
         const html = await convertLexicalToHTMLAsync({
           data: doc.content as SerializedEditorState,
-          converters: defaultHTMLConvertersAsync,
+          converters,
           disableContainer: true,
           populate: async ({ collectionSlug, id, select }) => {
             const relatedDoc = await req.payload.findByID({

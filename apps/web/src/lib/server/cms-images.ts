@@ -55,31 +55,46 @@ export async function localizeImage(cmsPath: string): Promise<string> {
 	}
 }
 
+function isCmsMediaSource(src: string, cmsBase: string): boolean {
+	return src.startsWith('/api/media/') || src.startsWith(`${cmsBase}/api/media/`);
+}
+
+async function localizeCmsMediaSource(src: string, cmsBase: string): Promise<string> {
+	if (!isCmsMediaSource(src, cmsBase)) {
+		return src;
+	}
+
+	const cmsPath = src.startsWith('http') ? new URL(src).pathname : src;
+	return localizeImage(cmsPath);
+}
+
 /**
- * Find all image `src` attributes in an HTML string that point to the CMS,
- * download each image, and rewrite the src to the local path.
+ * Find all image/video `src` attributes in an HTML string that point to the CMS,
+ * download each file, and rewrite the src to the local path.
  */
 export async function localizeHtmlImages(html: string): Promise<string> {
 	const cmsBase = getCmsBaseUrl();
-	const srcRegex = /(<img\s[^>]*?\bsrc=["'])([^"']+)(["'])/g;
 
-	const matches: { full: string; prefix: string; src: string; suffix: string }[] = [];
-	let match;
-	while ((match = srcRegex.exec(html)) !== null) {
-		matches.push({ full: match[0], prefix: match[1], src: match[2], suffix: match[3] });
-	}
-
-	let result = html;
-	for (const m of matches) {
-		// Only process CMS-hosted images (relative /api/media/ or absolute CMS URL)
-		if (m.src.startsWith('/api/media/') || m.src.startsWith(`${cmsBase}/api/media/`)) {
-			const cmsPath = m.src.startsWith('http')
-				? new URL(m.src).pathname
-				: m.src;
-			const localPath = await localizeImage(cmsPath);
-			result = result.replace(m.full, `${m.prefix}${localPath}${m.suffix}`);
+	const replaceMediaSrc = async (input: string, regex: RegExp): Promise<string> => {
+		const matches: { full: string; prefix: string; src: string; suffix: string }[] = [];
+		let match;
+		while ((match = regex.exec(input)) !== null) {
+			matches.push({ full: match[0], prefix: match[1], src: match[2], suffix: match[3] });
 		}
-	}
+
+		let output = input;
+		for (const m of matches) {
+			const localPath = await localizeCmsMediaSource(m.src, cmsBase);
+			if (localPath !== m.src) {
+				output = output.replace(m.full, `${m.prefix}${localPath}${m.suffix}`);
+			}
+		}
+
+		return output;
+	};
+
+	let result = await replaceMediaSrc(html, /(<img\s[^>]*?\bsrc=["'])([^"']+)(["'])/g);
+	result = await replaceMediaSrc(result, /(<(?:video|source)\s[^>]*?\bsrc=["'])([^"']+)(["'])/g);
 
 	return result;
 }

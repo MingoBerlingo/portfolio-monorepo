@@ -106,7 +106,7 @@
 		<section id="overview" class="pt-2">
 			<div
 				id="content"
-				class="prose max-w-none md:prose-lg prose-headings:font-normal prose-headings:tracking-tight prose-headings:text-foreground-1 prose-h1:mb-3 prose-h1:text-sm prose-h1:tracking-normal prose-h1:text-primary prose-h2:mt-0 prose-h2:mb-5 prose-h2:text-3xl sm:prose-h2:text-4xl prose-p:leading-relaxed prose-p:text-foreground-2"
+				class="prose max-w-none md:prose-lg prose-headings:font-normal prose-headings:tracking-tight prose-headings:text-foreground-1 prose-h1:mb-3 prose-h1:text-sm prose-h1:tracking-normal prose-h1:text-primary prose-h2:mt-0 prose-h2:mb-5 prose-h2:text-3xl sm:prose-h2:text-4xl prose-p:leading-relaxed prose-p:text-foreground-2 [&_img]:rounded-xl [&_video]:block [&_video]:w-full [&_video]:rounded-xl"
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized server-side -->
 				{@html project.contentHtml}
