@@ -20,7 +20,11 @@ export const Project: CollectionConfig = {
       async ({ doc, req }) => {
         if (!doc.content) return doc
 
-        const converters = ({ defaultConverters }: { defaultConverters: typeof defaultHTMLConvertersAsync }) => ({
+        const converters = ({
+          defaultConverters,
+        }: {
+          defaultConverters: typeof defaultHTMLConvertersAsync
+        }) => ({
           ...defaultConverters,
           upload: async (args: any) => {
             const uploadNode = args.node as {
@@ -28,14 +32,17 @@ export const Project: CollectionConfig = {
               relationTo?: string
             }
 
-            let uploadDoc: {
-              url?: string
-              mimeType?: string
-              filename?: string
-              width?: number
-              height?: number
-              alt?: string
-            } | null | undefined
+            let uploadDoc:
+              | {
+                  url?: string
+                  mimeType?: string
+                  filename?: string
+                  width?: number
+                  height?: number
+                  alt?: string
+                }
+              | null
+              | undefined
 
             if (typeof uploadNode.value !== 'object' || uploadNode.value === null) {
               if (!args.populate || !uploadNode.relationTo || !uploadNode.value) {
@@ -57,9 +64,10 @@ export const Project: CollectionConfig = {
             if (uploadDoc.mimeType.startsWith('video/')) {
               const width = uploadDoc.width ? ` width="${uploadDoc.width}"` : ''
               const height = uploadDoc.height ? ` height="${uploadDoc.height}"` : ''
-              const poster = typeof doc.featuredImage === 'object' && doc.featuredImage?.url
-                ? ` poster="${doc.featuredImage.url}"`
-                : ''
+              const poster =
+                typeof doc.featuredImage === 'object' && doc.featuredImage?.url
+                  ? ` poster="${doc.featuredImage.url}"`
+                  : ''
 
               return `
                 <video src="${uploadDoc.url}"${poster}${width}${height} preload="metadata" autoplay muted loop playsinline></video>
