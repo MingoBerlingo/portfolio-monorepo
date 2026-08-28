@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     media: Media;
     project: Project;
+    experiences: Experience;
     "payload-locked-documents": PayloadLockedDocument;
     "payload-preferences": PayloadPreference;
     "payload-migrations": PayloadMigration;
@@ -79,6 +80,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     project: ProjectSelect<false> | ProjectSelect<true>;
+    experiences: ExperiencesSelect<false> | ExperiencesSelect<true>;
     "payload-locked-documents":
       | PayloadLockedDocumentsSelect<false>
       | PayloadLockedDocumentsSelect<true>;
@@ -224,6 +226,30 @@ export interface Project {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "experiences".
+ */
+export interface Experience {
+  id: string;
+  company: string;
+  role: string;
+  startDate: string;
+  /**
+   * Optional. Leave empty if this experience is still ongoing.
+   */
+  endDate?: string | null;
+  industries: {
+    industry: string;
+    id?: string | null;
+  }[];
+  activities: {
+    activity: string;
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -240,6 +266,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: "project";
         value: string | Project;
+      } | null)
+    | ({
+        relationTo: "experiences";
+        value: string | Experience;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -356,6 +386,30 @@ export interface ProjectSelect<T extends boolean = true> {
         id?: T;
       };
   contentHtml?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "experiences_select".
+ */
+export interface ExperiencesSelect<T extends boolean = true> {
+  company?: T;
+  role?: T;
+  startDate?: T;
+  endDate?: T;
+  industries?:
+    | T
+    | {
+        industry?: T;
+        id?: T;
+      };
+  activities?:
+    | T
+    | {
+        activity?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
