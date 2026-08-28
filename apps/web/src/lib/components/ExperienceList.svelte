@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cn } from '$lib/utils/cn';
 	import type { Experience } from '@saiver/types';
 
 	type Props = {
@@ -37,9 +38,12 @@
 </script>
 
 <div class="mt-6 space-y-0">
-	{#each experiences as experience (experience.id)}
+	{#each experiences as experience, index (experience.id)}
 		<div
-			class="text-base grid grid-cols-[120px_1fr_auto] items-center gap-6 border-t border-border py-4 text-foreground-1"
+			class={cn(
+				'text-base grid grid-cols-[120px_1fr_auto] items-center gap-6 pb-4 text-foreground-1',
+				index > 0 && 'border-t border-border pt-4'
+			)}
 		>
 			<div class="text-foreground-3">{formatPeriod(experience)}</div>
 			<div class="min-w-0">

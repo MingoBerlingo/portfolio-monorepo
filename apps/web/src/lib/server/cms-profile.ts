@@ -1,5 +1,6 @@
 import type { Profile } from '@saiver/types';
 import { cmsQuery } from './cms-client';
+import { sanitize } from './sanitize';
 
 const PROFILE_QUERY = `
 	query {
@@ -7,6 +8,7 @@ const PROFILE_QUERY = `
 			name
 			surname
 			jobPosition
+			presentationHtml
 			email
 			github {
 				label
@@ -22,5 +24,10 @@ const PROFILE_QUERY = `
 
 export async function getProfile(): Promise<Profile> {
 	const data = await cmsQuery<{ Profile: Profile }>(PROFILE_QUERY);
-	return data.Profile;
+	const profile = data.Profile;
+
+	return {
+		...profile,
+		presentationHtml: profile.presentationHtml ? sanitize(profile.presentationHtml) : ''
+	};
 }

@@ -448,6 +448,22 @@ export interface Profile {
   name: string;
   surname: string;
   jobPosition: string;
+  presentation?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  presentationHtml?: string | null;
   email: string;
   github: {
     label: string;
@@ -470,6 +486,8 @@ export interface ProfileSelect<T extends boolean = true> {
   name?: T;
   surname?: T;
   jobPosition?: T;
+  presentation?: T;
+  presentationHtml?: T;
   email?: T;
   github?:
     | T
