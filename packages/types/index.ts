@@ -4,4 +4,5 @@ export type {
   User,
   Profile,
   Experience,
+  Education,
 } from "./payload-types";

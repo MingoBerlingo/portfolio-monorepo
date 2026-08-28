@@ -1,4 +1,5 @@
 <script lang="ts">
+	import EducationList from '$lib/components/EducationList.svelte';
 	import ExperienceList from '$lib/components/ExperienceList.svelte';
 	import type { PageProps } from './$types';
 
@@ -10,7 +11,7 @@
 	<p class="mb-3 text-sm font-normal tracking-normal text-primary">Introduction</p>
 	{#if profile.presentationHtml}
 		<div
-			class="prose max-w-none pb-8 md:prose-lg prose-headings:font-normal prose-headings:tracking-tight prose-headings:text-foreground-1 prose-h1:mb-3 prose-h1:text-sm prose-h1:tracking-normal prose-h1:text-primary prose-h2:mt-0 prose-h2:mb-5 prose-h2:text-3xl sm:prose-h2:text-4xl prose-p:text-xl prose-p:leading-tight prose-p:text-foreground-2 [&_a]:text-primary [&_img]:rounded-xl [&_img]:border [&_img]:border-border [&_strong]:text-foreground-1"
+			class="prose max-w-none pb-4 md:prose-lg prose-headings:font-normal prose-headings:tracking-tight prose-headings:text-foreground-1 prose-h1:mb-3 prose-h1:text-sm prose-h1:tracking-normal prose-h1:text-primary prose-h2:mt-0 prose-h2:mb-5 prose-h2:text-3xl sm:prose-h2:text-4xl prose-p:text-xl prose-p:leading-tight prose-p:text-foreground-2 [&_a]:text-primary [&_img]:rounded-xl [&_img]:border [&_img]:border-border [&_strong]:text-foreground-1"
 		>
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized server-side -->
 			{@html profile.presentationHtml}
@@ -19,4 +20,9 @@
 
 	<p class="mt-10 mb-3 text-sm font-normal tracking-normal text-primary">Experiences</p>
 	<ExperienceList experiences={data.experiences} />
+
+	{#if data.education?.length}
+		<p class="mt-10 mb-3 text-sm font-normal tracking-normal text-primary">Education</p>
+		<EducationList education={data.education} />
+	{/if}
 </section>

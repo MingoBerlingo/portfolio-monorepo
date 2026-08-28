@@ -71,6 +71,7 @@ export interface Config {
     media: Media;
     project: Project;
     experiences: Experience;
+    education: Education;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -81,6 +82,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     project: ProjectSelect<false> | ProjectSelect<true>;
     experiences: ExperiencesSelect<false> | ExperiencesSelect<true>;
+    education: EducationSelect<false> | EducationSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -244,6 +246,19 @@ export interface Experience {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "education".
+ */
+export interface Education {
+  id: string;
+  startDate: string;
+  endDate: string;
+  title: string;
+  school: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -264,6 +279,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'experiences';
         value: string | Experience;
+      } | null)
+    | ({
+        relationTo: 'education';
+        value: string | Education;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -404,6 +423,18 @@ export interface ExperiencesSelect<T extends boolean = true> {
         activity?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "education_select".
+ */
+export interface EducationSelect<T extends boolean = true> {
+  startDate?: T;
+  endDate?: T;
+  title?: T;
+  school?: T;
   updatedAt?: T;
   createdAt?: T;
 }
