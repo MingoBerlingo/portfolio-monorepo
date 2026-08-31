@@ -3,7 +3,7 @@
 
 	interface Props {
 		name: IconName;
-		size?: 16 | 20 | 24 | 32;
+		size?: 12 | 16 | 20 | 24 | 32;
 		fill?: string;
 		title?: string;
 	}

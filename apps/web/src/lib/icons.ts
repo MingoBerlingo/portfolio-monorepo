@@ -1,3 +1,4 @@
+import { JumpLink } from 'carbon-icons-svelte';
 import ArrowLeft from 'carbon-icons-svelte/lib/ArrowLeft.svelte';
 import ArrowRight from 'carbon-icons-svelte/lib/ArrowRight.svelte';
 import ArrowUpRight from 'carbon-icons-svelte/lib/ArrowUpRight.svelte';
@@ -17,7 +18,8 @@ export const icons = {
 	close: Close,
 	information: Information,
 	launch: Launch,
-	menu: Menu
+	menu: Menu,
+	'jump-link': JumpLink
 } as const;
 
 export type IconName = keyof typeof icons;
