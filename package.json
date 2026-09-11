@@ -17,7 +17,7 @@
     "web:storybook": "pnpm --filter web storybook",
     "web:build-storybook": "pnpm --filter web build-storybook",
     "build:site": "bash scripts/build-site.sh",
-    "publish:pages": "bash scripts/publish-pages.sh",
+    "publish:static": "bash scripts/publish-static.sh",
     "cms:dev": "pnpm --filter cms dev",
     "cms:build": "pnpm --filter cms build",
     "cms:start": "pnpm --filter cms start",

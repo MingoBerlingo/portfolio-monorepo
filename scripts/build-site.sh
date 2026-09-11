@@ -10,7 +10,7 @@
 # Environment:
 #   BASE_PATH   Subpath the site is hosted under (leading slash, no trailing
 #               slash). Empty = domain root. GitHub Pages project sites use
-#               /<repo-name>. `pnpm publish:pages` sets this automatically.
+#               /<repo-name>. `pnpm publish:static` sets this automatically.
 #   CMS_API_URL Base URL of the CMS (default: http://localhost:3000).
 #
 # The site only runs during the build: after this command finishes you get a
@@ -92,7 +92,14 @@ fi
 log "Building static site (BASE_PATH='${BASE_PATH:-}')..."
 (cd "$ROOT" && BASE_PATH="${BASE_PATH:-}" pnpm --filter web build)
 
+# GitHub Pages (Jekyll) skips files/directories starting with `_` — including the
+# `_app/` folder that holds all JS/CSS chunks — unless a `.nojekyll` file exists
+# at the site root. `static/.nojekyll` normally ships it; this is a safety net.
+if [ -d "$ROOT/apps/web/build" ]; then
+	touch "$ROOT/apps/web/build/.nojekyll"
+fi
+
 log "Done! The static website is ready in apps/web/build."
 [ -n "${BASE_PATH:-}" ] && log "Built with subpath base '${BASE_PATH}' (links/media prefixed)."
 log "Preview it with:   pnpm web:preview"
-log "Publish it with:   pnpm publish:pages"
+log "Publish it with:   pnpm publish:static"

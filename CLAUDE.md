@@ -10,15 +10,15 @@ PNPM monorepo with two apps and a shared types package:
 
 The web app is a fully static site. At production-build time it reads the content + media
 live from the CMS/database (`pnpm build:site`), prerenders every page, and stops what it
-started. The result in `apps/web/build` is published to the `gh-pages` branch
-(`pnpm publish:pages`) and served for free by GitHub Pages — no server or database needed.
+started. `pnpm publish:static` pushes the result as a standalone site repo (e.g.
+`<user>.github.io`) that GitHub Pages serves for free — no server or database needed.
 
 ## Commands
 
 ```bash
 pnpm dev              # Run all dev servers (needs MongoDB + CMS for content)
 pnpm build:site       # ONE-command production build: ensures CMS+DB, generates static site from live data
-pnpm publish:pages    # Build the site and push apps/web/build to the gh-pages branch
+pnpm publish:static   # Build + push the site to a standalone site repo (e.g. <you>.github.io)
 pnpm build            # Build everything (web build needs a running CMS locally)
 pnpm test             # Run tests across workspace
 pnpm lint             # Lint all packages
@@ -51,8 +51,10 @@ Always regenerate types after modifying any collection in `apps/cms/src/collecti
 
 - Web app is fully prerendered at build time (`adapter-static`) and deployed to GitHub Pages
 - Production build: `pnpm build:site` (starts MongoDB/CMS if needed, pulls data live via GraphQL, downloads media into `static/media`, prerenders to `apps/web/build`, stops the CMS it started)
-- Publish: `pnpm publish:pages` pushes `apps/web/build` to the `gh-pages` branch; GitHub Pages serves it from there (Settings → Pages → Deploy from a branch)
-- `BASE_PATH` env var sets the deployment subpath (detected automatically by `publish:pages`; empty for `<user>.github.io` sites/roots, `/<repo>` for project sites)
+- Publish: `pnpm publish:static` — pushes the build as a single fresh commit to a standalone site repo (e.g. `<user>.github.io`) configured as a git remote (default name `pages`)
+- `.nojekyll` is shipped (`apps/web/static/.nojekyll` + a safety net in the scripts): branch-based GitHub Pages runs Jekyll, which strips `_app/` and breaks every JS/CSS chunk without it
+- Deliberately **no GitHub Actions/workflows**: builds and publishes run locally so nothing consumes CI minutes
+- `BASE_PATH` env var sets the deployment subpath (detected automatically from the target repo; empty for `<user>.github.io` roots, `/<repo>` for project sites)
 - `kit.paths.relative` is `false` on purpose: relative `base`/`resolve()` relies on a mutable global that leaks between concurrently prerendered pages and breaks links on nested routes (`/projects/<slug>`); a fixed configured base keeps links deterministic
 - Media URLs from the CMS are downloaded and rewritten (base-aware) by `apps/web/src/lib/server/cms-images.ts` during the build
 - Rich text HTML is sanitized with `sanitize-html` in server load functions

@@ -15,8 +15,9 @@ This monorepo is organized into:
 **Static site from your own database.** Content is edited in the CMS (MongoDB +
 [Payload]) on your machine. `pnpm build:site` is the *production build*: it reads the data
 directly from the database at build time and prerenders the whole site into
-`apps/web/build`. `pnpm publish:pages` pushes that static output to the `gh-pages` branch so
-[GitHub Pages] can serve it for free — no server, no database, no paid hosting needed.
+`apps/web/build`. `pnpm publish:static` pushes that output as a standalone site repo (e.g.
+`<you>.github.io`) that [GitHub Pages] serves for free — no server, no database, no paid
+hosting needed.
 
 [Payload]: https://payloadcms.com
 [GitHub Pages]: https://pages.github.com
@@ -65,7 +66,7 @@ directly from the database at build time and prerenders the whole site into
 - `pnpm lint` - Lint all packages
 - `pnpm format` - Format code across all packages
 - `pnpm build:site` - Production build: pull data live from the DB/CMS, generate the static site in `apps/web/build`
-- `pnpm publish:pages` - Build the site and push it to the `gh-pages` branch (GitHub Pages)
+- `pnpm publish:static` - Build and push the site to a standalone site repo (e.g. `<you>.github.io`)
 - `pnpm clean` - Clean build artifacts
 
 ### Application-Specific Commands
@@ -121,34 +122,53 @@ or database is needed to *serve* the site — only to *generate* it.
    (Use your repo name instead of `portfolio-monorepo`.) For a domain-root site — a
    `<you>.github.io` user/org repo or a custom domain — just `pnpm build:site` + `pnpm web:preview`.
 
-4. **Publish** — push the generated static site to the `gh-pages` branch:
+4. **Publish** — build and push the site to a **separate, standalone site repository**:
 
    ```bash
-   pnpm publish:pages
+   pnpm publish:static
    ```
 
-   This rebuilds the site and pushes `apps/web/build` to the `gh-pages` branch of your
-   `origin` remote.
+   This rebuilds the site and force-pushes `apps/web/build` as a single fresh commit to the
+   `pages` remote. Nothing is committed to this (source) repo and **no CI/Actions run** —
+   everything happens on your machine.
 
-### 1-time GitHub Pages setup
+### Setup: dedicated user-site repo
 
-1. Create a repository on GitHub and push this project to it:
+Serving from a repo named exactly `<you>.github.io` gives you the domain **root**
+(`https://<you>.github.io/`) and the cleanest separation: this monorepo stays source-only
+(it can even be private) and the site repo contains *only* the built output.
+
+1. Create a **public** repository named exactly `<you>.github.io` on GitHub.
+2. Register it here as a `pages` remote:
 
    ```bash
-   git remote add origin git@github.com:<you>/<repo>.git
-   git push -u origin main
+   git remote add pages git@github.com:<you>/<you>.github.io.git
    ```
 
-2. In **Settings → Pages → Build and deployment**, set **Source** to
-   **Deploy from a branch**, branch `gh-pages`, folder `/ (root)`.
+3. In that repo: **Settings → Pages → Deploy from a branch → `main` / (root)**.
+4. Publish whenever you change content:
 
-3. Run `pnpm publish:pages` once — the site goes live at:
-   - `https://<you>.github.io/<repo>/` for project sites (base path detected automatically), or
-   - the domain root for `<you>.github.io` user/org sites and custom domains.
+   ```bash
+   pnpm publish:static
+   ```
 
-The publish script detects which case applies from your remote and sets `BASE_PATH`
-accordingly. To override (e.g. custom domain), run `BASE_PATH= pnpm publish:pages` or set
-`BASE_PATH=/my-path` explicitly.
+   → live at `https://<you>.github.io/` (base path `''` — no subpath logic at all).
+
+### Why `.nojekyll` matters
+
+GitHub Pages serves *branch* deploys through Jekyll, which **ignores any file or directory
+whose name starts with `_`** — including SvelteKit's `_app/` folder that holds every JS/CSS
+chunk. The page then loads but every chunk 404s. The build ships an empty `.nojekyll` file at
+the site root (`apps/web/static/.nojekyll`, plus a safety net in the publish scripts) which
+disables Jekyll processing. Without it you'd see console errors like:
+
+```text
+GET https://<you>.github.io/_app/immutable/chunks/xxxx.js 404
+```
+
+> **No GitHub Actions required.** Publishing is entirely local: build against your database,
+> then push the generated files. This repo ships **no workflows**, so nothing consumes Actions
+> minutes.
 
 ## 🔄 Shared Types
 
