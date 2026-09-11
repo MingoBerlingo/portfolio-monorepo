@@ -1,5 +1,5 @@
 {
-  "name": "saiver-monorepo",
+  "name": "portfolio-monorepo",
   "version": "1.0.0",
   "description": "A modern monorepo built with PNPM workspaces, featuring SvelteKit applications and shared packages",
   "private": true,
@@ -21,9 +21,9 @@
     "cms:start": "pnpm --filter cms start",
     "cms:payload": "pnpm --filter cms payload",
     "cms:generate:types": "pnpm --filter cms generate:types",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
   },
   "keywords": [
     "monorepo",

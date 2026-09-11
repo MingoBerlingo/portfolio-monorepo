@@ -1,7 +1,7 @@
 <script lang="ts">
 	import TimelineRow from '$lib/components/TimelineRow.svelte';
 	import { formatPeriod } from '$lib/utils/date';
-	import type { Experience } from '@saiver/types';
+	import type { Experience } from '@portfolio/types';
 
 	type Props = {
 		experiences: Experience[];

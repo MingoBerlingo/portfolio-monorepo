@@ -1,7 +1,7 @@
 {
   "name": "cms",
   "version": "1.0.0",
-  "description": "Payload CMS for Saiver Monorepo",
+  "description": "Payload CMS for Portfolio Monorepo",
   "private": true,
   "license": "ISC",
   "type": "module",
@@ -24,7 +24,7 @@
     "@payloadcms/payload-cloud": "3.57.0",
     "@payloadcms/richtext-lexical": "3.57.0",
     "@payloadcms/ui": "3.57.0",
-    "@saiver/types": "workspace:*",
+    "@portfolio/types": "workspace:*",
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
     "ffmpeg-static": "^5.3.0",

@@ -1,4 +1,4 @@
-import type { Project } from '@saiver/types';
+import type { Project } from '@portfolio/types';
 import { cmsQuery, type PaginatedResponse } from './cms-client';
 import { localizeImage, localizeHtmlImages } from './cms-images';
 

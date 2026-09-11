@@ -1,4 +1,4 @@
-# Saiver Monorepo
+# Portfolio Monorepo
 
 A modern monorepo built with PNPM workspaces, featuring SvelteKit applications and shared packages.
 
@@ -26,7 +26,7 @@ This monorepo is organized into:
 
    ```bash
    git clone <repository-url>
-   cd saiver-monorepo
+   cd portfolio-monorepo
    ```
 
 2. **Install dependencies**
@@ -65,7 +65,7 @@ This monorepo is organized into:
 - `pnpm cms:dev` - Start Payload CMS development server
 - `pnpm cms:build` - Build CMS application
 - `pnpm cms:start` - Start CMS in production mode
-- `pnpm cms:generate:types` - Generate TypeScript types from CMS collections into the shared `@saiver/types` package
+- `pnpm cms:generate:types` - Generate TypeScript types from CMS collections into the shared `@portfolio/types` package
 
 ## 🔄 Shared Types
 
@@ -75,7 +75,7 @@ The `packages/types` package contains TypeScript types that are **auto-generated
 
 1. Payload CMS generates `packages/types/payload-types.ts` directly (configured via `outputFile` and `declare: false` in `payload.config.ts`)
 2. `packages/types/index.ts` re-exports only the types needed by the frontend (`Project`, `Media`, `User`)
-3. The web app imports them as `import type { Project } from '@saiver/types'`
+3. The web app imports them as `import type { Project } from '@portfolio/types'`
 
 **When to regenerate:** after adding or modifying fields in any CMS collection (`apps/cms/src/collections/`), run:
 
@@ -90,7 +90,7 @@ pnpm cms:generate:types
 ### Project Structure
 
 ```
-saiver-monorepo/
+portfolio-monorepo/
 ├── apps/
 │   ├── web/                 # SvelteKit application
 │   └── cms/                 # Payload CMS application
@@ -123,7 +123,7 @@ pnpm init
 
 - **Install a dependency for all workspaces**: `pnpm add <package> -w`
 - **Install a dependency for a specific workspace**: `pnpm add <package> --filter web`
-- **Install a local package**: `pnpm add @saiver/types --filter web`
+- **Install a local package**: `pnpm add @portfolio/types --filter web`
 
 ## 🐳 Docker Services
 

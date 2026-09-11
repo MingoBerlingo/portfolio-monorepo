@@ -55,7 +55,7 @@
 		"vitest-browser-svelte": "^0.1.0"
 	},
 	"dependencies": {
-		"@saiver/types": "workspace:*",
+		"@portfolio/types": "workspace:*",
 		"carbon-icons-svelte": "^13.9.0",
 		"clsx": "^2.1.1",
 		"sanitize-html": "^2.17.1",

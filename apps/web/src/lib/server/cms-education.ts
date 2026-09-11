@@ -1,4 +1,4 @@
-import type { Education } from '@saiver/types';
+import type { Education } from '@portfolio/types';
 import { cmsQuery, type PaginatedResponse } from './cms-client';
 
 const EDUCATION_QUERY = `

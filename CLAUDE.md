@@ -29,7 +29,7 @@ pnpm cms:generate:types  # Regenerate shared types after collection changes
 
 ## Type Generation Flow
 
-CMS collections → `pnpm cms:generate:types` → `packages/types/payload-types.ts` → re-exported via `@saiver/types`
+CMS collections → `pnpm cms:generate:types` → `packages/types/payload-types.ts` → re-exported via `@portfolio/types`
 
 Always regenerate types after modifying any collection in `apps/cms/src/collections/`.
 

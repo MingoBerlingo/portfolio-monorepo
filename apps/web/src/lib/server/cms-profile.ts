@@ -1,4 +1,4 @@
-import type { Profile } from '@saiver/types';
+import type { Profile } from '@portfolio/types';
 import { cmsQuery } from './cms-client';
 import { sanitize } from './sanitize';
 

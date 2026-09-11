@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Saiver Monorepo Development Setup Script
+# Portfolio Monorepo Development Setup Script
 # This script helps you get started with the development environment
 
 set -e
 
-echo "🚀 Setting up Saiver Monorepo Development Environment"
+echo "🚀 Setting up Portfolio Monorepo Development Environment"
 echo "=================================================="
 
 # Check if Node.js is installed

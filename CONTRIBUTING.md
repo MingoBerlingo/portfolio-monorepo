@@ -1,6 +1,6 @@
-# Contributing to Saiver Monorepo
+# Contributing to Portfolio Monorepo
 
-Thank you for your interest in contributing to the Saiver Monorepo! This guide will help you get started.
+Thank you for your interest in contributing to the Portfolio Monorepo! This guide will help you get started.
 
 ## 🚀 Getting Started
 
@@ -8,8 +8,8 @@ Thank you for your interest in contributing to the Saiver Monorepo! This guide w
 2. **Clone your fork** locally:
 
    ```bash
-   git clone https://github.com/yourusername/saiver-monorepo.git
-   cd saiver-monorepo
+   git clone https://github.com/yourusername/portfolio-monorepo.git
+   cd portfolio-monorepo
    ```
 
 3. **Install dependencies**:

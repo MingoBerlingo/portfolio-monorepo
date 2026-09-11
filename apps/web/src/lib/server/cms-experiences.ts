@@ -1,4 +1,4 @@
-import type { Experience } from '@saiver/types';
+import type { Experience } from '@portfolio/types';
 import { cmsQuery, type PaginatedResponse } from './cms-client';
 
 const EXPERIENCES_QUERY = `
