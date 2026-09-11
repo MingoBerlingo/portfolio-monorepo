@@ -9,6 +9,16 @@ function getCmsBaseUrl(): string {
 	return env.CMS_API_URL || DEFAULT_CMS_URL;
 }
 
+/**
+ * Deployment subpath (e.g. `/portfolio-monorepo`), from the same `BASE_PATH`
+ * env var used in `svelte.config.js`. Empty at the domain root. Read from the
+ * environment rather than `$app/paths` because these URLs end up inside data
+ * and HTML strings that SvelteKit does not rewrite.
+ */
+function getSubpath(): string {
+	return env.BASE_PATH ?? '';
+}
+
 /** Already-downloaded files in this build run (CMS path → local path). */
 const downloaded = new Map<string, string>();
 
@@ -25,7 +35,9 @@ export async function localizeImage(cmsPath: string): Promise<string> {
 	const filename = cmsPath.split('/').pop();
 	if (!filename) return cmsPath;
 
-	const localPath = `/media/${filename}`;
+	// Prefix with the deployment base path (empty at the domain root) so the
+	// media URLs are correct on subpath hosts like GitHub Pages project sites.
+	const localPath = `${getSubpath()}/media/${filename}`;
 	const destDir = join(process.cwd(), MEDIA_DIR);
 	const destFile = join(destDir, filename);
 
@@ -40,7 +52,7 @@ export async function localizeImage(cmsPath: string): Promise<string> {
 	try {
 		const res = await fetch(url);
 		if (!res.ok) {
-			console.warn(`[cms-images] Failed to download ${url}: ${res.status}`);
+			console.error(`[cms-images] Failed to download ${url}: ${res.status}`);
 			return cmsPath;
 		}
 
@@ -50,7 +62,7 @@ export async function localizeImage(cmsPath: string): Promise<string> {
 		downloaded.set(cmsPath, localPath);
 		return localPath;
 	} catch (err) {
-		console.warn(`[cms-images] Error downloading ${url}:`, err);
+		console.error(`[cms-images] Error downloading ${url}:`, err);
 		return cmsPath;
 	}
 }
@@ -95,6 +107,7 @@ export async function localizeHtmlImages(html: string): Promise<string> {
 
 	let result = await replaceMediaSrc(html, /(<img\s[^>]*?\bsrc=["'])([^"']+)(["'])/g);
 	result = await replaceMediaSrc(result, /(<(?:video|source)\s[^>]*?\bsrc=["'])([^"']+)(["'])/g);
+	result = await replaceMediaSrc(result, /(<video\s[^>]*?\bposter=["'])([^"']+)(["'])/g);
 
 	return result;
 }

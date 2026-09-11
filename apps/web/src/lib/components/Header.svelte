@@ -1,14 +1,16 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { cn } from '$lib/utils/cn';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 
 	const navLinks = [
-		{ href: '/projects', label: 'Projects' },
-		{ href: '/info', label: 'Info' },
-		{ href: '/contact', label: 'Contact' }
+		{ href: resolve('/projects'), label: 'Projects' },
+		{ href: resolve('/info'), label: 'Info' },
+		{ href: resolve('/contact'), label: 'Contact' }
 	];
+	const homeHref = resolve('/');
 
 	// Hide header on scroll down, show on scroll up
 	let lastScrollY = $state(0);
@@ -39,7 +41,9 @@
 	})}
 >
 	<div class="relative z-50 flex items-center justify-between">
-		<a href="/" class="font-display text-foreground-1" onclick={closeMenu}>Alessandro Quets</a>
+		<a href={homeHref} class="font-display text-foreground-1" onclick={closeMenu}
+			>Alessandro Quets</a
+		>
 
 		<!-- Desktop nav -->
 		<nav class="hidden items-center gap-8 md:flex">

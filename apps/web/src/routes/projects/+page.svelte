@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -46,7 +47,7 @@
 			{@const coverAsset = getCoverAsset(project)}
 			{@const year = formatYear(project.year)}
 			<li class="list-none">
-				<a href="/projects/{project.slug}" class="group block">
+				<a href={resolve(`/projects/${project.slug}`)} class="group block">
 					<div class="overflow-clip rounded-xl border border-border bg-surface-1">
 						<div class="bg-white ring-primary/30 group-focus-visible:ring-2 dark:bg-surface-1">
 							{#if coverAsset?.url && isVideoAsset(coverAsset)}

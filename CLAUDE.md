@@ -8,13 +8,18 @@ PNPM monorepo with two apps and a shared types package:
 - **`apps/cms`** — Payload CMS on Next.js 15 (MongoDB, Lexical rich text editor)
 - **`packages/types`** — Auto-generated TypeScript types from Payload collections
 
-The web app queries the CMS via GraphQL (`/api/graphql`) with an in-memory cache.
+The web app is a fully static site. At production-build time it reads the content + media
+live from the CMS/database (`pnpm build:site`), prerenders every page, and stops what it
+started. The result in `apps/web/build` is published to the `gh-pages` branch
+(`pnpm publish:pages`) and served for free by GitHub Pages — no server or database needed.
 
 ## Commands
 
 ```bash
-pnpm dev              # Run all dev servers
-pnpm build            # Build everything
+pnpm dev              # Run all dev servers (needs MongoDB + CMS for content)
+pnpm build:site       # ONE-command production build: ensures CMS+DB, generates static site from live data
+pnpm publish:pages    # Build the site and push apps/web/build to the gh-pages branch
+pnpm build            # Build everything (web build needs a running CMS locally)
 pnpm test             # Run tests across workspace
 pnpm lint             # Lint all packages
 pnpm format           # Format code
@@ -23,9 +28,10 @@ pnpm cms:generate:types  # Regenerate shared types after collection changes
 
 ## Development Setup
 
-- Docker required for MongoDB (`docker compose up -d`)
+- Docker required for MongoDB (`docker compose up -d`); `pnpm build:site` does this automatically
 - CMS runs on `localhost:3000`, web on `localhost:5173`
 - Env files: `apps/web/.env` (CMS_API_URL), `apps/cms/.env` (DATABASE_URI, PAYLOAD_SECRET)
+- The web app reads content from the CMS at build/run time — start the CMS (`pnpm cms:dev`) to `pnpm dev`; in production the CMS only needs to be up while running `pnpm build:site`
 
 ## Type Generation Flow
 
@@ -44,7 +50,11 @@ Always regenerate types after modifying any collection in `apps/cms/src/collecti
 ## Deployment
 
 - Web app is fully prerendered at build time (`adapter-static`) and deployed to GitHub Pages
-- CMS must be running during `pnpm build` so pages can fetch data at build time
+- Production build: `pnpm build:site` (starts MongoDB/CMS if needed, pulls data live via GraphQL, downloads media into `static/media`, prerenders to `apps/web/build`, stops the CMS it started)
+- Publish: `pnpm publish:pages` pushes `apps/web/build` to the `gh-pages` branch; GitHub Pages serves it from there (Settings → Pages → Deploy from a branch)
+- `BASE_PATH` env var sets the deployment subpath (detected automatically by `publish:pages`; empty for `<user>.github.io` sites/roots, `/<repo>` for project sites)
+- `kit.paths.relative` is `false` on purpose: relative `base`/`resolve()` relies on a mutable global that leaks between concurrently prerendered pages and breaks links on nested routes (`/projects/<slug>`); a fixed configured base keeps links deterministic
+- Media URLs from the CMS are downloaded and rewritten (base-aware) by `apps/web/src/lib/server/cms-images.ts` during the build
 - Rich text HTML is sanitized with `sanitize-html` in server load functions
 
 ## Architecture Notes

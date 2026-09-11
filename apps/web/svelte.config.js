@@ -8,6 +8,18 @@ const config = {
 	preprocess: vitePreprocess(),
 	kit: {
 		adapter: adapter(),
+		paths: {
+			// Subpath the site is hosted under (leading slash, no trailing slash).
+			// Leave empty for the domain root (e.g. custom domain or a
+			// `<user>.github.io` user/org site). The deploy workflow sets
+			// `BASE_PATH=/<repo-name>` automatically for project sites.
+			base: process.env.BASE_PATH ?? '',
+			// Keep `base`/`resolve()` as the fixed, configured base instead of a
+			// per-page relative value. The relative form relies on a mutable
+			// global that can leak between concurrently prerendered pages,
+			// producing broken links on nested routes (e.g. `/projects/<slug>`).
+			relative: false
+		},
 		prerender: {
 			handleHttpError({ path, message }) {
 				// Images downloaded to static/media/ during prerendering are copied

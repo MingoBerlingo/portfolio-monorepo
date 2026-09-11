@@ -41,8 +41,11 @@ jobs:
       - name: Run tests
         run: pnpm test
 
-      - name: Build
-        run: pnpm build
+      - name: Build CMS app
+        # The static site production build (`pnpm build:site`) pulls live data
+        # from the local DB/CMS and runs locally; the result is published to the
+        # `gh-pages` branch with `pnpm publish:pages`.
+        run: pnpm --filter cms build
 
   storybook-build:
     runs-on: ubuntu-latest
