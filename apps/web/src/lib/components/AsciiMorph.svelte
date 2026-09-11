@@ -14,6 +14,7 @@
 		frames?: string[][];
 		interval?: number; // ms between auto-cycling to the next frame
 		frameDelay?: number; // ms between each animation step during a morph
+		ariaLabel?: string;
 		class?: string;
 	}
 
@@ -21,6 +22,7 @@
 		frames = defaultFrames,
 		interval = 3000,
 		frameDelay = 20,
+		ariaLabel = 'Animated ASCII art showcasing design skills',
 		class: className
 	}: Props = $props();
 
@@ -199,6 +201,6 @@
 			className
 		)}
 		role="img"
-		aria-label="Animated ASCII art showcasing design skills"
+		aria-label={ariaLabel}
 		onclick={morphNextFrame}>{lines.join('\n')}</pre>
 </div>
