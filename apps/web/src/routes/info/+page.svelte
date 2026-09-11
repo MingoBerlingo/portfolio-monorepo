@@ -27,7 +27,7 @@
 		<EducationList education={data.education} />
 	{/if}
 
-	<div class="mt-40">
+	<div class="mt-20">
 		<div class="text-base grid gap-5 text-foreground-2 sm:grid-cols-3">
 			<div class="space-y-1">
 				<p class="text-sm font-normal tracking-normal text-primary">Email</p>
