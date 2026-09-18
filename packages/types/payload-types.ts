@@ -158,6 +158,9 @@ export interface Media {
   createdAt: string;
   url?: string | null;
   thumbnailURL?: string | null;
+  /**
+   * Renames the stored file (spaces and special characters become dashes, the extension is kept).
+   */
   filename?: string | null;
   mimeType?: string | null;
   filesize?: number | null;

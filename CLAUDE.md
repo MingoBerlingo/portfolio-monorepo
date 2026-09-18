@@ -56,13 +56,16 @@ Always regenerate types after modifying any collection in `apps/cms/src/collecti
 - Deliberately **no GitHub Actions/workflows**: builds and publishes run locally so nothing consumes CI minutes
 - `BASE_PATH` env var sets the deployment subpath (detected automatically from the target repo; empty for `<user>.github.io` roots, `/<repo>` for project sites)
 - `kit.paths.relative` is `false` on purpose: relative `base`/`resolve()` relies on a mutable global that leaks between concurrently prerendered pages and breaks links on nested routes (`/projects/<slug>`); a fixed configured base keeps links deterministic
-- Media URLs from the CMS are downloaded and rewritten (base-aware) by `apps/web/src/lib/server/cms-images.ts` during the build
+- Media URLs from the CMS are downloaded and rewritten (base-aware) by `apps/web/src/lib/server/cms-images.ts` during the build. File names are owned by the CMS — uploads are sanitized to URL-safe names on the way in and can be renamed from the dashboard (see `apps/cms/src/utils/mediaFilename.ts`); the web build only logs an error for a name that still needs percent-encoding, because static hosts decode the request path and would 404 on it
+- `apps/web/scripts/sync-media.mjs` (part of `pnpm build`) copies media fetched *while* prerendering into `build/media`: Vite copies `static/` into the bundle before pages are prerendered, so those files would otherwise be missing from the published output
 - Rich text HTML is sanitized with `sanitize-html` in server load functions
 
 ## Architecture Notes
 
 - Web server utilities live in `apps/web/src/lib/server/`
 - CMS collections are in `apps/cms/src/collections/`
+- Uploads are sanitized to URL-safe names on the way in (`apps/cms/src/collections/Media.ts` + `apps/cms/src/utils/mediaFilename.ts`): spaces/special characters become dashes, so media URLs need no percent-encoding. The upload collection's `filename` field is re-declared to make it editable in the dashboard — renaming there sanitizes the value, resolves collisions (`-1`, `-2` …) and moves the file on disk (`afterChange`)
+- Payload caches its instance per process and reloads it when the config changes (HMR); if a collection/hook edit doesn't seem to apply in dev, restart `pnpm cms:dev`
 - Rich text uses async HTML conversion (`afterRead` hook) — not `lexicalHTMLField` — to properly resolve images
 - Storybook is configured in the web app (`pnpm --filter web storybook`)
 - CI runs lint, type-check, test, and build on Node 18.x and 20.x

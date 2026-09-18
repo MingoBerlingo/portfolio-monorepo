@@ -22,9 +22,12 @@ const config = {
 		},
 		prerender: {
 			handleHttpError({ path, message }) {
-				// Images downloaded to static/media/ during prerendering are copied
-				// by the adapter but aren't visible to the prerender crawler.
-				if (path.startsWith('/media/')) return;
+				// Media downloaded to static/media/ while prerendering is not part of
+				// the server build, so the crawler reports it as missing. Those files
+				// are copied into the output afterwards (scripts/sync-media.mjs).
+				// `path` is already prefixed with `paths.base`, so compare with the
+				// same prefix — otherwise subpath builds (BASE_PATH=/<repo>) fail.
+				if (path.startsWith(`${process.env.BASE_PATH ?? ''}/media/`)) return;
 				throw new Error(message);
 			}
 		}
