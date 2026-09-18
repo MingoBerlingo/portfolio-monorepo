@@ -11,7 +11,6 @@ const PROJECTS_QUERY = `
 				title
 				shortTitle
 				tagline
-				introduction
 				year
 				featuredImage {
 					url
@@ -48,13 +47,12 @@ const PROJECT_BY_SLUG_QUERY = `
 				title
 				shortTitle
 				tagline
-				introduction
 				year
 				isFeatured
 				isMinor
 				client
 				role
-				platform
+				output
 				featuredImage {
 					url
 					alt

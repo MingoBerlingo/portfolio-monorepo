@@ -119,15 +119,6 @@ export const Project: CollectionConfig = {
       maxLength: 160,
     },
     {
-      name: 'introduction',
-      type: 'textarea',
-      required: true,
-      maxLength: 280,
-      admin: {
-        rows: 4,
-      },
-    },
-    {
       name: 'slug',
       type: 'text',
       required: true,
@@ -194,7 +185,7 @@ export const Project: CollectionConfig = {
           type: 'text',
         },
         {
-          name: 'platform',
+          name: 'output',
           type: 'text',
         },
       ],

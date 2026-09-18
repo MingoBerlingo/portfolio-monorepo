@@ -15,5 +15,5 @@
 
 {#if component}
 	{@const Component = component}
-	<Component {size} {fill} {title} />
+	<Component {fill} {title} width={size} height={size} />
 {/if}

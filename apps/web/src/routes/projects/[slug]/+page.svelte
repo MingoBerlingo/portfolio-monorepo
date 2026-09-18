@@ -26,10 +26,6 @@
 			{project.tagline}
 		</h1>
 
-		<p class="max-w-4xl text-lg leading-tight text-foreground-2 md:text-xl">
-			{project.introduction}
-		</p>
-
 		{#if project.links?.length}
 			<div class="flex flex-wrap gap-3 pt-1">
 				{#each project.links as link (link.url)}
@@ -83,10 +79,10 @@
 					<dd class="mt-1 text-lg text-foreground-1">{project.role}</dd>
 				</div>
 			{/if}
-			{#if project.platform}
+			{#if project.output}
 				<div>
-					<dt class="mb-3 text-sm font-normal tracking-normal text-primary">Platform</dt>
-					<dd class="mt-1 text-lg text-foreground-1">{project.platform}</dd>
+					<dt class="mb-3 text-sm font-normal tracking-normal text-primary">Output</dt>
+					<dd class="mt-1 text-lg text-foreground-1">{project.output}</dd>
 				</div>
 			{/if}
 			{#if project.client}

@@ -178,7 +178,6 @@ export interface Project {
   title: string;
   shortTitle: string;
   tagline: string;
-  introduction: string;
   slug: string;
   isFeatured: boolean;
   isMinor: boolean;
@@ -190,7 +189,7 @@ export interface Project {
   year: string;
   client?: string | null;
   role?: string | null;
-  platform?: string | null;
+  output?: string | null;
   content?: {
     root: {
       type: string;
@@ -377,7 +376,6 @@ export interface ProjectSelect<T extends boolean = true> {
   title?: T;
   shortTitle?: T;
   tagline?: T;
-  introduction?: T;
   slug?: T;
   isFeatured?: T;
   isMinor?: T;
@@ -386,7 +384,7 @@ export interface ProjectSelect<T extends boolean = true> {
   year?: T;
   client?: T;
   role?: T;
-  platform?: T;
+  output?: T;
   content?: T;
   links?:
     | T
