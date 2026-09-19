@@ -116,7 +116,7 @@ or database is needed to *serve* the site — only to *generate* it.
 
    ```bash
    BASE_PATH=/portfolio-monorepo pnpm build:site
-   pnpm --filter web exec vite preview --base /portfolio-monorepo --port 4173
+   BASE_PATH=/portfolio-monorepo pnpm web:preview
    ```
 
    (Use your repo name instead of `portfolio-monorepo`.) For a domain-root site — a
