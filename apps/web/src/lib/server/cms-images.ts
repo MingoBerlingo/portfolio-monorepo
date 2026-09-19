@@ -1,3 +1,4 @@
+import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -34,13 +35,20 @@ function getSubpath(): string {
 	return env.BASE_PATH ?? '';
 }
 
-/** Already-downloaded files in this build run (CMS path → local path). */
+/** Already-resolved files in this process (CMS path → local/CMS URL). */
 const downloaded = new Map<string, string>();
 
 /**
- * Download an image from the CMS and save it to static/media/.
- * Returns the local path (e.g. `/media/image.jpg`) to use in the HTML.
- * If the image was already downloaded, returns the cached path.
+ * Resolve a CMS media path into the URL to use in the HTML.
+ *
+ * In dev the file is served straight from the CMS (e.g.
+ * `http://localhost:3000/api/media/file/image.jpg`), so the site always shows
+ * whatever the admin panel currently holds.
+ *
+ * During a static build the file is downloaded into static/media/ and the local
+ * path (e.g. `/media/image.jpg`) is returned. An image already on disk is never
+ * re-downloaded: the CMS file name owns the identity, so replacing the *content*
+ * of an image while keeping its name requires deleting the local copy first.
  *
  * The CMS file name is used verbatim — the CMS owns the names (uploads are
  * sanitized on the way in, and they can be renamed from the dashboard).
@@ -48,6 +56,16 @@ const downloaded = new Map<string, string>();
 export async function localizeImage(cmsPath: string): Promise<string> {
 	if (downloaded.has(cmsPath)) {
 		return downloaded.get(cmsPath)!;
+	}
+
+	// In dev the CMS serves the file itself: nothing is copied into
+	// `static/media`, so an image replaced in the admin panel (same file name,
+	// new bytes) is visible on the next reload instead of being shadowed by a
+	// stale local copy. Downloads only happen during the static build.
+	if (dev) {
+		const url = cmsPath.startsWith('http') ? cmsPath : `${getCmsBaseUrl()}${cmsPath}`;
+		downloaded.set(cmsPath, url);
+		return url;
 	}
 
 	const filename = cmsPath.split('/').pop();

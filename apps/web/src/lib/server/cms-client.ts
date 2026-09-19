@@ -1,3 +1,4 @@
+import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 
 const DEFAULT_CMS_URL = 'http://localhost:3000';
@@ -72,7 +73,9 @@ export async function cmsQuery<T>(
 	const cacheKey = JSON.stringify(body);
 	const ttl = options?.ttl ?? DEFAULT_TTL_MS;
 
-	const cached = getCached<T>(cacheKey);
+	// No caching in dev: an edit in the CMS has to show up on the next reload,
+	// not after the TTL. Builds keep the TTL (one process renders every page).
+	const cached = dev ? null : getCached<T>(cacheKey);
 	if (cached) return cached;
 
 	const res = await fetch(getCmsGraphqlUrl(), {
@@ -92,6 +95,6 @@ export async function cmsQuery<T>(
 	}
 
 	const data = json.data as T;
-	setCache(cacheKey, data, ttl);
+	if (!dev) setCache(cacheKey, data, ttl);
 	return data;
 }
