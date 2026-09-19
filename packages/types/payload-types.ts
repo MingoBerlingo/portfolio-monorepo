@@ -541,6 +541,32 @@ export interface ProfileSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaLayoutBlock".
+ */
+export interface MediaLayoutBlock {
+  /**
+   * Add rows — one media item, or two side by side — and reorder them to build the layout.
+   */
+  rows: {
+    /**
+     * Two columns sit side by side on wide screens and stack on narrow ones.
+     */
+    columns: '1' | '2';
+    /**
+     * One image or video for a single column, two for two columns.
+     */
+    images: {
+      image: string | Media;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaLayout';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "auth".
  */
 export interface Auth {

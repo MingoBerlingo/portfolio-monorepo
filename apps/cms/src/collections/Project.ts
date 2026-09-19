@@ -1,10 +1,12 @@
 import type { CollectionConfig } from 'payload'
+import { BlocksFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { linkFields } from '../fields/link'
 import {
   convertLexicalToHTMLAsync,
   defaultHTMLConvertersAsync,
 } from '@payloadcms/richtext-lexical/html-async'
 import type { SerializedEditorState } from 'lexical'
+import { MediaLayout, mediaLayoutConverter } from '../blocks/mediaLayout'
 import { validateVideoCover } from '../validators/videoCover'
 
 export const Project: CollectionConfig = {
@@ -26,6 +28,9 @@ export const Project: CollectionConfig = {
           defaultConverters: typeof defaultHTMLConvertersAsync
         }) => ({
           ...defaultConverters,
+          blocks: {
+            [MediaLayout.slug]: mediaLayoutConverter,
+          },
           upload: async (args: any) => {
             const uploadNode = args.node as {
               value?: unknown
@@ -193,6 +198,11 @@ export const Project: CollectionConfig = {
     {
       name: 'content',
       type: 'richText',
+      // Scoped to this field so the block only shows up where the site knows how
+      // to render it; `rootFeatures` keeps every default feature available.
+      editor: lexicalEditor({
+        features: ({ rootFeatures }) => [...rootFeatures, BlocksFeature({ blocks: [MediaLayout] })],
+      }),
     },
     {
       name: 'links',
