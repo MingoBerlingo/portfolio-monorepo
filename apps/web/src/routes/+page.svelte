@@ -18,7 +18,9 @@
 	<!-- Introduction -->
 	<div class="order-last flex flex-col justify-end lg:order-first">
 		<h1 class="font-display text-2xl leading-[1.1] xl:text-4xl">
-			<span class="sm:whitespace-nowrap">Hey! I’m Alessandro Quets.</span>
+			<span class="sm:whitespace-nowrap"
+				>Hey! <br class="block sm:hidden" />I’m Alessandro Quets.</span
+			>
 			<br />
 			<span class="text-foreground-4 sm:whitespace-nowrap">I’m a Digital Designer & Frontend </span>
 			<br class="hidden sm:block" />
