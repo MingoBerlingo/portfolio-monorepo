@@ -20,27 +20,31 @@
 </script>
 
 <article class="mx-auto max-w-5xl space-y-10 pb-20">
-	<section class="space-y-5 pt-8" aria-label="Project intro">
-		<p class="text-base text-foreground-2">{project.shortTitle} • {year}</p>
-		<h1 class="md:text-6xl max-w-4xl text-4xl tracking-tight text-foreground-1 sm:text-5xl">
-			{project.tagline}
-		</h1>
-
-		{#if project.links?.length}
-			<div class="flex flex-wrap gap-3 pt-1">
-				{#each project.links as link (link.url)}
-					<a
-						href={link.url}
-						class="text-base inline-flex items-center gap-2 rounded-full border border-border bg-surface-1 px-5 py-2.5 text-foreground-1 transition-colors hover:border-border-contrast"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						{link.label}
-						<Icon name="arrow-up-right" size={16} fill="currentColor" />
-					</a>
-				{/each}
+	<section class="pt-8" aria-label="Project intro">
+		<div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
+			<div class="space-y-5">
+				<p class="text-lg text-foreground-2">{project.shortTitle} • {year}</p>
+				<h1 class="md:text-6xl max-w-4xl text-4xl tracking-tight text-foreground-1 sm:text-5xl">
+					{project.tagline}
+				</h1>
 			</div>
-		{/if}
+
+			{#if project.links?.length}
+				<div class="flex flex-wrap gap-x-5 gap-y-2 sm:shrink-0 sm:justify-end">
+					{#each project.links as link (link.url)}
+						<a
+							href={link.url}
+							class="text-base inline-flex items-center gap-1.5 underline-offset-4 transition-colors hover:underline"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							{link.label}
+							<Icon name="launch" size={16} fill="currentColor" />
+						</a>
+					{/each}
+				</div>
+			{/if}
+		</div>
 	</section>
 
 	{#if typeof project.videoCover === 'object' && project.videoCover?.url && isVideoAsset(project.videoCover)}

@@ -85,7 +85,7 @@
 								class="h-1.5 w-0 shrink-0 rounded-full bg-foreground-1 opacity-0 transition-all motion-base group-hover:w-3 group-hover:opacity-100 group-focus-visible:w-3 group-focus-visible:opacity-100"
 							></span>
 							<span
-								class="transition-colors motion-base group-hover:text-foreground-1 group-focus-visible:text-foreground-1"
+								class="line-clamp-1 text-ellipsis transition-colors motion-base group-hover:text-foreground-1 group-focus-visible:text-foreground-1"
 								>{project.tagline}</span
 							>
 						</p>
