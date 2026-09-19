@@ -1,10 +1,12 @@
 import type { CollectionConfig, PayloadRequest, SanitizedCollectionConfig } from 'payload'
+import { APIError } from 'payload'
 import { optimizeVideo } from '../utils/videoOptimization'
 import {
   incrementFilename,
   sanitizeMediaFilename,
   sanitizeRenamedFilename,
 } from '../utils/mediaFilename'
+import { replaceMediaFile } from '../utils/replaceMediaFile'
 import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import os from 'node:os'
@@ -59,6 +61,37 @@ export const Media: CollectionConfig = {
   access: {
     read: () => true,
   },
+  admin: {
+    components: {
+      edit: {
+        // Payload's upload UI only offers its picker once a document has no file
+        // left, so a file that is already there can only be swapped through
+        // Remove + upload. This adds a "Replace file" control that posts to the
+        // endpoint below (see the component).
+        beforeDocumentControls: ['@/components/ReplaceMediaFile#ReplaceMediaFile'],
+      },
+    },
+  },
+  endpoints: [
+    {
+      // Swaps the file of a document while keeping its stored name, so the media
+      // URL the site links to stays the same. A regular re-upload always derives
+      // a new name (suffixed when taken, which it is for a document replacing its
+      // own file), and only the local API can ask Payload to overwrite instead —
+      // hence this endpoint rather than Payload's own save.
+      handler: async (req) => {
+        const id = req.routeParams?.id
+
+        if (typeof id !== 'number' && typeof id !== 'string') {
+          throw new APIError('A media document id is required.', 400)
+        }
+
+        return Response.json(await replaceMediaFile(req, id))
+      },
+      method: 'post',
+      path: '/:id/replace-file',
+    },
+  ],
   hooks: {
     beforeOperation: [
       async ({ req, args }) => {
@@ -83,7 +116,11 @@ export const Media: CollectionConfig = {
             const optimized = await optimizeVideo(sourcePath)
             const optimizedBuffer = await fs.readFile(optimized.filePath)
 
-            const filename = `${path.basename(sourcePath, path.extname(sourcePath))}.webm`
+            // The name the request asks for owns the file name — a replacement
+            // keeps the name the document already has — so the temp file's name
+            // only stands in when the request carried none.
+            const requestedName = req.file.name || path.basename(sourcePath)
+            const filename = `${path.basename(requestedName, path.extname(requestedName))}.webm`
 
             req.file = {
               ...req.file,
@@ -155,17 +192,27 @@ export const Media: CollectionConfig = {
       async ({ collection, doc, operation, previousDoc, req }) => {
         if (operation !== 'update') return doc
 
+        // A new upload on an existing document ("replace file") already wrote
+        // the file under its final name and deleted the previous one, so there
+        // is nothing to move: renaming here would fail (the old file is gone) or
+        // overwrite the replacement with the old bytes.
+        if (req.file) return doc
+
         const previousFilename =
           typeof previousDoc?.filename === 'string' ? previousDoc.filename : null
         const filename = typeof doc.filename === 'string' ? doc.filename : null
 
         if (!previousFilename || !filename || previousFilename === filename) return doc
 
+        const staticDir = getStaticDir(collection)
+        const previousPath = path.join(staticDir, previousFilename)
+
+        // The previous file can also be gone when it was replaced or removed
+        // outside of this request — there is nothing to move then either.
+        if (!existsSync(previousPath)) return doc
+
         try {
-          await fs.rename(
-            path.join(getStaticDir(collection), previousFilename),
-            path.join(getStaticDir(collection), filename),
-          )
+          await fs.rename(previousPath, path.join(staticDir, filename))
         } catch (err) {
           req.payload.logger.error(
             `[media] "${previousFilename}" was renamed to "${filename}" in the database, but the file on disk could not be renamed: ${String(err)}`,

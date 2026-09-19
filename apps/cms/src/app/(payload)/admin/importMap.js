@@ -1,3 +1,4 @@
+import { ReplaceMediaFile as ReplaceMediaFile_7c76da15f8271c51acfa3025905b74d0 } from '@/components/ReplaceMediaFile'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -25,6 +26,7 @@ import { LinkRowLabel as LinkRowLabel_3dfc581a42afcb6dc56e89ba0a7bac8e } from '@
 import { CollaboratorRowLabel as CollaboratorRowLabel_3dfc581a42afcb6dc56e89ba0a7bac8e } from '@/components/LinkRowLabel'
 
 export const importMap = {
+  "@/components/ReplaceMediaFile#ReplaceMediaFile": ReplaceMediaFile_7c76da15f8271c51acfa3025905b74d0,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,

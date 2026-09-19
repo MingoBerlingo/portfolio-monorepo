@@ -1,9 +1,11 @@
 import config from '@/payload.config'
 import {
   incrementFilename,
+  replacementFilename,
   sanitizeMediaFilename,
   sanitizeRenamedFilename,
 } from '@/utils/mediaFilename'
+import { resolveReplacementFilename } from '@/utils/replaceMediaFile'
 import { getPayload, Payload } from 'payload'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -18,10 +20,52 @@ let payload: Payload
 const createdIDs: (number | string)[] = []
 const createdFiles = new Set<string>()
 
-const createImage = () =>
-  sharp({ create: { width: 4, height: 4, channels: 3, background: '#ffffff' } })
+const createImage = (options: { background?: string; height?: number; width?: number } = {}) =>
+  sharp({
+    create: {
+      background: options.background || '#ffffff',
+      channels: 3,
+      height: options.height || 4,
+      width: options.width || 4,
+    },
+  })
     .jpeg()
     .toBuffer()
+
+/** What the `/:id/replace-file` endpoint does: keep the name, overwrite the file. */
+const replaceFile = async ({
+  docId,
+  fileData,
+  filename,
+  mimetype = 'image/jpeg',
+  storedFilename,
+  uploadedName,
+}: {
+  docId: number | string
+  fileData: Buffer
+  filename?: string
+  mimetype?: string
+  storedFilename: string
+  uploadedName: string
+}) => {
+  const name =
+    filename ||
+    (await resolveReplacementFilename({
+      id: docId,
+      payload,
+      staticDir,
+      storedFilename,
+      uploadedName,
+    }))
+
+  return payload.update({
+    collection: 'media',
+    data: {},
+    file: { data: fileData, mimetype, name, size: fileData.length },
+    id: docId,
+    overwriteExistingFiles: true,
+  })
+}
 
 describe('media file names', () => {
   beforeAll(async () => {
@@ -48,6 +92,19 @@ describe('media file names', () => {
     expect(incrementFilename('poster.jpg')).toBe('poster-1.jpg')
     expect(incrementFilename('poster-1.jpg')).toBe('poster-2.jpg')
     expect(sanitizeRenamedFilename('new name.png', 'old.jpg')).toBe('new-name.jpg')
+  })
+
+  it('names a replacement after the stored file, keeping only its extension', () => {
+    expect(replacementFilename('cover.jpg', 'shot.png')).toBe('cover.png')
+    expect(replacementFilename('cover.jpg', 'shot.JPG')).toBe('cover.jpg')
+    expect(replacementFilename('cover.jpg', 'shot.jpeg')).toBe('cover.jpeg')
+    // A name is not a "base" — dots inside it stay intact.
+    expect(replacementFilename('Screenshot-2026-09-18-at-4.47.27-PM.png', 'Frame 1.png')).toBe(
+      'Screenshot-2026-09-18-at-4.47.27-PM.png',
+    )
+    // No extension on either side: keep whatever the stored file has.
+    expect(replacementFilename('poster.jpg', 'no-extension')).toBe('poster.jpg')
+    expect(replacementFilename('no-ext', 'shot.png')).toBe('no-ext.png')
   })
 
   it('exposes the file name as an editable field', () => {
@@ -183,5 +240,130 @@ describe('media file names', () => {
       fs.access(path.join(staticDir, renamed.filename as string)),
     ).resolves.toBeUndefined()
     await expect(fs.access(path.join(staticDir, taken.filename as string))).resolves.toBeUndefined()
+  })
+
+  it('keeps the stored name and URL when a replacement keeps the format', async () => {
+    const data = await createImage()
+
+    const doc = await payload.create({
+      collection: 'media',
+      data: { alt: 'keep my name' },
+      file: {
+        data,
+        mimetype: 'image/jpeg',
+        name: `Keep My Name ${run}.jpg`,
+        size: data.length,
+      },
+    })
+
+    createdIDs.push(doc.id)
+    createdFiles.add(doc.filename as string)
+
+    const replacement = await createImage({ background: '#000000', height: 6, width: 8 })
+
+    const updated = await replaceFile({
+      docId: doc.id,
+      fileData: replacement,
+      storedFilename: doc.filename as string,
+      uploadedName: `Totally-Different-${run}.jpg`,
+    })
+
+    createdFiles.add(updated.filename as string)
+
+    // The name the site links to does not move, so nothing has to be re-linked.
+    expect(updated.filename).toBe(doc.filename)
+    expect(updated.url).toBe(doc.url)
+    expect(updated.filesize).toBe(replacement.length)
+
+    const onDisk = await fs.readFile(path.join(staticDir, updated.filename as string))
+    expect(onDisk.equals(replacement)).toBe(true)
+
+    // No suffixed leftovers: the file was overwritten, not duplicated.
+    await expect(fs.access(path.join(staticDir, `Keep-My-Name-${run}-1.jpg`))).rejects.toThrow()
+  })
+
+  it('keeps the base name but follows the replacement format', async () => {
+    const data = await createImage()
+
+    const doc = await payload.create({
+      collection: 'media',
+      data: { alt: 'cover' },
+      file: {
+        data,
+        mimetype: 'image/jpeg',
+        name: `Cover Photo ${run}.jpg`,
+        size: data.length,
+      },
+    })
+
+    createdIDs.push(doc.id)
+    createdFiles.add(doc.filename as string)
+
+    const replacement = await sharp({
+      create: { width: 8, height: 6, channels: 4, background: '#00000000' },
+    })
+      .png()
+      .toBuffer()
+
+    const updated = await replaceFile({
+      docId: doc.id,
+      fileData: replacement,
+      mimetype: 'image/png',
+      storedFilename: doc.filename as string,
+      uploadedName: `Frame 1 ${run}.png`,
+    })
+
+    createdFiles.add(updated.filename as string)
+
+    expect(updated.filename).toBe(`Cover-Photo-${run}.png`)
+    expect(updated.url).toContain(`/api/media/file/Cover-Photo-${run}.png`)
+    expect(updated.mimeType).toBe('image/png')
+
+    const onDisk = await fs.readFile(path.join(staticDir, updated.filename as string))
+    expect(onDisk.equals(replacement)).toBe(true)
+    // The replaced .jpg is gone, and nothing was suffixed.
+    await expect(fs.access(path.join(staticDir, doc.filename as string))).rejects.toThrow()
+    await expect(fs.access(path.join(staticDir, `Cover-Photo-${run}-1.png`))).rejects.toThrow()
+  })
+
+  it('never overwrites a file another document already holds', async () => {
+    const data = await createImage()
+
+    const target = await payload.create({
+      collection: 'media',
+      data: { alt: 'being replaced' },
+      file: { data, mimetype: 'image/jpeg', name: `Guard ${run}.jpg`, size: data.length },
+    })
+
+    const other = await payload.create({
+      collection: 'media',
+      data: { alt: 'holds the name' },
+      file: { data, mimetype: 'image/png', name: `Guard ${run}.png`, size: data.length },
+    })
+
+    createdIDs.push(target.id, other.id)
+    createdFiles.add(target.filename as string)
+    createdFiles.add(other.filename as string)
+
+    const replacement = await createImage({ background: '#000000', height: 6, width: 8 })
+
+    // `Guard-<run>.png` (the desired name) belongs to `other`, so the stored name
+    // is incremented instead of written over another document's file.
+    const updated = await replaceFile({
+      docId: target.id,
+      fileData: replacement,
+      mimetype: 'image/png',
+      storedFilename: target.filename as string,
+      uploadedName: `Frame 1 ${run}.png`,
+    })
+
+    createdFiles.add(updated.filename as string)
+
+    expect(updated.filename).toBe(`Guard-${run}-1.png`)
+
+    // The other document's file survived untouched.
+    const untouched = await fs.readFile(path.join(staticDir, other.filename as string))
+    expect(untouched.equals(data)).toBe(true)
+    await expect(fs.access(path.join(staticDir, target.filename as string))).rejects.toThrow()
   })
 })

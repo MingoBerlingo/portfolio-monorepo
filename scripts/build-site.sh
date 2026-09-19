@@ -89,6 +89,12 @@ fi
 # ---------------------------------------------------------------------------
 # 2. Production build — prerender every page with live data from the CMS
 # ---------------------------------------------------------------------------
+# Media files are cached by name: the web build only downloads a file the first
+# time it sees that name (see apps/web/src/lib/server/cms-images.ts), and a file
+# replaced in the CMS keeps its name on purpose (the media replace endpoint).
+# Dropping the cache makes every build download the current files again.
+rm -rf "$ROOT/apps/web/static/media"
+
 log "Building static site (BASE_PATH='${BASE_PATH:-}')..."
 (cd "$ROOT" && BASE_PATH="${BASE_PATH:-}" pnpm --filter web build)
 

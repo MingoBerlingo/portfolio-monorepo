@@ -58,6 +58,7 @@ Always regenerate types after modifying any collection in `apps/cms/src/collecti
 - `kit.paths.relative` is `false` on purpose: relative `base`/`resolve()` relies on a mutable global that leaks between concurrently prerendered pages and breaks links on nested routes (`/projects/<slug>`); a fixed configured base keeps links deterministic
 - Media URLs from the CMS are downloaded and rewritten (base-aware) by `apps/web/src/lib/server/cms-images.ts` during the build. File names are owned by the CMS — uploads are sanitized to URL-safe names on the way in and can be renamed from the dashboard (see `apps/cms/src/utils/mediaFilename.ts`); the web build only logs an error for a name that still needs percent-encoding, because static hosts decode the request path and would 404 on it
 - `apps/web/scripts/sync-media.mjs` (part of `pnpm build`) copies media fetched *while* prerendering into `build/media`: Vite copies `static/` into the bundle before pages are prerendered, so those files would otherwise be missing from the published output
+- `scripts/build-site.sh` clears `apps/web/static/media` before every build, because media URLs do not change when a file is replaced (the CMS keeps the stored name): without it a replaced image would keep being published from the cached copy.
 - Rich text HTML is sanitized with `sanitize-html` in server load functions
 
 ## Architecture Notes

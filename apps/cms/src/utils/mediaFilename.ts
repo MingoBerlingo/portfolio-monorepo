@@ -70,3 +70,22 @@ export function sanitizeRenamedFilename(requested: string, current: string): str
 
   return `${sanitized.slice(0, sanitized.length - sanitizedExt.length)}${currentExt}`
 }
+
+/**
+ * Name for a file that replaces the one a document already has: the stored name
+ * is the one the site links to, so only its extension follows the replacement
+ * (`cover.jpg` replaced by `shot.png` becomes `cover.png`). A replacement
+ * without an extension keeps the stored one, and an unchanged extension keeps
+ * the whole name — and with it the media URL — untouched.
+ */
+export function replacementFilename(storedFilename: string, uploadedName: string): string {
+  const lastDot = storedFilename.lastIndexOf('.')
+  const base = lastDot > 0 ? storedFilename.slice(0, lastDot) : storedFilename
+  const storedExt = lastDot > 0 ? storedFilename.slice(lastDot) : ''
+
+  const sanitizedUpload = sanitizeMediaFilename(uploadedName)
+  const uploadDot = sanitizedUpload.lastIndexOf('.')
+  const uploadExt = uploadDot > 0 ? sanitizedUpload.slice(uploadDot) : ''
+
+  return `${base}${uploadExt || storedExt}`
+}
