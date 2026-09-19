@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { resolve } from '$app/paths';
 	import AsciiMorph from '$lib/components/AsciiMorph.svelte';
+	import ProjectCard from '$lib/components/ProjectCard.svelte';
+	import type { PageProps } from './$types';
 
-	const profile = $page.data.profile;
+	let { data }: PageProps = $props();
 </script>
 
 <section
@@ -33,24 +35,22 @@
 </section>
 
 <!-- Divider -->
-<div class="h-80"></div>
+<div class="h-5 md:h-20 xl:h-40"></div>
 
-<div class="mt-10 text-center">
-	<h1 class="font-display text-2xl text-foreground-1">{profile.name} {profile.surname}</h1>
-	<p class="mt-1 text-lg text-foreground-3">{profile.jobPosition}</p>
-	<div class="mt-3 flex justify-center gap-4 text-sm">
-		<a href="mailto:{profile.email}" class="text-primary hover:underline">{profile.email}</a>
-		<a
-			href={profile.github.url}
-			class="text-primary hover:underline"
-			target="_blank"
-			rel="noopener noreferrer">{profile.github.label}</a
-		>
-		<a
-			href={profile.linkedin.url}
-			class="text-primary hover:underline"
-			target="_blank"
-			rel="noopener noreferrer">{profile.linkedin.label}</a
-		>
-	</div>
-</div>
+{#if data?.featuredProjects?.length}
+	<section class="container mx-auto px-2 py-4" aria-labelledby="featured-heading">
+		<div class="mb-6 flex items-baseline justify-between gap-4">
+			<h2 id="featured-heading" class="font-display text-2xl text-foreground-1">
+				Featured projects
+			</h2>
+			<a href={resolve('/projects')} class="text-sm text-primary hover:underline">View all</a>
+		</div>
+		<ul class="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-2">
+			{#each data.featuredProjects as project (project.id)}
+				<li class="list-none">
+					<ProjectCard {project} />
+				</li>
+			{/each}
+		</ul>
+	</section>
+{/if}

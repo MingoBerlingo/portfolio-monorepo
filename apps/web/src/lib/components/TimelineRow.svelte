@@ -21,7 +21,7 @@
 >
 	<div class="sm:text-base text-sm text-foreground-3">{period}</div>
 	<div class="min-w-0">
-		<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+		<div class="flex flex-col flex-wrap items-start gap-x-3 gap-y-1 md:flex-row">
 			<span class="font-medium text-foreground-1">{title}</span>
 			<span class="text-primary">@{subtitle}</span>
 		</div>

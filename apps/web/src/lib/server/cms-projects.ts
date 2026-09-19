@@ -3,8 +3,8 @@ import { cmsQuery, type PaginatedResponse } from './cms-client';
 import { localizeImage, localizeHtmlImages } from './cms-images';
 
 const PROJECTS_QUERY = `
-	query Projects($limit: Int, $page: Int, $sort: String) {
-		Projects(limit: $limit, page: $page, sort: $sort) {
+	query Projects($limit: Int, $page: Int, $sort: String, $where: Project_where) {
+		Projects(limit: $limit, page: $page, sort: $sort, where: $where) {
 			docs {
 				id
 				slug
@@ -12,6 +12,7 @@ const PROJECTS_QUERY = `
 				shortTitle
 				tagline
 				year
+				isFeatured
 				featuredImage {
 					url
 					alt
@@ -106,17 +107,24 @@ async function localizeProjectImages(project: Project): Promise<Project> {
 }
 
 export async function getProjects(
-	options: { limit?: number; page?: number; sort?: string } = {}
+	options: { limit?: number; page?: number; sort?: string; where?: Record<string, unknown> } = {}
 ): Promise<PaginatedResponse<Project>> {
-	const variables = {
+	const variables: Record<string, unknown> = {
 		limit: options.limit ?? 10,
 		page: options.page ?? 1,
 		sort: options.sort ?? '-year'
 	};
+	if (options.where) {
+		variables.where = options.where;
+	}
 
 	const data = await cmsQuery<{ Projects: PaginatedResponse<Project> }>(PROJECTS_QUERY, variables);
 	const docs = await Promise.all(data.Projects.docs.map(localizeProjectImages));
 	return { ...data.Projects, docs };
+}
+
+export async function getFeaturedProjects(limit = 4): Promise<PaginatedResponse<Project>> {
+	return getProjects({ where: { isFeatured: { equals: true } }, limit });
 }
 
 export async function getProjectBySlug(slug: string): Promise<Project> {
