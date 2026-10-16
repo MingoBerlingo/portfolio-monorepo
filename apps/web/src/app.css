@@ -33,6 +33,7 @@
  */
 :root {
 	--color-white: #ffffff;
+	--color-black: #000000;
 
 	--color-slate-50: #f8fafc;
 	--color-slate-100: #f1f5f9;
@@ -46,9 +47,29 @@
 	--color-slate-900: #0f172a;
 	--color-slate-950: #020617;
 
-	--color-indigo-400: #818cf8;
-	--color-indigo-600: #4f46e5;
-	--color-indigo-950: #1e1b4b;
+	--color-zinc-50: #fafafa;
+	--color-zinc-100: #f4f4f5;
+	--color-zinc-200: #e4e4e7;
+	--color-zinc-300: #d4d4d8;
+	--color-zinc-400: #9f9fa9;
+	--color-zinc-500: #71717b;
+	--color-zinc-600: #52525c;
+	--color-zinc-700: #3f3f46;
+	--color-zinc-800: #27272a;
+	--color-zinc-900: #18181b;
+	--color-zinc-950: #09090b;
+
+	--color-indigo-50: #eef2ff;
+	--color-indigo-100: #e0e7ff;
+	--color-indigo-200: #c6d2ff;
+	--color-indigo-300: #a3b3ff;
+	--color-indigo-400: #7c86ff;
+	--color-indigo-500: #615fff;
+	--color-indigo-600: #4f39f6;
+	--color-indigo-700: #432dd7;
+	--color-indigo-800: #372aac;
+	--color-indigo-900: #312c85;
+	--color-indigo-950: #1e1a4d;
 
 	--color-emerald-100: #d1fae5;
 	--color-emerald-200: #a7f3d0;
@@ -215,21 +236,21 @@
 		--primary-foreground: var(--color-indigo-950);
 
 		/* Background */
-		--background: var(--color-slate-950);
+		--background: var(--color-black);
 
 		/* Surfaces: 1 = closest to bg, 5 = most distinct from bg */
-		--surface-1: var(--color-slate-900);
-		--surface-2: var(--color-slate-800);
-		--surface-3: var(--color-slate-800);
-		--surface-4: var(--color-slate-700);
-		--surface-5: var(--color-slate-600);
+		--surface-1: var(--color-zinc-950);
+		--surface-2: var(--color-zinc-900);
+		--surface-3: var(--color-zinc-800);
+		--surface-4: var(--color-zinc-700);
+		--surface-5: var(--color-zinc-600);
 
 		/* Foregrounds: 1 = lightest (highest contrast), 5 = darkest */
-		--foreground-1: var(--color-slate-50);
-		--foreground-2: var(--color-slate-200);
-		--foreground-3: var(--color-slate-400);
-		--foreground-4: var(--color-slate-500);
-		--foreground-5: var(--color-slate-600);
+		--foreground-1: var(--color-zinc-50);
+		--foreground-2: var(--color-zinc-400);
+		--foreground-3: var(--color-zinc-500);
+		--foreground-4: var(--color-zinc-600);
+		--foreground-5: var(--color-zinc-700);
 
 		/* Success */
 		--success-light: var(--color-emerald-950);
@@ -250,8 +271,8 @@
 		--error-foreground: var(--color-rose-950);
 
 		/* Borders */
-		--border: var(--color-slate-800);
-		--border-contrast: var(--color-slate-700);
+		--border: var(--color-zinc-800);
+		--border-contrast: var(--color-zinc-700);
 	}
 }
 
