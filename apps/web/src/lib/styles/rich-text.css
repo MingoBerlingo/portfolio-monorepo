@@ -1,0 +1,84 @@
+/*
+ * Rich text
+ *
+ * Styling for CMS-injected rich text — the `prose` content rendered with
+ * `{@html}` on the info and project detail pages. `prose` / `md:prose-lg` stay
+ * on the element as the typography plugin's base; the rules here hold the
+ * project's overrides and target the semantic tokens so they track the theme.
+ */
+
+/*
+ * The typography plugin ships a fixed gray palette and does not switch to its
+ * inverted (dark) palette automatically. Most prose colors are remapped per
+ * element, but `strong` (bold) still uses `--tw-prose-bold` — a dark gray that
+ * is unreadable on the dark background — and a weight of 600. Align it with
+ * the lighter type treatment used across the site.
+ */
+.prose {
+	--tw-prose-bold: var(--color-foreground-1);
+}
+
+.prose :where(strong):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+	font-weight: 400;
+}
+
+/*
+ * Shared typography for the `.rich-text`, `.rich-text--project` and
+ * `.rich-text--info` classes applied alongside `prose`.
+ */
+.rich-text {
+	max-width: none;
+}
+
+.rich-text :is(h2, h3, h4, h5, h6, th) {
+	font-weight: 400;
+	letter-spacing: -0.025em;
+	color: var(--color-foreground-1);
+}
+
+.rich-text h1 {
+	margin-bottom: 0.75rem;
+	font-weight: 400;
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+	letter-spacing: 0;
+	color: var(--color-primary);
+}
+
+.rich-text h2 {
+	margin-top: 0;
+	margin-bottom: 1.25rem;
+	font-size: var(--text-3xl);
+	line-height: 1.25;
+}
+
+@media (min-width: 40rem) {
+	.rich-text h2 {
+		font-size: var(--text-4xl);
+		line-height: 1.2;
+	}
+}
+
+.rich-text p {
+	font-size: var(--text-xl);
+	line-height: 1.25;
+	color: var(--color-foreground-2);
+}
+
+.rich-text img {
+	border-radius: var(--radius-xl);
+	border: 1px solid var(--border);
+}
+
+/* Projects: content may embed inline video */
+.rich-text--project video {
+	display: block;
+	width: 100%;
+	border-radius: var(--radius-xl);
+	border: 1px solid var(--border);
+}
+
+/* Info: presentation links use the accent color */
+.rich-text--info a {
+	color: var(--color-primary);
+}
