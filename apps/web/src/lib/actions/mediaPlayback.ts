@@ -28,10 +28,8 @@ export const mediaPlayback: Action<HTMLElement> = (root) => {
 				return;
 			}
 			if (
-				automatic &&
-				!motion.matches &&
 				!userPaused &&
-				!userPlaying &&
+				(userPlaying || (automatic && !motion.matches)) &&
 				video.paused &&
 				!automaticPlay
 			) {
