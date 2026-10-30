@@ -7,6 +7,10 @@ Approved scope: the motion audit fixes, coordinated entrances, and brief scrambl
 | 001 Motion accessibility and lifecycle | DONE | None |
 | 002 Navigation and card interactions | DONE | None |
 | 003 Coordinated page entrances | DONE | 001, 002 |
-| 004 Scrambled link hover feedback | TODO | 002 |
+| 004 Scrambled link hover feedback | DONE | 002 |
 
 Execute in numbered order, one focused commit per plan. First preserve existing CMS and homepage work in separate commits. Keep all content, responsive sizing, the current description scroll reveal and prior no-blur preference. Marketing entrance duration is deliberately 450ms; UI interactions are 200ms, scramble is 200ms maximum. Build plans with tests, then perform a whole-change review.
+
+## Verification
+
+19 web tests pass using the installed Chrome browser (the bundled Playwright Chromium is not installed). Svelte checks and changed-file ESLint pass. Desktop/mobile browser checks include live reduced motion, stable link widths, coordinated entrance progress, CMS external links, and zero ASCII frame updates during reduced motion. Production static prerendering was verified against the local CMS. The original project-card animations are intentionally retained by explicit user preference, documented in plan 002.

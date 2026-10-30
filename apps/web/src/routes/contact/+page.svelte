@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ScrambleLinkText from '$lib/components/ScrambleLinkText.svelte';
 	import { entrance } from '$lib/actions/entrance';
 	import AsciiMorph from '$lib/components/AsciiMorph.svelte';
 	import { contactFrames } from '$lib/components/contact-frames';
@@ -23,7 +24,7 @@
 					class="text-foreground-1 underline-offset-4 hover:underline"
 					href={`mailto:${profile.email}`}
 				>
-					{profile.email}
+					<ScrambleLinkText text={profile.email} />
 				</a>
 			</div>
 
@@ -36,7 +37,7 @@
 						target="_blank"
 						rel="noreferrer"
 					>
-						<span>{profile.github.label || 'GitHub'}</span>
+						<ScrambleLinkText text={profile.github.label || 'GitHub'} />
 						<Icon name="launch" size={12} fill="currentColor" />
 					</a>
 				</div>
@@ -51,7 +52,7 @@
 						target="_blank"
 						rel="noreferrer"
 					>
-						<span>{profile.linkedin.label || 'LinkedIn'}</span>
+						<ScrambleLinkText text={profile.linkedin.label || 'LinkedIn'} />
 						<Icon name="launch" size={12} fill="currentColor" />
 					</a>
 				</div>

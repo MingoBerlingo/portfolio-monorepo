@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ScrambleLinkText from './ScrambleLinkText.svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { cn } from '$lib/utils/cn';
@@ -86,7 +87,7 @@
 						page.url.pathname.startsWith(href) && 'underline'
 					)}
 				>
-					{label}
+					<ScrambleLinkText text={label} />
 				</a>
 			{/each}
 		</nav>
@@ -133,7 +134,7 @@
 					'text-2xl text-foreground-1 hover:underline',
 					page.url.pathname.startsWith(href) && 'underline'
 				)}
-				style="--item-delay: {i * 50}ms">{label}</a
+				style="--item-delay: {i * 50}ms"><ScrambleLinkText text={label} /></a
 			>
 		{/each}
 	</nav>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { scrambleExternalLinks } from '$lib/actions/scrambleHover';
+	import ScrambleLinkText from '$lib/components/ScrambleLinkText.svelte';
 	import { entrance } from '$lib/actions/entrance';
 	import Icon from '$lib/components/Icon.svelte';
 	import type { PageProps } from './$types';
@@ -35,7 +37,7 @@
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								{link.label}
+								<ScrambleLinkText text={link.label} />
 								<Icon name="launch" size={16} fill="currentColor" />
 							</a>
 						{/each}
@@ -106,7 +108,11 @@
 
 	{#if project.contentHtml}
 		<section id="overview" class="pt-2">
-			<div id="content" class="rich-text rich-text--project prose md:prose-lg">
+			<div
+				use:scrambleExternalLinks
+				id="content"
+				class="rich-text rich-text--project prose md:prose-lg"
+			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized server-side -->
 				{@html project.contentHtml}
 			</div>

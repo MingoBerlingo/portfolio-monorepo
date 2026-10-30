@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { scrambleExternalLinks } from '$lib/actions/scrambleHover';
+	import ScrambleLinkText from '$lib/components/ScrambleLinkText.svelte';
 	import { entrance } from '$lib/actions/entrance';
 	import EducationList from '$lib/components/EducationList.svelte';
 	import ExperienceList from '$lib/components/ExperienceList.svelte';
@@ -12,7 +14,7 @@
 <section use:entrance class="mx-auto max-w-5xl px-2 py-4 pb-10">
 	<p class="mb-3 text-sm font-normal tracking-normal text-primary">Introduction</p>
 	{#if profile.presentationHtml}
-		<div class="rich-text rich-text--info prose pb-4 md:prose-lg">
+		<div use:scrambleExternalLinks class="rich-text rich-text--info prose pb-4 md:prose-lg">
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized server-side -->
 			{@html profile.presentationHtml}
 		</div>
@@ -34,7 +36,7 @@
 					class="text-foreground-1 underline-offset-4 hover:underline"
 					href={`mailto:${profile.email}`}
 				>
-					{profile.email}
+					<ScrambleLinkText text={profile.email} />
 				</a>
 			</div>
 
@@ -47,7 +49,7 @@
 						target="_blank"
 						rel="noreferrer"
 					>
-						<span>{profile.github.label || 'GitHub'}</span>
+						<ScrambleLinkText text={profile.github.label || 'GitHub'} />
 						<Icon name="launch" size={12} fill="currentColor" />
 					</a>
 				</div>
@@ -62,7 +64,7 @@
 						target="_blank"
 						rel="noreferrer"
 					>
-						<span>{profile.linkedin.label || 'LinkedIn'}</span>
+						<ScrambleLinkText text={profile.linkedin.label || 'LinkedIn'} />
 						<Icon name="launch" size={12} fill="currentColor" />
 					</a>
 				</div>

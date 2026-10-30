@@ -372,3 +372,33 @@ body {
 		transition-duration: 0ms;
 	}
 }
+
+/* Preserve the exact label width and accessible name during pointer feedback. */
+.scramble-label {
+	position: relative;
+	display: inline-block;
+	vertical-align: baseline;
+}
+.scramble-output {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	white-space: pre;
+	opacity: 0;
+	pointer-events: none;
+	user-select: none;
+}
+.scramble-label[data-active='true'] > .scramble-original {
+	opacity: 0;
+}
+.scramble-label[data-active='true'] > .scramble-output {
+	opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+	.scramble-label[data-active='true'] > .scramble-original {
+		opacity: 1;
+	}
+	.scramble-label[data-active='true'] > .scramble-output {
+		opacity: 0;
+	}
+}

@@ -1,6 +1,6 @@
 # 004 — Scrambled link hover feedback
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 97705f7
 - **Severity**: LOW
 - **Category**: Motion craft, accessibility and cohesion
@@ -21,11 +21,11 @@ Svelte 5, TypeScript, Tailwind 4. Shared motion tokens are in `apps/web/src/app.
 
 ## Steps
 
-- [ ] Add meaningful browser regression coverage for lifecycle, interaction interruption and reduced motion where applicable; run before implementing.
-- [ ] Implement the target in the named files, keeping existing visual layout and media sizing.
-- [ ] Run `pnpm --filter web check`, relevant browser tests, changed-file ESLint and Prettier checks.
-- [ ] Inspect browser desktop/mobile and live reduced motion, and check rapid pointer/menu interaction. For entrances inspect slowed playback.
-- [ ] Commit this change independently with its tests; update plan status.
+- [x] Add meaningful browser regression coverage for lifecycle, interaction interruption and reduced motion where applicable; run before implementing.
+- [x] Implement the target in the named files, keeping existing visual layout and media sizing.
+- [x] Run `pnpm --filter web check`, relevant browser tests, changed-file ESLint and Prettier checks.
+- [x] Inspect browser desktop/mobile and live reduced motion, and check rapid pointer/menu interaction. For entrances inspect slowed playback.
+- [x] Commit this change independently with its tests; update plan status.
 
 ## Boundaries
 
@@ -34,3 +34,7 @@ No dependencies, deployment, CMS content edits, blanket animation removal, word 
 ## Verification
 
 Test reduced motion on load and toggled live; unmount during animation; route navigation; touch/keyboard interactions; repeated pointer entry/exit. Confirm no width/height/padding animation and no invisible interactive elements held behind long delays. Verify exact link accessible names and unchanged destinations. Check no horizontal overflow at 390px. No screenshot-only assertions.
+
+## Review verification
+
+Rendered browser regression tests cover accessible names, unchanged destinations and widths, rich-text boundary whitespace, touch/reduced-motion gating, focus and pointer-leave cancellation, automatic completion, and cleanup. Independent review findings were reproduced and fixed before completion.
