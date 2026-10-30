@@ -1,6 +1,6 @@
 # 001 — Motion accessibility and lifecycle
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 97705f7
 - **Severity**: HIGH
 - **Category**: Motion craft, accessibility and cohesion
@@ -21,11 +21,11 @@ Svelte 5, TypeScript, Tailwind 4. Shared motion tokens are in `apps/web/src/app.
 
 ## Steps
 
-- [ ] Add meaningful browser regression coverage for lifecycle, interaction interruption and reduced motion where applicable; run before implementing.
-- [ ] Implement the target in the named files, keeping existing visual layout and media sizing.
-- [ ] Run `pnpm --filter web check`, relevant browser tests, changed-file ESLint and Prettier checks.
-- [ ] Inspect browser desktop/mobile and live reduced motion, and check rapid pointer/menu interaction. For entrances inspect slowed playback.
-- [ ] Commit this change independently with its tests; update plan status.
+- [x] Add meaningful browser regression coverage for lifecycle, interaction interruption and reduced motion where applicable; run before implementing.
+- [x] Implement the target in the named files, keeping existing visual layout and media sizing.
+- [x] Run `pnpm --filter web check`, relevant browser tests, changed-file ESLint and Prettier checks.
+- [x] Inspect browser desktop/mobile and live reduced motion, and check rapid pointer/menu interaction. For entrances inspect slowed playback.
+- [x] Commit this change independently with its tests; update plan status.
 
 ## Boundaries
 

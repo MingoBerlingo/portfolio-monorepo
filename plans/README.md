@@ -4,7 +4,7 @@ Approved scope: the motion audit fixes, coordinated entrances, and brief scrambl
 
 | Plan | Status | Dependencies |
 | --- | --- | --- |
-| 001 Motion accessibility and lifecycle | TODO | None |
+| 001 Motion accessibility and lifecycle | DONE | None |
 | 002 Navigation and card interactions | TODO | None |
 | 003 Coordinated page entrances | TODO | 001, 002 |
 | 004 Scrambled link hover feedback | TODO | 002 |

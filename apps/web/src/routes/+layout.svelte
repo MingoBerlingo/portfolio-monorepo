@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import { mediaPlayback } from '$lib/actions/mediaPlayback';
 	import '$lib/styles/rich-text.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import Header from '$lib/components/Header.svelte';
@@ -16,7 +17,7 @@
 
 <div class="min-h-screen bg-background text-foreground-1">
 	<Header />
-	<main class="p-4 pt-14 md:p-6 md:pt-20">
+	<main use:mediaPlayback class="p-4 pt-14 md:p-6 md:pt-20">
 		{@render children?.()}
 	</main>
 	<footer class="flex items-center justify-between px-6 py-6 text-sm text-foreground-4">

@@ -30,6 +30,7 @@
 	let lines: string[] = $state([]);
 	let canvasSize = { x: 41, y: 19 };
 	let currentIndex = $state(0);
+	let allowMotion = false;
 	let animationTimeout: ReturnType<typeof setTimeout> | undefined;
 	let cycleInterval: ReturnType<typeof setInterval> | undefined;
 
@@ -172,23 +173,47 @@
 
 	function morphNextFrame() {
 		currentIndex = (currentIndex + 1) % frames.length;
-		morph(frames[currentIndex]);
+		if (allowMotion) morph(frames[currentIndex]);
+		else lines = squareOutData(frames[currentIndex]);
 	}
 
 	$effect(() => {
-		untrack(() => {
-			lines = squareOutData(['']);
-			morph(frames[0]);
-
-			cycleInterval = setInterval(() => {
-				morphNextFrame();
-			}, interval);
+		const element = containerEl;
+		if (!element) return;
+		return untrack(() => {
+			const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+			let visible = false;
+			lines = squareOutData(frames[currentIndex]);
+			const stop = () => {
+				if (animationTimeout) clearTimeout(animationTimeout);
+				if (cycleInterval) clearInterval(cycleInterval);
+				animationTimeout = undefined;
+				cycleInterval = undefined;
+			};
+			const sync = () => {
+				allowMotion = visible && !document.hidden && !motion.matches;
+				if (!allowMotion) {
+					stop();
+					lines = squareOutData(frames[currentIndex]);
+				} else if (!cycleInterval) {
+					cycleInterval = setInterval(morphNextFrame, interval);
+				}
+			};
+			const observer = new IntersectionObserver(([entry]) => {
+				visible = entry.isIntersecting;
+				sync();
+			});
+			observer.observe(element);
+			motion.addEventListener('change', sync);
+			document.addEventListener('visibilitychange', sync);
+			return () => {
+				allowMotion = false;
+				stop();
+				observer.disconnect();
+				motion.removeEventListener('change', sync);
+				document.removeEventListener('visibilitychange', sync);
+			};
 		});
-
-		return () => {
-			if (animationTimeout) clearTimeout(animationTimeout);
-			if (cycleInterval) clearInterval(cycleInterval);
-		};
 	});
 </script>
 
