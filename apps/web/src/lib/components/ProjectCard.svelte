@@ -51,7 +51,7 @@
 	}
 </script>
 
-<a href={resolve(`/projects/${project.slug}`)} class="project-card group block">
+<a href={resolve(`/projects/${project.slug}`)} class="group block">
 	<div class="overflow-clip rounded-xl border border-border bg-surface-1">
 		<div class="bg-white ring-primary/30 group-focus-visible:ring-2 dark:bg-surface-1">
 			{#if coverAsset?.url && isVideoAsset(coverAsset)}
@@ -65,7 +65,7 @@
 					loop
 					playsinline
 					preload="metadata"
-					class="project-cover block aspect-video w-full object-cover"
+					class="block aspect-video w-full object-cover transition-transform motion-base group-hover:scale-110 group-focus-visible:scale-110"
 				></video>
 			{:else if coverAsset?.url}
 				<img
@@ -74,7 +74,7 @@
 					width={coverAsset.width ?? undefined}
 					height={coverAsset.height ?? undefined}
 					loading="lazy"
-					class="project-cover block aspect-video w-full object-cover"
+					class="block aspect-video w-full object-cover transition-transform motion-base group-hover:scale-110 group-focus-visible:scale-110"
 				/>
 			{:else}
 				<div class="block aspect-video w-full bg-surface-2" aria-hidden="true"></div>
@@ -85,7 +85,9 @@
 		class="mt-2 flex flex-col items-start gap-1 text-sm leading-snug text-foreground-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3.5"
 	>
 		<p class="m-0 flex items-center gap-2 sm:flex-1">
-			<span class="project-indicator h-1.5 w-3 shrink-0 rounded-full bg-foreground-1"></span>
+			<span
+				class="h-1.5 w-0 shrink-0 rounded-full bg-foreground-1 opacity-0 transition-all motion-base group-hover:w-3 group-hover:opacity-100 group-focus-visible:w-3 group-focus-visible:opacity-100"
+			></span>
 			<span
 				class="line-clamp-1 text-ellipsis transition-colors motion-base group-hover:text-foreground-1 group-focus-visible:text-foreground-1"
 				>{project.tagline}</span
@@ -100,39 +102,9 @@
 </a>
 
 <style>
-	.project-cover {
-		transition: transform 200ms var(--motion-ease-interactive);
-	}
-	.project-indicator {
-		opacity: 0;
-		transform: scale(0.5);
-		transition:
-			opacity 200ms var(--motion-ease-interactive),
-			transform 200ms var(--motion-ease-interactive);
-	}
-	.project-card:focus-visible .project-indicator {
-		opacity: 1;
-		transform: none;
-		transition: none;
-	}
-	@media (hover: hover) and (pointer: fine) {
-		.project-card:hover .project-cover {
-			transform: scale(1.03);
-		}
-		.project-card:hover .project-indicator {
-			opacity: 1;
-			transform: none;
-		}
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.project-cover,
-		.project-card:hover .project-cover {
-			transform: none;
-			transition: none;
-		}
-		.project-indicator {
-			transform: none;
-			transition-property: opacity;
-		}
+	/* Intentional portfolio-preview exception: preserve the original hover/focus feel. */
+	a {
+		--motion-duration-interactive: 300ms;
+		--motion-ease-interactive: cubic-bezier(0, 0, 0.2, 1);
 	}
 </style>

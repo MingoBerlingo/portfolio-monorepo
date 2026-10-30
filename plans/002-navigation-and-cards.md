@@ -34,3 +34,7 @@ No dependencies, deployment, CMS content edits, blanket animation removal, word 
 ## Verification
 
 Test reduced motion on load and toggled live; unmount during animation; route navigation; touch/keyboard interactions; repeated pointer entry/exit. Confirm no width/height/padding animation and no invisible interactive elements held behind long delays. Verify exact link accessible names and unchanged destinations. Check no horizontal overflow at 390px. No screenshot-only assertions.
+
+## Accepted exception
+
+The user explicitly preferred the original project previews after trying the audited version. Restore their 1.10 hover/focus zoom, width-expanding caption indicator, and original 300ms cubic-bezier(0,0,0.2,1) timing. Treat these as an intentional portfolio exception; do not reapply the card cleanup. Navigation fixes remain approved.
