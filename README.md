@@ -170,6 +170,23 @@ GET https://<you>.github.io/_app/immutable/chunks/xxxx.js 404
 > then push the generated files. This repo ships **no workflows**, so nothing consumes Actions
 > minutes.
 
+## Homepage introduction
+
+The section below the homepage hero is edited in **CMS → Profile → Homepage introduction**.
+Use a blank line between paragraphs. Put an image marker such as `[design-system]`
+where you want a small inline illustration. The built-in markers are `[design-system]`,
+`[components]`, and `[pull-request]`; remove a marker to remove its illustration.
+
+To replace an illustration or add your own, add a **Homepage images** row, enter
+its key (without brackets), and select an image from Media. PNG, JPEG, WebP, AVIF,
+GIF, and SVG images are supported. Use the same `[key]` in the text. Set alt text
+when the image conveys information; leave it empty for decoration. Unresolved
+markers are omitted. Empty introduction text uses the built-in copy.
+
+Restart the CMS after updating its schema. As with other content, rebuild with
+`pnpm build:site` after editing to update the published static site. The reveal
+respects reduced motion, and all copy remains readable without JavaScript.
+
 ## 🔄 Shared Types
 
 The `packages/types` package contains TypeScript types that are **auto-generated from Payload CMS collections**. This ensures the web frontend always has accurate, up-to-date types matching the CMS schema.

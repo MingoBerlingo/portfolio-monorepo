@@ -480,6 +480,24 @@ export interface Profile {
   name: string;
   surname: string;
   jobPosition: string;
+  /**
+   * Homepage scroll reveal. Separate paragraphs with a blank line. Insert images with [key], for example [design-system]. Leave empty to use the default introduction.
+   */
+  homepageIntroduction?: string | null;
+  /**
+   * Small inline images. Match each key to a [key] marker in the introduction. Built-in keys: design-system, components, pull-request. Uploads replace the built-in images.
+   */
+  homepageImages?:
+    | {
+        key: string;
+        image: string | Media;
+        /**
+         * Optional description. Leave empty for a decorative image.
+         */
+        alt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   presentation?: {
     root: {
       type: string;
@@ -518,6 +536,15 @@ export interface ProfileSelect<T extends boolean = true> {
   name?: T;
   surname?: T;
   jobPosition?: T;
+  homepageIntroduction?: T;
+  homepageImages?:
+    | T
+    | {
+        key?: T;
+        image?: T;
+        alt?: T;
+        id?: T;
+      };
   presentation?: T;
   presentationHtml?: T;
   email?: T;
