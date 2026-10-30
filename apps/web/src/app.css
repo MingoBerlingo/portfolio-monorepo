@@ -278,8 +278,8 @@
 
 /* Motion tokens used by interactive transitions */
 :root {
-	--motion-duration-interactive: 300ms;
-	--motion-ease-interactive: cubic-bezier(0, 0, 0.2, 1);
+	--motion-duration-interactive: 200ms;
+	--motion-ease-interactive: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @keyframes fade-in {
@@ -363,5 +363,11 @@ body {
 	/* A lone item keeps the full width instead of sitting in one cell. */
 	.media-layout-row--columns-2 > :is(img, video):only-child {
 		grid-column: span 2;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.motion-base {
+		transition-duration: 0ms;
 	}
 }
