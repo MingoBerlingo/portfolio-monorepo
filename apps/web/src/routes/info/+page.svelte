@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { entrance } from '$lib/actions/entrance';
 	import EducationList from '$lib/components/EducationList.svelte';
 	import ExperienceList from '$lib/components/ExperienceList.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -8,7 +9,7 @@
 	const profile = data.profile;
 </script>
 
-<section class="mx-auto max-w-5xl px-2 py-4 pb-10">
+<section use:entrance class="mx-auto max-w-5xl px-2 py-4 pb-10">
 	<p class="mb-3 text-sm font-normal tracking-normal text-primary">Introduction</p>
 	{#if profile.presentationHtml}
 		<div class="rich-text rich-text--info prose pb-4 md:prose-lg">

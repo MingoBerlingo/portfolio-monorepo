@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { entrance } from '$lib/actions/entrance';
 	import RevealText from '$lib/components/RevealText.svelte';
 	import { resolve } from '$app/paths';
 	import AsciiMorph from '$lib/components/AsciiMorph.svelte';
@@ -9,16 +10,16 @@
 	let { data }: PageProps = $props();
 </script>
 
-<section class="mx-auto max-w-5xl px-2 pt-4 md:pt-6 xl:pt-8" aria-label="Introduction">
+<section use:entrance class="mx-auto max-w-5xl px-2 pt-4 md:pt-6 xl:pt-8" aria-label="Introduction">
 	<div class="w-full">
-		<h1 class="font-display text-2xl leading-[1.15] md:text-4xl md:leading-[1.15]">
+		<h1 data-enter class="font-display text-2xl leading-[1.15] md:text-4xl md:leading-[1.15]">
 			<RevealText text="Hey! I’m Alessandro Quets." />
 			<br />
 			<RevealText text="I’m a Digital Designer & Frontend" /><br class="hidden md:block" />
 			<RevealText text=" Developer based in Lecco 🇮🇹" />
 		</h1>
 
-		<div class="py-8 md:py-12 xl:py-14">
+		<div data-enter class="py-8 md:py-12 xl:py-14">
 			<AsciiMorph
 				class="text-[clamp(0.6rem,3.2vw,1.5rem)] leading-[1.2] sm:text-[clamp(0.6rem,3.2vw,1.5rem)] md:text-[clamp(0.6rem,3.2vw,1.5rem)] lg:text-[clamp(0.65rem,1.7vw,1.5rem)]"
 			/>

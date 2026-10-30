@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { entrance } from '$lib/actions/entrance';
 	import Icon from '$lib/components/Icon.svelte';
 	import type { PageProps } from './$types';
 
@@ -19,8 +20,8 @@
 	}
 </script>
 
-<article class="mx-auto max-w-5xl space-y-10 pb-20">
-	<section class="pt-8" aria-label="Project intro">
+<article use:entrance class="mx-auto max-w-5xl space-y-10 pb-20">
+	<section data-enter class="pt-8" aria-label="Project intro">
 		<div class="space-y-5">
 			<div class="flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
 				<p class="text-lg text-foreground-2">{project.shortTitle} • {year}</p>
@@ -49,7 +50,7 @@
 	</section>
 
 	{#if typeof project.videoCover === 'object' && project.videoCover?.url && isVideoAsset(project.videoCover)}
-		<figure class="overflow-hidden rounded-xl border border-border bg-surface-1">
+		<figure data-enter class="overflow-hidden rounded-xl border border-border bg-surface-1">
 			<video
 				src={project.videoCover.url}
 				poster={typeof project.featuredImage === 'object' && project.featuredImage?.url
@@ -64,7 +65,7 @@
 			></video>
 		</figure>
 	{:else if typeof project.featuredImage === 'object' && project.featuredImage?.url}
-		<figure class="overflow-hidden rounded-xl border border-border bg-surface-1">
+		<figure data-enter class="overflow-hidden rounded-xl border border-border bg-surface-1">
 			<img
 				src={project.featuredImage.url}
 				alt={project.featuredImage.alt}

@@ -279,6 +279,7 @@
 /* Motion tokens used by interactive transitions */
 :root {
 	--motion-duration-interactive: 200ms;
+	--motion-duration-enter: 450ms;
 	--motion-ease-interactive: cubic-bezier(0.23, 1, 0.32, 1);
 }
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { entrance } from '$lib/actions/entrance';
 	import AsciiMorph from '$lib/components/AsciiMorph.svelte';
 	import { contactFrames } from '$lib/components/contact-frames';
 	import Icon from '$lib/components/Icon.svelte';
@@ -8,8 +9,11 @@
 	const profile = data.profile;
 </script>
 
-<section class="mx-auto grid max-w-5xl gap-10 px-2 py-4 pb-10 lg:grid-cols-2 lg:items-center">
-	<div>
+<section
+	use:entrance
+	class="mx-auto grid max-w-5xl gap-10 px-2 py-4 pb-10 lg:grid-cols-2 lg:items-center"
+>
+	<div data-enter>
 		<h1 class="font-display text-2xl text-foreground-1">Get in touch</h1>
 
 		<div class="text-base mt-10 flex flex-col gap-8 text-foreground-2">
@@ -55,10 +59,12 @@
 		</div>
 	</div>
 
-	<AsciiMorph
-		frames={contactFrames}
-		interval={4000}
-		class="text-[2.5cqw] sm:text-[1.8cqw] lg:text-[1.4cqw]"
-		ariaLabel="Animated ASCII art with contact-related illustrations"
-	/>
+	<div data-enter>
+		<AsciiMorph
+			frames={contactFrames}
+			interval={4000}
+			class="text-[2.5cqw] sm:text-[1.8cqw] lg:text-[1.4cqw]"
+			ariaLabel="Animated ASCII art with contact-related illustrations"
+		/>
+	</div>
 </section>
