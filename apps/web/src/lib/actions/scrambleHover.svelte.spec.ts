@@ -53,15 +53,21 @@ it('does not scramble touch or reduced-motion interactions and cancels when keyb
 	expect(label.dataset.active).toBeUndefined();
 });
 
-it('settles automatically within 200ms and does not queue repeated entries', async () => {
+it('settles automatically within 200ms and does not queue repeated entries', () => {
 	mockMotion(false);
-	const label = mount();
-	anchor.dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'mouse' }));
-	anchor.dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'mouse' }));
-	await vi.waitFor(() => expect(label.dataset.active).toBeUndefined(), {
-		timeout: 500,
-		interval: 25
+	let nextFrame: FrameRequestCallback | undefined;
+	const request = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+		nextFrame = callback;
+		return 1;
 	});
+	vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+	const label = mount();
+	const started = performance.now();
+	anchor.dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'mouse' }));
+	anchor.dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'mouse' }));
+	expect(request).toHaveBeenCalledOnce();
+	nextFrame?.(started + 250);
+	expect(label.dataset.active).toBeUndefined();
 	expect(label.querySelector('.scramble-original')?.textContent).toBe('Projects');
 });
 
