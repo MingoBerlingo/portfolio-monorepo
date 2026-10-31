@@ -107,6 +107,16 @@ export const Project: CollectionConfig = {
   },
   fields: [
     {
+      name: 'keywords',
+      type: 'relationship',
+      relationTo: 'keywords',
+      hasMany: true,
+      admin: {
+        description:
+          'Assign reusable keywords. These assignments are not displayed on the website yet.',
+      },
+    },
+    {
       name: 'title',
       type: 'text',
       required: true,

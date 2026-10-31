@@ -72,6 +72,7 @@ export interface Config {
     project: Project;
     experiences: Experience;
     education: Education;
+    keywords: Keyword;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -83,6 +84,7 @@ export interface Config {
     project: ProjectSelect<false> | ProjectSelect<true>;
     experiences: ExperiencesSelect<false> | ExperiencesSelect<true>;
     education: EducationSelect<false> | EducationSelect<true>;
+    keywords: KeywordsSelect<false> | KeywordsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -175,6 +177,10 @@ export interface Media {
  */
 export interface Project {
   id: string;
+  /**
+   * Assign reusable keywords. These assignments are not displayed on the website yet.
+   */
+  keywords?: (string | Keyword)[] | null;
   title: string;
   shortTitle: string;
   tagline: string;
@@ -219,6 +225,23 @@ export interface Project {
       }[]
     | null;
   contentHtml?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Reusable project keywords. Project assignments are stored in the CMS only; selected keywords appear as footer chips.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "keywords".
+ */
+export interface Keyword {
+  id: string;
+  label: string;
+  showInFooter?: boolean | null;
+  /**
+   * Lower numbers appear first in the footer.
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -285,6 +308,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'education';
         value: string | Education;
+      } | null)
+    | ({
+        relationTo: 'keywords';
+        value: string | Keyword;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -373,6 +400,7 @@ export interface MediaSelect<T extends boolean = true> {
  * via the `definition` "project_select".
  */
 export interface ProjectSelect<T extends boolean = true> {
+  keywords?: T;
   title?: T;
   shortTitle?: T;
   tagline?: T;
@@ -441,6 +469,17 @@ export interface EducationSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "keywords_select".
+ */
+export interface KeywordsSelect<T extends boolean = true> {
+  label?: T;
+  showInFooter?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
@@ -477,6 +516,10 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Profile {
   id: string;
+  /**
+   * The contact heading in the site footer.
+   */
+  footerHeading?: string | null;
   name: string;
   surname: string;
   jobPosition: string;
@@ -533,6 +576,7 @@ export interface Profile {
  * via the `definition` "profile_select".
  */
 export interface ProfileSelect<T extends boolean = true> {
+  footerHeading?: T;
   name?: T;
   surname?: T;
   jobPosition?: T;

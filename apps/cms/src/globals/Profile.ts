@@ -27,6 +27,13 @@ export const Profile: GlobalConfig = {
   },
   fields: [
     {
+      name: 'footerHeading',
+      type: 'text',
+      defaultValue: 'Let’s build something together.',
+      maxLength: 100,
+      admin: { description: 'The contact heading in the site footer.' },
+    },
+    {
       name: 'name',
       type: 'text',
       required: true,

@@ -9,6 +9,7 @@ const PROFILE_QUERY = `
 			name
 			surname
 			jobPosition
+			footerHeading
 			homepageIntroduction
 			homepageImages { key alt image { id url mimeType } }
 			presentationHtml
