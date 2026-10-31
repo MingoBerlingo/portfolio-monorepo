@@ -67,12 +67,13 @@
 <svelte:window onscroll={handleScroll} onkeydown={handleKeydown} onresize={handleResize} />
 
 <header
+	data-menu-open={menuOpen}
 	class={cn('fixed top-0 left-0 z-50 w-full px-6 py-5 transition-transform motion-base', {
 		'-translate-y-full': hidden && !menuOpen,
 		'translate-y-0': !hidden || menuOpen
 	})}
 >
-	<div class="relative z-50 flex items-center justify-between">
+	<div class="header-surface relative z-50 flex items-center justify-between">
 		<a href={homeHref} class="font-display text-foreground-1" onclick={closeMenu}
 			>Alessandro Quets</a
 		>
@@ -141,6 +142,25 @@
 </header>
 
 <style>
+	/* Keep the persistent header readable over the dark, tall mobile footer. */
+	:global(html[data-header-over-footer='true'])
+		header:not([data-menu-open='true'])
+		.header-surface
+		a,
+	:global(html[data-header-over-footer='true'])
+		header:not([data-menu-open='true'])
+		.header-surface
+		button {
+		color: #f8fafc;
+	}
+	:global(html[data-header-over-footer='true'])
+		header:not([data-menu-open='true'])
+		.header-surface
+		button
+		> span {
+		background: #f8fafc;
+	}
+
 	.mobile-menu {
 		opacity: 0;
 		transform: translateY(-8px);

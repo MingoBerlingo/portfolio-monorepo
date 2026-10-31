@@ -282,3 +282,26 @@ The project uses:
 - [SvelteKit Documentation](https://kit.svelte.dev/)
 - [Storybook Documentation](https://storybook.js.org/)
 - [PNPM Workspaces](https://pnpm.io/workspaces)
+
+## Footer and project keywords
+
+The footer uses the Profile email, GitHub and LinkedIn links. Edit its contact
+heading in **CMS → Profile → Footer heading**. The footer reveals beneath the
+page on screens where it fits; short screens, keyboard focus and reduced-motion
+preferences use normal document flow so all links remain accessible.
+
+Manage chip labels in **CMS → Keywords**. `Show in footer` selects the footer
+chips; `Order` controls their order. The first 12 selected keywords are shown.
+Projects have a multi-select **Keywords** relationship, ready for categorization;
+these assignments are intentionally not rendered on project cards or pages.
+
+To recreate the starter keywords without overwriting existing records:
+
+```sh
+pnpm --filter cms payload run scripts/seed-keywords.ts
+```
+
+Physics loads only when the footer is revealed, pauses offscreen and in hidden
+tabs, and sleeps when the chips settle. Drag a chip to move it, or focus its
+button and press Enter/Space to toss it. Reduced motion shows a static list.
+After CMS edits, rebuild the static site with `pnpm build:site` to publish them.
