@@ -27,8 +27,12 @@
 	}: Props = $props();
 
 	let containerEl: HTMLPreElement | undefined = $state();
-	let lines: string[] = $state([]);
-	let canvasSize = { x: 41, y: 19 };
+	const canvasSize = untrack(() => ({
+		x: Math.max(41, ...frames.flatMap((frame) => frame.map((line) => line.length))),
+		y: Math.max(19, ...frames.map((frame) => frame.length))
+	}));
+	// Reserve the complete canvas in SSR, before hydration starts the entrance.
+	let lines: string[] = $state(Array(canvasSize.y).fill(' '.repeat(canvasSize.x)));
 	let currentIndex = $state(0);
 	let allowMotion = false;
 	let animationTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -50,33 +54,13 @@
 
 	/** Pads and centers ASCII art within the fixed canvas size */
 	function squareOutData(data: string[]): string[] {
-		const result = data.map((line) => line);
-		let maxWidth = 0;
-
-		for (const line of result) {
-			if (line.length > maxWidth) maxWidth = line.length;
-		}
-
-		for (let i = 0; i < result.length; i++) {
-			if (result[i].length < maxWidth) {
-				result[i] = result[i] + repeat(' ', maxWidth - result[i].length);
-			}
-		}
-
+		const maxWidth = Math.max(0, ...data.map((line) => line.length));
 		const padX = Math.floor((canvasSize.x - maxWidth) / 2);
-		const padY = Math.floor((canvasSize.y - result.length) / 2);
-
-		for (let i = 0; i < result.length; i++) {
-			result[i] = repeat(' ', padX) + result[i] + repeat(' ', padX);
-		}
-
-		for (let i = 0; i < canvasSize.y; i++) {
-			if (i < padY) {
-				result.unshift(repeat(' ', canvasSize.x));
-			} else if (i > padY + data.length) {
-				result.push(repeat(' ', canvasSize.x));
-			}
-		}
+		const padY = Math.floor((canvasSize.y - data.length) / 2);
+		const result = Array.from({ length: canvasSize.y }, (_, row) => {
+			const line = data[row - padY] ?? '';
+			return (repeat(' ', padX) + line).padEnd(canvasSize.x, ' ');
+		});
 
 		return result;
 	}
@@ -183,7 +167,10 @@
 		return untrack(() => {
 			const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
 			let visible = false;
-			lines = squareOutData(frames[currentIndex]);
+			let entered = motion.matches;
+			const blankFrame = () =>
+				squareOutData(frames[currentIndex]).map((line) => ' '.repeat(line.length));
+			lines = entered ? squareOutData(frames[currentIndex]) : blankFrame();
 			const stop = () => {
 				if (animationTimeout) clearTimeout(animationTimeout);
 				if (cycleInterval) clearInterval(cycleInterval);
@@ -196,6 +183,11 @@
 					stop();
 					lines = squareOutData(frames[currentIndex]);
 				} else if (!cycleInterval) {
+					if (!entered) {
+						entered = true;
+						lines = blankFrame();
+						morph(frames[currentIndex]);
+					}
 					cycleInterval = setInterval(morphNextFrame, interval);
 				}
 			};
