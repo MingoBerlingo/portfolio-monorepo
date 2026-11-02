@@ -1,7 +1,6 @@
 import type { Profile } from '@portfolio/types';
 import { cmsQuery } from './cms-client';
 import { sanitize } from './sanitize';
-import { localizeImage } from './cms-images';
 
 const PROFILE_QUERY = `
 	query {
@@ -9,9 +8,6 @@ const PROFILE_QUERY = `
 			name
 			surname
 			jobPosition
-			footerHeading
-			homepageIntroduction
-			homepageImages { key alt image { id url mimeType } }
 			presentationHtml
 			email
 			github {
@@ -32,15 +28,6 @@ export async function getProfile(): Promise<Profile> {
 
 	return {
 		...profile,
-		homepageImages: await Promise.all(
-			(profile.homepageImages ?? []).map(async (entry) => ({
-				...entry,
-				image:
-					typeof entry.image === 'object' && entry.image?.url
-						? { ...entry.image, url: await localizeImage(entry.image.url) }
-						: entry.image
-			}))
-		),
 		presentationHtml: profile.presentationHtml ? sanitize(profile.presentationHtml) : ''
 	};
 }

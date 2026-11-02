@@ -23,5 +23,5 @@
 	>
 		{@render children?.()}
 	</main>
-	<Footer profile={data.profile} keywords={data.footerKeywords} />
+	<Footer footer={data.footer} profile={data.profile} keywords={data.footerKeywords} />
 </div>

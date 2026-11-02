@@ -1,14 +1,14 @@
 import { page } from '@vitest/browser/context';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
-import type { Profile } from '@portfolio/types';
+import type { Hero } from '@portfolio/types';
 import ScrollIntroduction from './ScrollIntroduction.svelte';
 import '../../app.css';
 
 describe('ScrollIntroduction', () => {
 	it('renders editable copy and a custom inline image without exposing its marker', async () => {
 		render(ScrollIntroduction, {
-			profile: {
+			hero: {
 				homepageIntroduction: 'Design [custom] and build.\n\nShip together.',
 				homepageImages: [
 					{
@@ -21,7 +21,7 @@ describe('ScrollIntroduction', () => {
 						}
 					}
 				]
-			} as Profile
+			} as Hero
 		});
 		await expect
 			.element(page.getByRole('region', { name: 'My approach' }))

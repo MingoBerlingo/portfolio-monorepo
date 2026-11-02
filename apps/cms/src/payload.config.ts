@@ -13,6 +13,8 @@ import { Project } from './collections/Project'
 import { Experiences } from './collections/Experiences'
 import { Education } from './collections/Education'
 import { Keywords } from './collections/Keywords'
+import { Footer } from './globals/Footer'
+import { Hero } from './globals/Hero'
 import { Profile } from './globals/Profile'
 
 const filename = fileURLToPath(import.meta.url)
@@ -28,7 +30,7 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Project, Experiences, Education, Keywords],
-  globals: [Profile],
+  globals: [Footer, Hero, Profile],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

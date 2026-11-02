@@ -172,7 +172,7 @@ GET https://<you>.github.io/_app/immutable/chunks/xxxx.js 404
 
 ## Homepage introduction
 
-The section below the homepage hero is edited in **CMS → Profile → Homepage introduction**.
+The section below the homepage hero is edited in **CMS → Hero → Homepage introduction**.
 Use a blank line between paragraphs. Put an image marker such as `[design-system]`
 where you want a small inline illustration. The built-in markers are `[design-system]`,
 `[components]`, and `[pull-request]`; remove a marker to remove its illustration.

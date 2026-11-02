@@ -4,7 +4,7 @@ import { render } from 'vitest-browser-svelte';
 import Footer from './Footer.svelte';
 import { mockMotion } from '$lib/testing/motion';
 import '../../app.css';
-import type { Profile, Keyword } from '@portfolio/types';
+import type { Profile, Keyword, Footer as FooterContent } from '@portfolio/types';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -15,9 +15,10 @@ it('exposes footer navigation, profile contacts and CMS keywords without motion'
 			name: 'Alessandro',
 			surname: 'Quets',
 			email: 'hello@example.com',
-			footerHeading: 'Let’s talk.',
+
 			github: { url: 'https://github.com/example' }
 		} as Profile,
+		footer: { heading: 'Let’s talk.' } as FooterContent,
 		keywords: [{ id: 'keyword-1', label: 'UX / UI' }] as Keyword[]
 	});
 	await expect
@@ -46,7 +47,7 @@ it('scopes dark tokens to the footer and gives physics the full footer bounds', 
 		const footer = document.querySelector('footer')!;
 		const scene = footer.querySelector<HTMLElement>('.chip-scene')!;
 		const chip = scene.querySelector('button')!;
-		expect(getComputedStyle(footer).backgroundColor).toBe('rgb(0, 0, 0)');
+		expect(getComputedStyle(footer).backgroundColor).toBe('rgb(9, 9, 11)');
 		expect(getComputedStyle(chip).backgroundColor).toBe('rgb(250, 250, 250)');
 		expect(getComputedStyle(chip).color).toBe('rgb(0, 0, 0)');
 		expect(scene.getBoundingClientRect().width).toBe(footer.getBoundingClientRect().width);

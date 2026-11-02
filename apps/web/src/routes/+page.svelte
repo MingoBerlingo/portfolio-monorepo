@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { entrance } from '$lib/actions/entrance';
+	import ScrambleLinkText from '$lib/components/ScrambleLinkText.svelte';
 	import RevealText from '$lib/components/RevealText.svelte';
 	import { resolve } from '$app/paths';
 	import AsciiMorph from '$lib/components/AsciiMorph.svelte';
@@ -12,12 +13,20 @@
 
 <section use:entrance class="mx-auto max-w-5xl px-2 pt-4 md:pt-6 xl:pt-8" aria-label="Introduction">
 	<div class="w-full">
-		<h1 data-enter class="font-display text-2xl leading-[1.15] md:text-4xl md:leading-[1.15]">
-			<RevealText text="Hey! I’m Alessandro Quets." />
-			<br />
-			<RevealText text="I’m a Digital Designer & Frontend" /><br class="hidden md:block" />
-			<RevealText text=" Developer based in Lecco 🇮🇹" />
-		</h1>
+		<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 lg:gap-8">
+			<h1 data-enter class="font-display text-2xl leading-[1.15] md:text-4xl md:leading-[1.15]">
+				<RevealText text={data?.hero?.greeting || 'Hey!'} />
+				<span class="whitespace-nowrap md:whitespace-normal"
+					><RevealText text={data?.hero?.nameLine || 'I’m Alessandro Quets.'} /></span
+				>
+				<br />
+				<RevealText
+					text={data?.hero?.introduction ||
+						'I’m a Digital Designer & Frontend Developer based in Lecco, Italy 🇮🇹'}
+				/>
+			</h1>
+
+		</div>
 
 		<div data-enter class="py-8 md:py-12 xl:py-14">
 			<AsciiMorph
@@ -27,7 +36,7 @@
 	</div>
 </section>
 
-<ScrollIntroduction profile={data?.profile} />
+<ScrollIntroduction hero={data?.hero} />
 
 {#if data?.featuredProjects?.length}
 	<section class="mx-auto max-w-5xl px-2 py-4 pb-10" aria-labelledby="featured-heading">
@@ -35,7 +44,11 @@
 			<h2 id="featured-heading" class="font-display text-2xl text-foreground-1">
 				Featured projects
 			</h2>
-			<a href={resolve('/projects')} class="text-sm text-primary hover:underline">View all</a>
+			<a
+				href={resolve('/projects')}
+				class="text-sm text-foreground-1 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
+				><ScrambleLinkText text="View all" /></a
+			>
 		</div>
 		<ul class="flex flex-col gap-6 md:gap-8">
 			{#each data.featuredProjects as project (project.id)}

@@ -4,6 +4,8 @@ export type {
   Media,
   User,
   Profile,
+  Hero,
+  Footer,
   Experience,
   Education,
 } from "./payload-types";

@@ -93,9 +93,13 @@ export interface Config {
     defaultIDType: string;
   };
   globals: {
+    footer: Footer;
+    hero: Hero;
     profile: Profile;
   };
   globalsSelect: {
+    footer: FooterSelect<false> | FooterSelect<true>;
+    hero: HeroSelect<false> | HeroSelect<true>;
     profile: ProfileSelect<false> | ProfileSelect<true>;
   };
   locale: null;
@@ -512,23 +516,31 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "profile".
+ * via the `definition` "footer".
  */
-export interface Profile {
+export interface Footer {
   id: string;
-  /**
-   * The contact heading in the site footer.
-   */
-  footerHeading?: string | null;
-  name: string;
-  surname: string;
-  jobPosition: string;
+  heading: string;
+  keywordsHeading?: string | null;
+  signature?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hero".
+ */
+export interface Hero {
+  id: string;
+  greeting: string;
+  nameLine: string;
+  introduction: string;
   /**
    * Homepage scroll reveal. Separate paragraphs with a blank line. Insert images with [key], for example [design-system]. Leave empty to use the default introduction.
    */
   homepageIntroduction?: string | null;
   /**
-   * Small inline images. Match each key to a [key] marker in the introduction. Built-in keys: design-system, components, pull-request. Uploads replace the built-in images.
+   * Small inline images. Match each key to a [key] marker in the introduction. Built-in keys: eye, figma, code, design-system, components, pull-request. Uploads replace the built-in images.
    */
   homepageImages?:
     | {
@@ -541,6 +553,18 @@ export interface Profile {
         id?: string | null;
       }[]
     | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "profile".
+ */
+export interface Profile {
+  id: string;
+  name: string;
+  surname: string;
+  jobPosition: string;
   presentation?: {
     root: {
       type: string;
@@ -573,13 +597,24 @@ export interface Profile {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "profile_select".
+ * via the `definition` "footer_select".
  */
-export interface ProfileSelect<T extends boolean = true> {
-  footerHeading?: T;
-  name?: T;
-  surname?: T;
-  jobPosition?: T;
+export interface FooterSelect<T extends boolean = true> {
+  heading?: T;
+  keywordsHeading?: T;
+  signature?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hero_select".
+ */
+export interface HeroSelect<T extends boolean = true> {
+  greeting?: T;
+  nameLine?: T;
+  introduction?: T;
   homepageIntroduction?: T;
   homepageImages?:
     | T
@@ -589,6 +624,18 @@ export interface ProfileSelect<T extends boolean = true> {
         alt?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "profile_select".
+ */
+export interface ProfileSelect<T extends boolean = true> {
+  name?: T;
+  surname?: T;
+  jobPosition?: T;
   presentation?: T;
   presentationHtml?: T;
   email?: T;

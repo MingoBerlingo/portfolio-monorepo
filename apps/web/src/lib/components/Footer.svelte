@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import type { Profile, Keyword } from '@portfolio/types';
+	import type { Profile, Keyword, Footer as FooterContent } from '@portfolio/types';
 	import PhysicsChips from './PhysicsChips.svelte';
 	import ScrambleLinkText from './ScrambleLinkText.svelte';
 
-	let { profile, keywords = [] }: { profile: Profile; keywords?: Keyword[] } = $props();
+	let {
+		profile,
+		footer: footerContent,
+		keywords = []
+	}: { profile: Profile; footer?: FooterContent; keywords?: Keyword[] } = $props();
 	let footer: HTMLElement;
 	let boundary: HTMLDivElement;
 	let reveal = $state(false);
@@ -56,11 +60,11 @@
 
 <div bind:this={boundary} class="h-px" aria-hidden="true"></div>
 <footer bind:this={footer} data-theme="dark" data-reveal={reveal}>
-	<div class="footer-content mx-auto max-w-5xl px-2 pt-12 pb-6 md:pt-16">
-		<div class="grid gap-10 md:grid-cols-[1.5fr_0.7fr_1fr] md:gap-12">
-			<div>
-				<h2 class="font-display text-3xl leading-[1.1] md:text-4xl">
-					{profile.footerHeading || 'Let’s build something together.'}
+	<div class="footer-content mx-auto max-w-7xl px-2 pt-12 pb-6 md:pt-16">
+		<div class="grid grid-cols-2 gap-10 md:grid-cols-[1.5fr_0.7fr_1fr] md:gap-12">
+			<div class="col-span-2 md:col-span-1">
+				<h2 class="font-display text-3xl leading-[1.1] whitespace-pre-line md:text-4xl">
+					{footerContent?.heading || 'Make it clear.\nMake it feel right.'}
 				</h2>
 			</div>
 			<nav aria-label="Footer navigation">
@@ -92,8 +96,9 @@
 		</div>
 		{#if keywords.length}
 			<div class="footer-keywords mt-10">
-				<p class="mb-3 text-xs text-foreground-2">
-					A few things I work with <span aria-hidden="true">↘</span>
+				<p class="mb-3 text-xs text-foreground-1">
+					{footerContent?.keywordsHeading || 'A few things I work with'}
+					<span aria-hidden="true">↘</span>
 				</p>
 				<div class="footer-chip-space" data-chip-start aria-hidden="true"></div>
 			</div>
@@ -103,7 +108,7 @@
 			class="mt-6 flex flex-wrap justify-between gap-3 text-xs text-foreground-2"
 		>
 			<span>© {new Date().getFullYear()} {profile.name} {profile.surname}</span><span
-				>In ♥ with pixels</span
+				>{footerContent?.signature || 'In ♥ with pixels'}</span
 			>
 		</div>
 	</div>
@@ -127,6 +132,7 @@
 		min-height: 480px;
 	}
 	[data-chip-floor] {
+		border-top: 1px solid var(--color-border);
 		position: relative;
 		z-index: 2;
 		margin-top: auto;
@@ -143,7 +149,7 @@
 		z-index: 0;
 		color-scheme: dark;
 		padding-inline: 16px;
-		background: var(--color-background);
+		background: var(--color-surface-1);
 		color: var(--color-foreground-1);
 	}
 	@media (min-width: 768px) {
@@ -153,11 +159,11 @@
 	}
 	@media (prefers-color-scheme: dark) {
 		:global(html:not([data-theme='light'])) footer {
-			background: var(--color-surface-3);
+			background: var(--color-surface-2);
 		}
 	}
 	:global(html[data-theme='dark']) footer {
-		background: var(--color-surface-3);
+		background: var(--color-surface-2);
 	}
 	footer[data-reveal='true'] {
 		position: sticky;

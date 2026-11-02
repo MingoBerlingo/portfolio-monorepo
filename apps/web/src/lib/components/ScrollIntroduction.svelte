@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { scrollReveal } from '$lib/actions/scrollReveal';
-	import type { Profile } from '@portfolio/types';
+	import type { Hero } from '@portfolio/types';
 	import { splitIntroduction, type IntroductionImage } from '$lib/utils/introduction';
 	import designSystem from '$lib/assets/introduction/design-system.svg';
 	import components from '$lib/assets/introduction/components.svg';
 	import pullRequest from '$lib/assets/introduction/pull-request.svg';
 
-	let { profile }: { profile?: Profile } = $props();
+	let { hero }: { hero?: Hero } = $props();
 	const wordSpace = ' ';
 	const defaultText =
 		'I work best between design and frontend, close enough to both sides to make them talk to each other.\n\nI focus on design systems architecture [design-system], UI component library development [components], and frontend implementation in React and Svelte. I can sit in a design review and open a pull request [pull-request] on the same day.';
@@ -18,7 +18,7 @@
 	const images = $derived(
 		[
 			...defaults,
-			...(profile?.homepageImages ?? []).flatMap((entry) => {
+			...(hero?.homepageImages ?? []).flatMap((entry) => {
 				const image = entry.image;
 				return typeof image === 'object' && image?.url && image.mimeType?.startsWith('image/')
 					? [{ key: entry.key, src: image.url, alt: entry.alt ?? '' }]
@@ -30,7 +30,7 @@
 		)
 	);
 	const paragraphs = $derived(
-		splitIntroduction(profile?.homepageIntroduction?.trim() || defaultText, images)
+		splitIntroduction(hero?.homepageIntroduction?.trim() || defaultText, images)
 	);
 </script>
 
