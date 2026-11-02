@@ -20,7 +20,7 @@
 	<Header />
 	<main
 		use:mediaPlayback
-		class="relative z-10 min-h-screen bg-background p-4 pt-14 md:p-6 md:pt-20"
+		class="relative z-10 min-h-screen bg-background p-4 pt-14 pb-20 md:p-6 md:pt-20 md:pb-32"
 	>
 		{@render children?.()}
 	</main>
