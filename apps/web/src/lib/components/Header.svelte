@@ -44,7 +44,7 @@
 			toggleElement.focus();
 		}
 		if (event.key === 'Tab') {
-			const targets = [toggleElement, ...menuElement.querySelectorAll<HTMLAnchorElement>('a')];
+			const targets = [toggleElement, ...menuElement.querySelectorAll<HTMLElement>('a, button')];
 			const index = targets.indexOf(document.activeElement as HTMLButtonElement);
 			if (event.shiftKey && index <= 0) {
 				event.preventDefault();
@@ -95,7 +95,7 @@
 		</nav>
 
 		<div class="flex items-center gap-4">
-			<ThemeSwitch />
+			<div class="hidden md:block"><ThemeSwitch /></div>
 			<!-- Burger button -->
 			<button
 				bind:this={toggleElement}
@@ -142,6 +142,7 @@
 				style="--item-delay: {i * 50}ms"><ScrambleLinkText text={label} /></a
 			>
 		{/each}
+		<ThemeSwitch />
 	</nav>
 </header>
 
