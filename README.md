@@ -291,7 +291,7 @@ page on screens where it fits; short screens, keyboard focus and reduced-motion
 preferences use normal document flow so all links remain accessible.
 
 Manage chip labels in **CMS → Keywords**. `Show in footer` selects the footer
-chips; `Order` controls their order. The first 12 selected keywords are shown.
+chips; `Order` controls their order. The first 16 selected keywords are shown.
 Projects have a multi-select **Keywords** relationship, ready for categorization;
 these assignments are intentionally not rendered on project cards or pages.
 

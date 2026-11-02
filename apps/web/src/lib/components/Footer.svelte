@@ -123,7 +123,7 @@
 		position: relative;
 	}
 	.footer-chip-space {
-		min-height: 300px;
+		min-height: 480px;
 	}
 	[data-chip-floor] {
 		position: relative;
@@ -131,7 +131,7 @@
 	}
 	@media (min-width: 768px) {
 		.footer-chip-space {
-			min-height: 240px;
+			min-height: 300px;
 		}
 	}
 

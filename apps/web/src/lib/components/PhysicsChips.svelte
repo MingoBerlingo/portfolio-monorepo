@@ -52,7 +52,7 @@
 		align-content: end;
 		justify-content: center;
 		gap: 8px;
-		min-height: 300px;
+		min-height: 480px;
 		padding: 12px;
 		overflow: hidden;
 		border-bottom: 1px solid var(--color-border);
@@ -62,13 +62,13 @@
 	}
 	button {
 		display: block;
-		max-width: min(280px, 80vw);
-		padding: 10px 20px;
+		max-width: min(360px, 80vw);
+		padding: 12px 24px;
 		border-radius: 9999px;
 		background: var(--color-foreground-1);
 		color: var(--color-background);
 		font-family: var(--font-display);
-		font-size: clamp(1rem, 1.6vw, 1.25rem);
+		font-size: clamp(1.125rem, 2vw, 1.5rem);
 		font-weight: 500;
 		line-height: 1.2;
 		white-space: nowrap;
@@ -97,7 +97,7 @@
 	}
 	@media (min-width: 768px) {
 		.chip-scene {
-			min-height: 240px;
+			min-height: 300px;
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {

@@ -12,6 +12,14 @@ try {
     'Svelte',
     'React',
     'Branding',
+    'Design Systems',
+    'Prototyping',
+    'Frontend',
+    'Accessibility',
+    'TypeScript',
+    'Component Libraries',
+    'Motion Design',
+    'Data Storytelling',
   ]
   for (const [order, label] of labels.entries()) {
     const existing = await payload.find({
