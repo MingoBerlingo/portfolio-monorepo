@@ -56,7 +56,7 @@
 
 <div bind:this={boundary} class="h-px" aria-hidden="true"></div>
 <footer bind:this={footer} data-theme="dark" data-reveal={reveal}>
-	<div class="footer-content mx-auto max-w-5xl px-6 pt-12 pb-6 md:px-2 md:pt-16">
+	<div class="footer-content mx-auto max-w-5xl px-2 pt-12 pb-6 md:pt-16">
 		<div class="grid gap-10 md:grid-cols-[1.5fr_0.7fr_1fr] md:gap-12">
 			<div>
 				<h2 class="font-display text-3xl leading-[1.1] md:text-4xl">
@@ -141,8 +141,20 @@
 	footer {
 		position: relative;
 		z-index: 0;
+		color-scheme: dark;
+		padding-inline: 16px;
 		background: var(--color-background);
 		color: var(--color-foreground-1);
+	}
+	@media (min-width: 768px) {
+		footer {
+			padding-inline: 24px;
+		}
+	}
+	@media (prefers-color-scheme: dark) {
+		footer {
+			background: var(--color-surface-1);
+		}
 	}
 	footer[data-reveal='true'] {
 		position: sticky;
