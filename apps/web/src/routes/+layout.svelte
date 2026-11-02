@@ -5,7 +5,6 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import Footer from '$lib/components/Footer.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import { Agentation } from 'sv-agentation';
 
 	import type { LayoutProps } from './$types';
 
@@ -25,7 +24,4 @@
 		{@render children?.()}
 	</main>
 	<Footer profile={data.profile} keywords={data.footerKeywords} />
-	{#if import.meta.env.DEV}
-		<Agentation />
-	{/if}
 </div>
