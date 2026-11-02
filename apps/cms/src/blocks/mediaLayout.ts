@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
 import type { HTMLConverterAsync } from '@payloadcms/richtext-lexical/html-async'
 import { validateMedia } from '../validators/media'
+import { groupMediaItems, type MediaGridItem } from '../utils/mediaGrid'
 
 /** The subset of a media document the blocks need to render. */
 type MediaDoc = {
@@ -24,76 +25,59 @@ type MediaLayoutRow = {
 /** Fields stored on a `mediaLayout` block node. */
 type MediaLayoutFields = {
   rows?: unknown
+  items?: unknown
 }
 
-/**
- * Editor block that stacks media rows inside the project content.
- *
- * A layout is a list of rows — a single image or video, or two side by side —
- * in the order they are added, so mixing full-width and half-width media is a
- * matter of adding rows. It stores content only: the converter below emits
- * `.media-layout` / `.media-layout-row` wrappers and the web app owns every
- * spacing and styling decision (see `apps/web/src/app.css`).
- */
+/** The old rows field stays readable while saved content transitions to grid items. */
 export const MediaLayout: Block = {
   slug: 'mediaLayout',
   interfaceName: 'MediaLayoutBlock',
-  labels: {
-    singular: 'Media layout',
-    plural: 'Media layouts',
-  },
+  labels: { singular: 'Media grid', plural: 'Media grids' },
   fields: [
+    { name: 'gridVersion', type: 'number', admin: { hidden: true } },
     {
-      name: 'rows',
+      name: 'items',
       type: 'array',
-      required: true,
-      minRows: 1,
-      labels: {
-        singular: 'Row',
-        plural: 'Rows',
-      },
+      label: 'Media grid',
+      labels: { singular: 'Media', plural: 'Media' },
       admin: {
+        initCollapsed: false,
+        components: { Field: '@/components/MediaLayoutEditor#MediaGridEditor' },
         description:
-          'Add rows — one media item, or two side by side — and reorder them to build the layout.',
+          'Add images or videos, choose their width, and drag to reorder. Unpaired half-width items leave an empty space.',
       },
       fields: [
         {
-          name: 'columns',
+          name: 'width',
           type: 'select',
           required: true,
-          defaultValue: '2',
-          label: 'Columns',
+          defaultValue: 'full',
           options: [
-            { label: 'One column (stacked)', value: '1' },
-            { label: 'Two columns', value: '2' },
+            { label: 'Full width', value: 'full' },
+            { label: 'Half width', value: 'half' },
           ],
-          admin: {
-            description: 'Two columns sit side by side on wide screens and stack on narrow ones.',
-          },
+          admin: { components: { Field: '@/components/MediaLayoutEditor#MediaGridWidth' } },
         },
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+          label: 'Media',
+          validate: validateMedia,
+        },
+      ],
+    },
+    {
+      name: 'rows',
+      type: 'array',
+      admin: { hidden: true },
+      fields: [
+        { name: 'columns', type: 'select', options: ['1', '2'] },
         {
           name: 'images',
           type: 'array',
-          required: true,
-          minRows: 1,
-          maxRows: 2,
-          labels: {
-            singular: 'Media',
-            plural: 'Media',
-          },
-          admin: {
-            description: 'One image or video for a single column, two for two columns.',
-          },
-          fields: [
-            {
-              name: 'image',
-              type: 'upload',
-              relationTo: 'media',
-              required: true,
-              label: 'Media',
-              validate: validateMedia,
-            },
-          ],
+          fields: [{ name: 'image', type: 'upload', relationTo: 'media' }],
         },
       ],
     },
@@ -189,7 +173,22 @@ async function renderRow(row: MediaLayoutRow, populate: PopulateFn | undefined):
 export const mediaLayoutConverter: HTMLConverterAsync = async ({ node, populate }) => {
   const fields = (node as { fields?: MediaLayoutFields }).fields
 
-  if (!fields || !Array.isArray(fields.rows)) return ''
+  if (!fields) return ''
+
+  if (Array.isArray(fields.items)) {
+    const rendered = await Promise.all(
+      groupMediaItems(fields.items as MediaGridItem[]).map(async (row) =>
+        renderRowHtml(
+          row.columns,
+          await Promise.all(row.items.map((item) => renderCell(item.image, populate))),
+        ),
+      ),
+    )
+    const rows = rendered.filter(Boolean)
+    return rows.length ? `<div class="media-layout media-layout--grid">${rows.join('')}</div>` : ''
+  }
+
+  if (!Array.isArray(fields.rows)) return ''
 
   const rendered = await Promise.all(
     (fields.rows as MediaLayoutRow[]).map((row) => renderRow(row, populate)),

@@ -89,7 +89,27 @@ describe('project content blocks', () => {
 
       const saved = await payload.findByID({ collection: 'project', id: project.id })
 
-      expect(saved.contentHtml).toContain('<div class="media-layout">')
+      expect(saved.contentHtml).toContain('<div class="media-layout media-layout--grid">')
+      const fields = saved.content?.root.children[0].fields as {
+        items: { width: string }[]
+        gridVersion: number
+      }
+      expect(fields.gridVersion).toBe(1)
+      expect(fields.items.map((item) => item.width)).toEqual(['full', 'half', 'half'])
+      const edited = structuredClone(saved.content!)
+      const editedFields = edited.root.children[0].fields as unknown as {
+        items: { width: string }[]
+      }
+      editedFields.items[0].width = 'half'
+      const updated = await payload.update({
+        collection: 'project',
+        id: project.id,
+        data: { content: edited },
+      })
+      expect(updated.contentHtml).toContain('media-layout-row--columns-2')
+      expect(
+        (updated.content?.root.children[0].fields as { items: { width: string }[] }).items[0].width,
+      ).toBe('half')
       expect(saved.contentHtml).toContain('media-layout-row--columns-1')
       expect(saved.contentHtml).toContain('media-layout-row--columns-2')
       expect(saved.contentHtml?.match(/<img /g)).toHaveLength(3)

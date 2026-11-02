@@ -306,7 +306,7 @@ body {
 	}
 
 	/* A lone item keeps the full width instead of sitting in one cell. */
-	.media-layout-row--columns-2 > :is(img, video):only-child {
+	.media-layout:not(.media-layout--grid) .media-layout-row--columns-2 > :is(img, video):only-child {
 		grid-column: span 2;
 	}
 }

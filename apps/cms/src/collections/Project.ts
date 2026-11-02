@@ -8,6 +8,7 @@ import {
 import type { SerializedEditorState } from 'lexical'
 import { MediaLayout, mediaLayoutConverter } from '../blocks/mediaLayout'
 import { validateVideoCover } from '../validators/videoCover'
+import { normalizeMediaGridContent } from '../utils/mediaGrid'
 
 export const Project: CollectionConfig = {
   slug: 'project',
@@ -18,9 +19,14 @@ export const Project: CollectionConfig = {
     read: () => true,
   },
   hooks: {
+    beforeValidate: [
+      ({ data }) =>
+        data?.content ? { ...data, content: normalizeMediaGridContent(data.content) } : data,
+    ],
     afterRead: [
       async ({ doc, req }) => {
         if (!doc.content) return doc
+        doc = { ...doc, content: normalizeMediaGridContent(doc.content) }
 
         const converters = ({
           defaultConverters,

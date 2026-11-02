@@ -662,23 +662,29 @@ export interface ProfileSelect<T extends boolean = true> {
  * via the `definition` "MediaLayoutBlock".
  */
 export interface MediaLayoutBlock {
+  gridVersion?: number | null;
   /**
-   * Add rows — one media item, or two side by side — and reorder them to build the layout.
+   * Add images or videos, choose their width, and drag to reorder. Unpaired half-width items leave an empty space.
    */
-  rows: {
-    /**
-     * Two columns sit side by side on wide screens and stack on narrow ones.
-     */
-    columns: '1' | '2';
-    /**
-     * One image or video for a single column, two for two columns.
-     */
-    images: {
-      image: string | Media;
-      id?: string | null;
-    }[];
-    id?: string | null;
-  }[];
+  items?:
+    | {
+        width: 'full' | 'half';
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  rows?:
+    | {
+        columns?: ('1' | '2') | null;
+        images?:
+          | {
+              image?: (string | null) | Media;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaLayout';
