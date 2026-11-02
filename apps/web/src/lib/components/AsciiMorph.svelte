@@ -134,7 +134,7 @@
 		return deconstructionFrames.concat(constructionFrames);
 	}
 
-	function animateFrames(frameData: string[][]) {
+	function animateFrames(frameData: string[][], delay = frameDelay) {
 		if (animationTimeout) clearTimeout(animationTimeout);
 
 		let frameIndex = 0;
@@ -148,11 +148,11 @@
 			}
 		}
 
-		animationTimeout = setTimeout(step, frameDelay);
+		animationTimeout = setTimeout(step, delay);
 	}
 
-	function morph(data: string[]) {
-		animateFrames(prepareFrames(data.slice()));
+	function morph(data: string[], delay = frameDelay) {
+		animateFrames(prepareFrames(data.slice()), delay);
 	}
 
 	function morphNextFrame() {
@@ -186,7 +186,7 @@
 					if (!entered) {
 						entered = true;
 						lines = blankFrame();
-						morph(frames[currentIndex]);
+						morph(frames[currentIndex], 500);
 					}
 					cycleInterval = setInterval(morphNextFrame, interval);
 				}

@@ -35,6 +35,8 @@ it('assembles the first frame once while preserving the full canvas size', async
 	expect(art.textContent?.trim()).toBe('');
 	expect(initialBounds.height).toBeGreaterThan(0);
 	intersect!([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+	await vi.advanceTimersByTimeAsync(499);
+	expect(art.textContent?.trim()).toBe('');
 	await vi.advanceTimersByTimeAsync(2000);
 	expect(art.textContent).toContain('HELLO');
 	expect(art.getBoundingClientRect().height).toBe(initialBounds.height);
