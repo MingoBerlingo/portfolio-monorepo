@@ -22,8 +22,9 @@ it('keeps keywords as a readable static list for reduced motion', () => {
 	expect(root.querySelector('li')?.style.transform).toBe('');
 });
 
-it('loads physics only when revealed and restores the static layout when reduced motion is enabled', async () => {
+it('starts settled without a drop and restores the static layout when reduced motion is enabled', async () => {
 	const motion = mockMotion(false);
+	const request = vi.spyOn(window, 'requestAnimationFrame');
 	vi.spyOn(document, 'hidden', 'get').mockReturnValue(false);
 	root = document.createElement('ul');
 	root.style.cssText = 'width:600px;height:240px;position:relative';
@@ -38,7 +39,9 @@ it('loads physics only when revealed and restores the static layout when reduced
 	expect(root.dataset.physics).toBeUndefined();
 	action.update(true);
 	await vi.waitFor(() => expect(root.dataset.physics).toBe('true'), { timeout: 5000 });
+	expect(request).not.toHaveBeenCalled();
 	const position = root.querySelector('li')!.style.transform;
+	root.querySelector('button')!.click();
 	await vi.waitFor(() => expect(root.querySelector('li')!.style.transform).not.toBe(position));
 	motion.setReduced(true);
 	expect(root.dataset.physics).toBeUndefined();

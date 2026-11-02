@@ -113,15 +113,8 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 			item.style.transform = `translate3d(${body.position.x - sizes[index].width / 2}px, ${body.position.y - sizes[index].height / 2}px, 0) rotate(${body.angle}rad)`;
 		});
 	};
-	const tick = (now: number) => {
-		frame = 0;
-		if (!engine || !matter || !active || motion.matches || document.hidden) return;
-		accumulated += last ? Math.min(now - last, 50) : 1000 / 60;
-		last = now;
-		while (accumulated >= 1000 / 60) {
-			advance(1000 / 60);
-			accumulated -= 1000 / 60;
-		}
+	const containBodies = () => {
+		if (!matter) return;
 		// Keep fast throws and dragging inside the visible world, even if a
 		// constraint moves a body through a wall between physics steps.
 		for (const body of bodies) {
@@ -137,6 +130,17 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 				matter.Body.setPosition(body, { x, y });
 			}
 		}
+	};
+	const tick = (now: number) => {
+		frame = 0;
+		if (!engine || !matter || !active || motion.matches || document.hidden) return;
+		accumulated += last ? Math.min(now - last, 50) : 1000 / 60;
+		last = now;
+		while (accumulated >= 1000 / 60) {
+			advance(1000 / 60);
+			accumulated -= 1000 / 60;
+		}
+		containBodies();
 		draw();
 		if (drag || bodies.some((body) => !body.isSleeping)) frame = requestAnimationFrame(tick);
 		else last = 0;
@@ -218,13 +222,23 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 			restitution: 0.45
 		});
 		matter.Composite.add(engine.world, [...walls, ...bodies, mouseBody]);
+		// Compute the loose pile offscreen. Revealing the footer should not
+		// start an entrance animation; only pointer/keyboard interaction wakes it.
+		for (let step = 0; step < 360 && bodies.some((body) => !body.isSleeping); step++) {
+			matter.Engine.update(engine, 1000 / 60);
+			containBodies();
+		}
+		for (const body of bodies) {
+			matter.Body.setVelocity(body, { x: 0, y: 0 });
+			matter.Body.setAngularVelocity(body, 0);
+			matter.Sleeping.set(body, true);
+		}
 		node.dataset.physics = 'true';
 		delete node.dataset.physicsPending;
 		buttons.forEach((button) => {
 			button.disabled = false;
 		});
 		draw();
-		wake();
 	};
 	const sync = async () => {
 		if (motion.matches) {

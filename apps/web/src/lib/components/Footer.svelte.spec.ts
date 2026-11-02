@@ -25,7 +25,7 @@ it('exposes footer navigation, profile contacts and CMS keywords without motion'
 		.toBeInTheDocument();
 	await expect.element(page.getByRole('heading', { name: 'Let’s talk.' })).toBeInTheDocument();
 	await expect
-		.element(page.getByRole('link', { name: 'hello@example.com', exact: true }))
+		.element(page.getByRole('link', { name: 'Email', exact: true }))
 		.toHaveAttribute('href', 'mailto:hello@example.com');
 	await expect
 		.element(page.getByRole('link', { name: 'GitHub', exact: true }))

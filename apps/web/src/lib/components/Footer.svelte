@@ -29,14 +29,9 @@
 				document.documentElement.dataset.headerOverFooter = String(headerOverFooter);
 			}
 			reveal = !motion.matches && footer.offsetHeight < window.innerHeight - 64;
-			// Start the first drop once its landing area is actually uncovered,
-			// rather than finishing the animation behind the overlapping page.
-			const chipStart = footer.querySelector<HTMLElement>('[data-chip-start]');
-			const trigger = chipStart
-				? chipStart.getBoundingClientRect().top + 40
-				: window.innerHeight - 48;
+
 			active =
-				boundary.getBoundingClientRect().top < Math.min(window.innerHeight - 48, trigger) &&
+				boundary.getBoundingClientRect().top < window.innerHeight - 48 &&
 				footer.getBoundingClientRect().bottom > 0;
 		};
 		const schedule = () => {
@@ -64,13 +59,11 @@
 	<div class="footer-content mx-auto max-w-5xl px-6 pt-12 pb-6 md:px-2 md:pt-16">
 		<div class="grid gap-10 md:grid-cols-[1.5fr_0.7fr_1fr] md:gap-12">
 			<div>
-				<p class="mb-4 text-sm text-foreground-2">Have something in mind?</p>
 				<h2 class="font-display text-3xl leading-[1.1] md:text-4xl">
 					{profile.footerHeading || 'Let’s build something together.'}
 				</h2>
 			</div>
 			<nav aria-label="Footer navigation">
-				<p class="mb-4 text-xs text-foreground-2">Explore</p>
 				<ul class="space-y-2">
 					{#each pages as page (page.href)}<li>
 							<a href={page.href}><ScrambleLinkText text={page.label} /></a>
@@ -78,11 +71,10 @@
 				</ul>
 			</nav>
 			<div>
-				<p class="mb-4 text-xs text-foreground-2">Get in touch</p>
 				<ul class="space-y-2">
 					<li>
-						<a href={`mailto:${profile.email}`} class="break-all"
-							><ScrambleLinkText text={profile.email} /> <span aria-hidden="true">↗</span></a
+						<a href={`mailto:${profile.email}`}
+							><ScrambleLinkText text="Email" /> <span aria-hidden="true">↗</span></a
 						>
 					</li>
 					{#if profile.github?.url}<li>

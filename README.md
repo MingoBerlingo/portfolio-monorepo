@@ -301,7 +301,8 @@ To recreate the starter keywords without overwriting existing records:
 pnpm --filter cms payload run scripts/seed-keywords.ts
 ```
 
-Physics loads only when the footer is revealed, pauses offscreen and in hidden
-tabs, and sleeps when the chips settle. Drag a chip to move it, or focus its
+Physics loads only when the footer is revealed and prepares a settled pile
+without a drop animation. It pauses offscreen and in hidden tabs, and sleeps
+when the chips settle. Drag a chip to move it, or focus its
 button and press Enter/Space to toss it. Reduced motion shows a static list.
 After CMS edits, rebuild the static site with `pnpm build:site` to publish them.
