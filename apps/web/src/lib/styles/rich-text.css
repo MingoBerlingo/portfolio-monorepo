@@ -27,7 +27,10 @@
  * `.rich-text--info` classes applied alongside `prose`.
  */
 .rich-text {
+	--tw-prose-body: var(--color-foreground-1);
+	--tw-prose-quotes: var(--color-foreground-1);
 	max-width: none;
+	color: var(--color-foreground-1);
 }
 
 .rich-text :is(h2, h3, h4, h5, h6, th) {
@@ -62,7 +65,7 @@
 .rich-text p {
 	font-size: var(--text-xl);
 	line-height: 1.25;
-	color: var(--color-foreground-2);
+	color: var(--color-foreground-1);
 }
 
 .rich-text img {

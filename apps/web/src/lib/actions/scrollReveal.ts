@@ -19,8 +19,12 @@ export const scrollReveal: Action<HTMLElement> = (node) => {
 						endProgress,
 						Math.min(1, (height * 0.88 - rect.top - stagger) / (height * 0.28))
 					);
-			word.style.opacity = String(0.15 + progress * 0.85);
+			word.style.opacity = String(progress);
 			word.style.transform = `rotate(${(1 - progress) * 2}deg)`;
+			// Run decorative accents once, only after the scroll reveal has fully settled.
+			if (progress === 1 && !motion.matches && word.dataset.graphic) {
+				word.dataset.revealed = 'true';
+			}
 		});
 	};
 	const schedule = () => {

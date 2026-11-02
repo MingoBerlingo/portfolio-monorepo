@@ -30,12 +30,14 @@ describe('ScrollIntroduction', () => {
 			.element(page.getByRole('img', { name: 'A component library' }))
 			.toBeInTheDocument();
 	});
-	it('shows the default introduction and three small illustrations', async () => {
+	it('shows the default introduction with an illustration, decorative toggle and icon', async () => {
 		render(ScrollIntroduction);
 		await expect
 			.element(page.getByRole('region', { name: 'My approach' }))
 			.toHaveTextContent('I work best between design and frontend');
-		expect(document.querySelectorAll('.inline-image').length).toBe(3);
+		expect(document.querySelectorAll('.inline-image').length).toBe(1);
+		expect(document.querySelector('.inline-toggle')?.getAttribute('aria-hidden')).toBe('true');
+		expect(document.querySelector('.inline-toggle')?.tagName).toBe('SPAN');
 		expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
 	});
 });
