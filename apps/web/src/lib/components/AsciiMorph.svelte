@@ -222,7 +222,7 @@
 	<pre
 		bind:this={containerEl}
 		class={cn(
-			'cursor-pointer rounded-xl text-center font-mono text-[3cqw] leading-tight font-normal text-foreground-2 select-none sm:text-[2.2cqw] lg:text-[1.7cqw]',
+			'cursor-pointer rounded-xl text-center font-mono text-[3cqw] leading-tight font-normal text-foreground-1 select-none sm:text-[2.2cqw] lg:text-[1.7cqw]',
 			className
 		)}
 		role="img"
