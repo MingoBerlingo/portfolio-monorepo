@@ -19,6 +19,7 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 	let accumulated = 0;
 	let width = 0;
 	let height = 0;
+	let floorY = 0;
 
 	const stop = () => {
 		cancelAnimationFrame(frame);
@@ -66,6 +67,21 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 			matter.Engine.update(engine, 1000 / 60);
 			accumulated -= 1000 / 60;
 		}
+		// Keep fast throws and dragging inside the visible world, even if a
+		// constraint moves a body through a wall between physics steps.
+		for (const body of bodies) {
+			const halfWidth = (body.bounds.max.x - body.bounds.min.x) / 2;
+			const halfHeight = (body.bounds.max.y - body.bounds.min.y) / 2;
+			const x = Math.max(halfWidth, Math.min(width - halfWidth, body.position.x));
+			const y = Math.max(halfHeight, Math.min(floorY - halfHeight, body.position.y));
+			if (x !== body.position.x || y !== body.position.y) {
+				matter.Body.setVelocity(body, {
+					x: x !== body.position.x ? 0 : body.velocity.x,
+					y: y !== body.position.y ? 0 : body.velocity.y
+				});
+				matter.Body.setPosition(body, { x, y });
+			}
+		}
 		draw();
 		if (drag || bodies.some((body) => !body.isSleeping)) frame = requestAnimationFrame(tick);
 		else last = 0;
@@ -80,6 +96,12 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 		width = node.clientWidth;
 		height = node.clientHeight;
 		if (!width || !height) return;
+		const origin = node.getBoundingClientRect().top;
+		const footer = node.closest('footer');
+		const floor = footer?.querySelector<HTMLElement>('[data-chip-floor]');
+		const start = footer?.querySelector<HTMLElement>('[data-chip-start]');
+		floorY = floor ? Math.min(height, floor.getBoundingClientRect().top - origin - 12) : height;
+		const spawnY = start ? Math.max(0, start.getBoundingClientRect().top - origin) : 0;
 		sizes = items.map((item) => ({
 			width: Math.min(Math.ceil(item.getBoundingClientRect().width) + 1, width - 16),
 			height: Math.ceil(item.getBoundingClientRect().height)
@@ -87,10 +109,16 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 		engine = matter.Engine.create({ enableSleeping: true });
 		engine.gravity.y = 0.8;
 		const walls = [
-			matter.Bodies.rectangle(width / 2, height + 25, width + 100, 50, { isStatic: true }),
+			matter.Bodies.rectangle(
+				width / 2,
+				floorY + (height - floorY + 50) / 2,
+				width + 100,
+				height - floorY + 50,
+				{ isStatic: true }
+			),
 			matter.Bodies.rectangle(-25, height / 2, 50, height + 200, { isStatic: true }),
 			matter.Bodies.rectangle(width + 25, height / 2, 50, height + 200, { isStatic: true }),
-			matter.Bodies.rectangle(width / 2, -75, width + 100, 50, { isStatic: true })
+			matter.Bodies.rectangle(width / 2, -25, width + 100, 50, { isStatic: true })
 		];
 		const columns = width < 600 ? 2 : 4;
 		bodies = items.map((item, index) => {
@@ -102,7 +130,7 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 			);
 			const body = matter!.Bodies.rectangle(
 				x,
-				28 + Math.floor(index / columns) * 50,
+				Math.min(floorY - size.height / 2, spawnY + 28 + Math.floor(index / columns) * 50),
 				size.width,
 				size.height,
 				{
@@ -156,7 +184,13 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 	};
 	const point = (event: PointerEvent) => {
 		const rect = node.getBoundingClientRect();
-		return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+		const body = drag?.bodyB;
+		const halfWidth = body ? (body.bounds.max.x - body.bounds.min.x) / 2 : 0;
+		const halfHeight = body ? (body.bounds.max.y - body.bounds.min.y) / 2 : 0;
+		return {
+			x: Math.max(halfWidth, Math.min(width - halfWidth, event.clientX - rect.left)),
+			y: Math.max(halfHeight, Math.min(floorY - halfHeight, event.clientY - rect.top))
+		};
 	};
 	const down = (event: PointerEvent) => {
 		if (!engine || !matter || motion.matches || event.button !== 0 || pointer !== undefined) return;

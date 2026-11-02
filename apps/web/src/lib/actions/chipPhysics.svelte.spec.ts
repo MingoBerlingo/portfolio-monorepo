@@ -45,3 +45,25 @@ it('loads physics only when revealed and restores the static layout when reduced
 	expect(root.querySelector('li')!.style.transform).toBe('');
 	expect(root.querySelector('button')!.disabled).toBe(true);
 });
+
+it('keeps a tossed chip inside the visible scene, including its rotated bounds', async () => {
+	mockMotion(false);
+	vi.spyOn(document, 'hidden', 'get').mockReturnValue(false);
+	root = document.createElement('ul');
+	root.style.cssText = 'width:240px;height:100px;position:relative;margin:0;padding:0';
+	root.innerHTML =
+		'<li style="position:absolute;left:0;top:0;display:inline-block"><button style="width:100px;height:40px">React</button></li>';
+	document.body.append(root);
+	cleanup = (chipPhysics(root, true) as { destroy: () => void }).destroy;
+	await vi.waitFor(() => expect(root.dataset.physics).toBe('true'), { timeout: 5000 });
+	root.querySelector('button')!.click();
+	const item = root.querySelector('li')!;
+	const first = item.style.transform;
+	await vi.waitFor(() => expect(item.style.transform).not.toBe(first));
+	const chip = item.getBoundingClientRect();
+	const bounds = root.getBoundingClientRect();
+	expect(chip.left).toBeGreaterThanOrEqual(bounds.left - 1);
+	expect(chip.right).toBeLessThanOrEqual(bounds.right + 1);
+	expect(chip.top).toBeGreaterThanOrEqual(bounds.top - 1);
+	expect(chip.bottom).toBeLessThanOrEqual(bounds.bottom + 1);
+});

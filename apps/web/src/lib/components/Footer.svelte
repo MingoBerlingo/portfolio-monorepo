@@ -54,17 +54,17 @@
 </script>
 
 <div bind:this={boundary} class="h-px" aria-hidden="true"></div>
-<footer bind:this={footer} data-reveal={reveal}>
-	<div class="mx-auto max-w-5xl px-6 pt-12 pb-6 md:px-2 md:pt-16">
+<footer bind:this={footer} data-theme="dark" data-reveal={reveal}>
+	<div class="footer-content mx-auto max-w-5xl px-6 pt-12 pb-6 md:px-2 md:pt-16">
 		<div class="grid gap-10 md:grid-cols-[1.5fr_0.7fr_1fr] md:gap-12">
 			<div>
-				<p class="mb-4 text-sm text-[#cbd5e1]">Have something in mind?</p>
+				<p class="mb-4 text-sm text-foreground-2">Have something in mind?</p>
 				<h2 class="font-display text-3xl leading-[1.1] md:text-4xl">
 					{profile.footerHeading || 'Let’s build something together.'}
 				</h2>
 			</div>
 			<nav aria-label="Footer navigation">
-				<p class="mb-4 text-xs text-[#cbd5e1]">Explore</p>
+				<p class="mb-4 text-xs text-foreground-2">Explore</p>
 				<ul class="space-y-2">
 					{#each pages as page (page.href)}<li>
 							<a href={page.href}><ScrambleLinkText text={page.label} /></a>
@@ -72,7 +72,7 @@
 				</ul>
 			</nav>
 			<div>
-				<p class="mb-4 text-xs text-[#cbd5e1]">Get in touch</p>
+				<p class="mb-4 text-xs text-foreground-2">Get in touch</p>
 				<ul class="space-y-2">
 					<li>
 						<a href={`mailto:${profile.email}`} class="break-all"
@@ -92,21 +92,48 @@
 				</ul>
 			</div>
 		</div>
-		<PhysicsChips {keywords} {active} />
-		<div class="mt-6 flex flex-wrap justify-between gap-3 text-xs text-[#cbd5e1]">
+		{#if keywords.length}
+			<div class="mt-10">
+				<p class="mb-3 text-xs text-foreground-2">
+					A few things I work with <span aria-hidden="true">↘</span>
+				</p>
+				<div class="footer-chip-space" data-chip-start aria-hidden="true"></div>
+			</div>
+		{/if}
+		<div
+			data-chip-floor
+			class="mt-6 flex flex-wrap justify-between gap-3 text-xs text-foreground-2"
+		>
 			<span>© {new Date().getFullYear()} {profile.name} {profile.surname}</span><span
 				>Design & frontend, together.</span
 			>
 		</div>
 	</div>
+	<PhysicsChips {keywords} {active} fullFooter />
 </footer>
 
 <style>
+	.footer-content {
+		position: relative;
+	}
+	.footer-chip-space {
+		min-height: 300px;
+	}
+	[data-chip-floor] {
+		position: relative;
+		z-index: 2;
+	}
+	@media (min-width: 768px) {
+		.footer-chip-space {
+			min-height: 240px;
+		}
+	}
+
 	footer {
 		position: relative;
 		z-index: 0;
-		background: #0f172a;
-		color: #f8fafc;
+		background: var(--color-background);
+		color: var(--color-foreground-1);
 	}
 	footer[data-reveal='true'] {
 		position: sticky;
@@ -116,13 +143,15 @@
 		position: relative;
 	}
 	a {
+		position: relative;
+		z-index: 2;
 		text-underline-offset: 4px;
 	}
 	a:hover {
 		text-decoration: underline;
 	}
 	a:focus-visible {
-		outline: 2px solid #a5b4fc;
+		outline: 2px solid var(--color-primary);
 		outline-offset: 4px;
 		border-radius: 2px;
 	}
