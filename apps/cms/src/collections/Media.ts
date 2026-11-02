@@ -6,7 +6,8 @@ import {
   sanitizeMediaFilename,
   sanitizeRenamedFilename,
 } from '../utils/mediaFilename'
-import { replaceMediaFile } from '../utils/replaceMediaFile'
+import { replaceMediaFile, getMediaStaticDir } from '../utils/replaceMediaFile'
+import { getVideoPoster, videoThumbnailURL } from '../utils/videoPoster'
 import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import os from 'node:os'
@@ -73,6 +74,42 @@ export const Media: CollectionConfig = {
     },
   },
   endpoints: [
+    {
+      method: 'get',
+      path: '/:id/poster',
+      handler: async (req) => {
+        const id = req.routeParams?.id
+        if (typeof id !== 'string' && typeof id !== 'number')
+          throw new APIError('Media not found.', 404)
+        const doc = await req.payload.findByID({
+          collection: 'media',
+          id,
+          depth: 0,
+          overrideAccess: false,
+          req,
+        })
+        if (!doc.mimeType?.startsWith('video/'))
+          throw new APIError('This media is not a video.', 404)
+        try {
+          const frame = await getVideoPoster(doc, getMediaStaticDir(req.payload))
+          return new Response(new Uint8Array(frame), {
+            headers: {
+              'Content-Type': 'image/jpeg',
+              'Cache-Control': 'public, max-age=3600',
+              'X-Content-Type-Options': 'nosniff',
+            },
+          })
+        } catch (error) {
+          req.payload.logger.error(
+            `[media] Could not generate video preview for ${id}: ${String(error)}`,
+          )
+          throw new APIError(
+            'The video preview is unavailable.',
+            (error as NodeJS.ErrnoException).code === 'ENOENT' ? 404 : 500,
+          )
+        }
+      },
+    },
     {
       // Swaps the file of a document while keeping its stored name, so the media
       // URL the site links to stays the same. A regular re-upload always derives
@@ -245,5 +282,5 @@ export const Media: CollectionConfig = {
       },
     },
   ],
-  upload: true,
+  upload: { adminThumbnail: ({ doc }) => videoThumbnailURL(doc) },
 }

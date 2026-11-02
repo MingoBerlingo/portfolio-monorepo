@@ -108,15 +108,20 @@ export async function extractVideoPoster(inputPath: string): Promise<string> {
   const tempDir = await fs.mkdtemp(path.join(getTempDir(), 'payload-poster-'))
   const posterPath = path.join(tempDir, 'poster.jpg')
 
-  await new Promise<void>((resolve, reject) => {
-    ffmpeg(inputPath)
-      .seekInput(0)
-      .frames(1)
-      .output(posterPath)
-      .on('end', () => resolve())
-      .on('error', (error) => reject(error))
-      .run()
-  })
-
-  return posterPath
+  try {
+    await new Promise<void>((resolve, reject) => {
+      ffmpeg(inputPath)
+        .seekInput(0)
+        .frames(1)
+        .outputOptions(['-vf', "thumbnail=100,scale='min(960,iw)':-2", '-q:v', '3'])
+        .output(posterPath)
+        .on('end', () => resolve())
+        .on('error', (error) => reject(error))
+        .run()
+    })
+    return posterPath
+  } catch (error) {
+    await fs.rm(tempDir, { recursive: true, force: true })
+    throw error
+  }
 }
