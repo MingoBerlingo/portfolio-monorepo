@@ -153,7 +153,7 @@
 	}
 	@media (prefers-color-scheme: dark) {
 		footer {
-			background: var(--color-surface-1);
+			background: var(--color-surface-3);
 		}
 	}
 	footer[data-reveal='true'] {
