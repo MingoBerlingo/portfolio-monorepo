@@ -117,10 +117,10 @@
 		flex-shrink: 0;
 		border-radius: 999px;
 		border: 0;
-		background: light-dark(var(--color-zinc-100), var(--color-zinc-950));
+		background: light-dark(var(--color-zinc-100), var(--color-zinc-800));
 		box-shadow:
-			inset 1px 2px 4px light-dark(rgb(0 0 0 / 10%), rgb(0 0 0 / 85%)),
-			inset -1px -2px 4px light-dark(rgb(255 255 255 / 10%), rgb(255 255 255 / 14%)),
+			inset 1px 2px 4px light-dark(rgb(0 0 0 / 10%), rgb(0 0 0 / 55%)),
+			inset -1px -2px 4px light-dark(rgb(255 255 255 / 10%), rgb(255 255 255 / 7%)),
 			0 1px 0 light-dark(transparent, rgb(255 255 255 / 9%));
 		cursor: pointer;
 	}
@@ -149,14 +149,14 @@
 		border-radius: 50%;
 		background: linear-gradient(
 			145deg,
-			light-dark(var(--color-white), var(--color-zinc-700)),
+			light-dark(var(--color-white), var(--color-zinc-800)),
 			light-dark(var(--color-zinc-100), var(--color-zinc-800)) 65%
 		);
 		border: 0;
 		box-shadow:
-			0 2px 4px light-dark(rgb(0 0 0 / 18%), rgb(0 0 0 / 65%)),
-			inset 0 1px 1px light-dark(rgb(255 255 255 / 90%), rgb(255 255 255 / 22%)),
-			inset 0 -1px 2px light-dark(rgb(0 0 0 / 4%), rgb(0 0 0 / 30%));
+			0 2px 4px light-dark(rgb(0 0 0 / 18%), rgb(0 0 0 / 35%)),
+			inset 0 1px 1px light-dark(rgb(255 255 255 / 90%), rgb(255 255 255 / 10%)),
+			inset 0 -1px 2px light-dark(rgb(0 0 0 / 4%), rgb(0 0 0 / 15%));
 		transition: transform 200ms var(--motion-ease-interactive);
 	}
 	:global(html[data-theme-transition]) .thumb {
