@@ -91,7 +91,7 @@
 			</div>
 		</div>
 		{#if keywords.length}
-			<div class="mt-10">
+			<div class="footer-keywords mt-10">
 				<p class="mb-3 text-xs text-foreground-2">
 					A few things I work with <span aria-hidden="true">↘</span>
 				</p>
@@ -113,13 +113,24 @@
 <style>
 	.footer-content {
 		position: relative;
+		display: flex;
+		flex-direction: column;
+		min-height: 85svh;
+	}
+	.footer-keywords {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
 	}
 	.footer-chip-space {
+		flex: 1;
 		min-height: 480px;
 	}
 	[data-chip-floor] {
 		position: relative;
 		z-index: 2;
+		margin-top: auto;
+		padding-top: 24px;
 	}
 	@media (min-width: 768px) {
 		.footer-chip-space {
