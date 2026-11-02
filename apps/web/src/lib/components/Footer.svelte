@@ -152,9 +152,12 @@
 		}
 	}
 	@media (prefers-color-scheme: dark) {
-		footer {
+		:global(html:not([data-theme='light'])) footer {
 			background: var(--color-surface-3);
 		}
+	}
+	:global(html[data-theme='dark']) footer {
+		background: var(--color-surface-3);
 	}
 	footer[data-reveal='true'] {
 		position: sticky;

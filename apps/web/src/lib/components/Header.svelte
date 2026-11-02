@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ScrambleLinkText from './ScrambleLinkText.svelte';
+	import ThemeSwitch from './ThemeSwitch.svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { cn } from '$lib/utils/cn';
@@ -79,7 +80,7 @@
 		>
 
 		<!-- Desktop nav -->
-		<nav class="hidden items-center gap-8 md:flex">
+		<nav class="hidden items-center gap-8 md:absolute md:left-1/2 md:flex md:-translate-x-1/2">
 			{#each navLinks as { href, label } (href)}
 				<a
 					{href}
@@ -93,25 +94,28 @@
 			{/each}
 		</nav>
 
-		<!-- Burger button -->
-		<button
-			bind:this={toggleElement}
-			onclick={toggleMenu}
-			class="relative z-50 flex h-6 w-6 flex-col items-center justify-center gap-1.5 text-foreground-1 md:hidden"
-			aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-			aria-expanded={menuOpen}
-		>
-			<span
-				class={cn('block h-0.5 w-5 bg-foreground-1 transition-transform motion-base', {
-					'translate-y-[4px] rotate-45': menuOpen
-				})}
-			></span>
-			<span
-				class={cn('block h-0.5 w-5 bg-foreground-1 transition-transform motion-base', {
-					'-translate-y-[4px] -rotate-45': menuOpen
-				})}
-			></span>
-		</button>
+		<div class="flex items-center gap-4">
+			<ThemeSwitch />
+			<!-- Burger button -->
+			<button
+				bind:this={toggleElement}
+				onclick={toggleMenu}
+				class="relative z-50 flex h-6 w-6 flex-col items-center justify-center gap-1.5 text-foreground-1 md:hidden"
+				aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+				aria-expanded={menuOpen}
+			>
+				<span
+					class={cn('block h-0.5 w-5 bg-foreground-1 transition-transform motion-base', {
+						'translate-y-[4px] rotate-45': menuOpen
+					})}
+				></span>
+				<span
+					class={cn('block h-0.5 w-5 bg-foreground-1 transition-transform motion-base', {
+						'-translate-y-[4px] -rotate-45': menuOpen
+					})}
+				></span>
+			</button>
+		</div>
 	</div>
 
 	<!-- Keep the panel mounted so transitions can reverse smoothly. -->
