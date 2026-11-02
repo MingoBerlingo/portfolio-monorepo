@@ -75,8 +75,11 @@
 	})}
 >
 	<div class="header-surface relative z-50 flex items-center justify-between">
-		<a href={homeHref} class="font-display text-foreground-1" onclick={closeMenu}
-			>Alessandro Quets</a
+		<a
+			href={homeHref}
+			class="flex h-9 w-9 items-center justify-center font-display text-3xl leading-none text-foreground-1"
+			aria-label="Alessandro Quets — Home"
+			onclick={closeMenu}><span aria-hidden="true">✽</span></a
 		>
 
 		<!-- Desktop nav -->
