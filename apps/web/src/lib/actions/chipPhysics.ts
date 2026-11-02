@@ -179,9 +179,9 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 			matter.Bodies.rectangle(width + 25, height / 2, 50, height + 200, { isStatic: true }),
 			matter.Bodies.rectangle(width / 2, -25, width + 100, 50, { isStatic: true })
 		];
-		// A concentrated, irregular shower creates a pile instead of columns.
-		const pileCenter = width < 600 ? width * 0.5 : width * 0.78;
-		const spread = Math.min(width * 0.58, 340);
+		// Spread starting positions evenly across the full width; keep the
+		// rotations and heights varied so the settled pile still feels natural.
+		const spacing = width / items.length;
 		bodies = items.map((item, index) => {
 			const size = sizes[index];
 			item.style.width = `${size.width}px`;
@@ -195,10 +195,7 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 				(Math.abs(Math.cos(angle)) * size.width + Math.abs(Math.sin(angle)) * size.height) / 2;
 			const halfHeight =
 				(Math.abs(Math.sin(angle)) * size.width + Math.abs(Math.cos(angle)) * size.height) / 2;
-			const x = Math.max(
-				halfWidth + 2,
-				Math.min(width - halfWidth - 2, pileCenter + (Math.random() - 0.5) * spread)
-			);
+			const x = Math.max(halfWidth + 2, Math.min(width - halfWidth - 2, (index + 0.5) * spacing));
 			const y = Math.max(
 				halfHeight + 2,
 				Math.min(floorY - halfHeight - 2, spawnY - 140 + Math.random() * 140)
