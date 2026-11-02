@@ -18,7 +18,8 @@
 		{ href: resolve('/'), label: 'Home' },
 		{ href: resolve('/projects'), label: 'Projects' },
 		{ href: resolve('/info'), label: 'Info' },
-		{ href: resolve('/contact'), label: 'Contact' }
+		{ href: resolve('/contact'), label: 'Contact' },
+		{ href: resolve('/index.md'), label: 'index.md' }
 	];
 
 	onMount(() => {

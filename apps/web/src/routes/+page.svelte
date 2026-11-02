@@ -25,7 +25,12 @@
 						'I’m a Digital Designer & Frontend Developer based in Lecco, Italy 🇮🇹'}
 				/>
 			</h1>
-
+			<a
+				data-enter
+				href={resolve('/index.md')}
+				class="text-sm whitespace-nowrap text-foreground-1 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
+				><ScrambleLinkText text="index.md" /></a
+			>
 		</div>
 
 		<div data-enter class="py-8 md:py-12 xl:py-14">
