@@ -111,17 +111,46 @@
 
 <style>
 	.theme-switch {
+		/* Custom charcoal tones preserve the tuned dark appearance. */
+		--switch-track: light-dark(var(--color-zinc-100), #151515);
+		--switch-thumb-top: light-dark(var(--color-white), #222222);
+		--switch-thumb-bottom: light-dark(var(--color-zinc-100), #1c1c1c);
+		--switch-track-shadow: light-dark(
+			color-mix(in srgb, var(--color-black) 10%, transparent),
+			color-mix(in srgb, var(--color-black) 50%, transparent)
+		);
+		--switch-track-highlight: light-dark(
+			color-mix(in srgb, var(--color-white) 10%, transparent),
+			color-mix(in srgb, var(--color-white) 1%, transparent)
+		);
+		--switch-track-rim: light-dark(
+			color-mix(in srgb, var(--color-white) 0%, transparent),
+			color-mix(in srgb, var(--color-white) 10%, transparent)
+		);
+		--switch-thumb-shadow: light-dark(
+			color-mix(in srgb, var(--color-black) 18%, transparent),
+			color-mix(in srgb, var(--color-black) 35%, transparent)
+		);
+		--switch-thumb-highlight: light-dark(
+			color-mix(in srgb, var(--color-white) 90%, transparent),
+			color-mix(in srgb, var(--color-white) 10%, transparent)
+		);
+		--switch-thumb-shade: light-dark(
+			color-mix(in srgb, var(--color-black) 4%, transparent),
+			color-mix(in srgb, var(--color-black) 15%, transparent)
+		);
+
 		position: relative;
 		width: 68px;
 		height: 36px;
 		flex-shrink: 0;
 		border-radius: 999px;
 		border: 0;
-		background: light-dark(var(--color-zinc-100), var(--color-zinc-800));
+		background: var(--switch-track);
 		box-shadow:
-			inset 1px 2px 4px light-dark(rgb(0 0 0 / 10%), rgb(0 0 0 / 55%)),
-			inset -1px -2px 4px light-dark(rgb(255 255 255 / 10%), rgb(255 255 255 / 7%)),
-			0 1px 0 light-dark(transparent, rgb(255 255 255 / 9%));
+			inset 1px 0 8px var(--switch-track-shadow),
+			inset 11px -5px 14px var(--switch-track-highlight),
+			0 -1px 0 var(--switch-track-rim);
 		cursor: pointer;
 	}
 	svg {
@@ -147,16 +176,12 @@
 		width: 30px;
 		height: 30px;
 		border-radius: 50%;
-		background: linear-gradient(
-			145deg,
-			light-dark(var(--color-white), var(--color-zinc-800)),
-			light-dark(var(--color-zinc-100), var(--color-zinc-800)) 65%
-		);
+		background: linear-gradient(145deg, var(--switch-thumb-top), var(--switch-thumb-bottom) 65%);
 		border: 0;
 		box-shadow:
-			0 2px 4px light-dark(rgb(0 0 0 / 18%), rgb(0 0 0 / 35%)),
-			inset 0 1px 1px light-dark(rgb(255 255 255 / 90%), rgb(255 255 255 / 10%)),
-			inset 0 -1px 2px light-dark(rgb(0 0 0 / 4%), rgb(0 0 0 / 15%));
+			0 1px 4px var(--switch-thumb-shadow),
+			inset 0 0 1px var(--switch-thumb-highlight),
+			inset 0 -1px 2px var(--switch-thumb-shade);
 		transition: transform 200ms var(--motion-ease-interactive);
 	}
 	:global(html[data-theme-transition]) .thumb {
