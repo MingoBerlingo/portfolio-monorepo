@@ -31,6 +31,24 @@ it('expands the new theme in a circle centered on the switch', async () => {
 	mockMotion(false);
 	document.documentElement.dataset.theme = 'light';
 	const animate = vi.spyOn(document.documentElement, 'animate');
+	const restartedFades: string[] = [];
+	const observer = new MutationObserver(() => {
+		if (!document.documentElement.dataset.themeTransition) {
+			for (const animation of document.getAnimations()) {
+				if (
+					animation instanceof CSSAnimation &&
+					animation.playState === 'running' &&
+					animation.animationName.includes('view-transition-fade')
+				) {
+					restartedFades.push(animation.animationName);
+				}
+			}
+		}
+	});
+	observer.observe(document.documentElement, {
+		attributes: true,
+		attributeFilter: ['data-theme-transition']
+	});
 	render(ThemeSwitch);
 	const button = document.querySelector<HTMLButtonElement>('[role="switch"]')!;
 	const bounds = button.getBoundingClientRect();
@@ -45,4 +63,6 @@ it('expands the new theme in a circle centered on the switch', async () => {
 	});
 	expect(options).toMatchObject({ pseudoElement: '::view-transition-new(root)', duration: 450 });
 	await expect.poll(() => document.documentElement.dataset.themeTransition).toBeUndefined();
+	observer.disconnect();
+	expect(restartedFades).toEqual([]);
 });

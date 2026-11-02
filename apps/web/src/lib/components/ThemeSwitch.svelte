@@ -56,6 +56,8 @@
 					pseudoElement: '::view-transition-new(root)'
 				}
 			).finished;
+			// Keep UA fades disabled until the snapshot overlay has been removed.
+			await transition.finished;
 		} catch {
 			/* A skipped snapshot needs no animation fallback. */
 		} finally {
@@ -101,7 +103,7 @@
 		height: 36px;
 		flex-shrink: 0;
 		border-radius: 999px;
-		border: 1px solid color-mix(in srgb, var(--color-foreground-1) 8%, transparent);
+		border: 0;
 		background: light-dark(var(--color-zinc-100), var(--color-zinc-900));
 		box-shadow:
 			inset 2px 3px 6px rgb(0 0 0 / 18%),
@@ -110,7 +112,7 @@
 	}
 	svg {
 		position: absolute;
-		top: 9px;
+		top: 10px;
 		width: 16px;
 		height: 16px;
 		color: var(--color-foreground-2);
@@ -126,18 +128,18 @@
 	}
 	.thumb {
 		position: absolute;
-		top: 2px;
-		left: 2px;
+		top: 3px;
+		left: 3px;
 		width: 30px;
 		height: 30px;
 		border-radius: 50%;
 		background: var(--color-zinc-50);
-		border: 3px solid var(--color-zinc-50);
-		box-shadow:
-			2px 3px 5px rgb(0 0 0 / 20%),
-			inset 1px 2px 3px rgb(0 0 0 / 9%),
-			inset -1px -1px 2px var(--color-white);
+		border: 0;
+		box-shadow: none;
 		transition: transform 200ms var(--motion-ease-interactive);
+	}
+	:global(html[data-theme-transition]) .thumb {
+		transition: none;
 	}
 	.theme-switch[aria-checked='true'] .thumb {
 		transform: translateX(32px);
