@@ -117,3 +117,25 @@ it('lets mouse movement push a sleeping chip without a click', async () => {
 	advance(360);
 	expect(frames.size).toBe(0);
 });
+
+it('preserves chip rotation and size on a resize instead of spawning a new pile', async () => {
+	mockMotion(false);
+	vi.spyOn(document, 'hidden', 'get').mockReturnValue(false);
+	const random = vi.spyOn(Math, 'random').mockReturnValue(0.5);
+	root = document.createElement('ul');
+	root.style.cssText = 'width:600px;height:300px;position:relative;margin:0;padding:0';
+	root.innerHTML =
+		'<li style="position:absolute;display:inline-block"><button style="width:100px;height:40px">Svelte</button></li>';
+	document.body.append(root);
+	cleanup = (chipPhysics(root, true) as { destroy: () => void }).destroy;
+	await vi.waitFor(() => expect(root.dataset.physics).toBe('true'), { timeout: 5000 });
+	const item = root.querySelector('li')!;
+	const initialTransform = item.style.transform;
+	const rotation = initialTransform.match(/rotate\(([^)]+)\)/)?.[1];
+	const initialWidth = item.style.width;
+	random.mockReturnValue(0.1);
+	root.style.width = '800px';
+	await vi.waitFor(() => expect(item.style.transform).not.toBe(initialTransform));
+	expect(item.style.transform.match(/rotate\(([^)]+)\)/)?.[1]).toBe(rotation);
+	expect(item.style.width).toBe(initialWidth);
+});

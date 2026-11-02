@@ -9,6 +9,7 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 	let matter: typeof import('matter-js') | undefined;
 	let engine: Engine | undefined;
 	let bodies: Body[] = [];
+	let walls: Body[] = [];
 	let sizes: { width: number; height: number }[] = [];
 	let drag: Constraint | undefined;
 	const host = node.closest('footer') ?? node;
@@ -97,6 +98,7 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 		}
 		engine = undefined;
 		bodies = [];
+		walls = [];
 		delete node.dataset.physics;
 		delete node.dataset.physicsPending;
 		buttons.forEach((button) => {
@@ -149,6 +151,18 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 		if (!frame && active && !motion.matches && !document.hidden && engine)
 			frame = requestAnimationFrame(tick);
 	};
+	const createWalls = () => [
+		matter!.Bodies.rectangle(
+			width / 2,
+			floorY + (height - floorY + 50) / 2,
+			width + 100,
+			height - floorY + 50,
+			{ isStatic: true }
+		),
+		matter!.Bodies.rectangle(-25, height / 2, 50, height + 200, { isStatic: true }),
+		matter!.Bodies.rectangle(width + 25, height / 2, 50, height + 200, { isStatic: true }),
+		matter!.Bodies.rectangle(width / 2, -25, width + 100, 50, { isStatic: true })
+	];
 	const build = () => {
 		if (!matter || !items.length) return;
 		reset();
@@ -159,7 +173,7 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 		const footer = node.closest('footer');
 		const floor = footer?.querySelector<HTMLElement>('[data-chip-floor]');
 		const start = footer?.querySelector<HTMLElement>('[data-chip-start]');
-		floorY = floor ? Math.min(height, floor.getBoundingClientRect().top - origin - 12) : height;
+		floorY = floor ? Math.min(height, floor.getBoundingClientRect().top - origin) : height;
 		const spawnY = start ? Math.max(0, start.getBoundingClientRect().top - origin) : 0;
 		sizes = items.map((item) => ({
 			width: Math.min(Math.ceil(item.getBoundingClientRect().width) + 1, width - 16),
@@ -167,18 +181,7 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 		}));
 		engine = matter.Engine.create({ enableSleeping: true });
 		engine.gravity.y = 0.8;
-		const walls = [
-			matter.Bodies.rectangle(
-				width / 2,
-				floorY + (height - floorY + 50) / 2,
-				width + 100,
-				height - floorY + 50,
-				{ isStatic: true }
-			),
-			matter.Bodies.rectangle(-25, height / 2, 50, height + 200, { isStatic: true }),
-			matter.Bodies.rectangle(width + 25, height / 2, 50, height + 200, { isStatic: true }),
-			matter.Bodies.rectangle(width / 2, -25, width + 100, 50, { isStatic: true })
-		];
+		walls = createWalls();
 		// Spread starting positions evenly across the full width; keep the
 		// rotations and heights varied so the settled pile still feels natural.
 		const spacing = width / items.length;
@@ -343,13 +346,55 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 		matter.Body.setVelocity(bodies[index], { x: index % 2 ? 3 : -3, y: -7 });
 		wake();
 	};
+	const resize = () => {
+		if (!engine || !matter || !node.clientWidth || !node.clientHeight) return;
+		const previousWidth = width;
+		const previousFloor = floorY;
+		stop();
+		release();
+		clearMouse(false);
+		width = node.clientWidth;
+		height = node.clientHeight;
+		const floor = node.closest('footer')?.querySelector<HTMLElement>('[data-chip-floor]');
+		floorY = floor
+			? Math.min(height, floor.getBoundingClientRect().top - node.getBoundingClientRect().top)
+			: height;
+		matter.Composite.remove(engine.world, walls);
+		walls = createWalls();
+		matter.Composite.add(engine.world, walls);
+		bodies.forEach((body, index) => {
+			const oldSize = sizes[index];
+			items[index].style.width = '';
+			const size = {
+				width: Math.min(buttons[index].offsetWidth + 1, width - 16),
+				height: buttons[index].offsetHeight
+			};
+			items[index].style.width = `${size.width}px`;
+			if (size.width !== oldSize.width || size.height !== oldSize.height) {
+				matter!.Body.scale(body, size.width / oldSize.width, size.height / oldSize.height);
+			}
+			sizes[index] = size;
+			// Keep each chip's rotation and relative horizontal position, anchored to the floor.
+			matter!.Body.setPosition(body, {
+				x: (body.position.x * width) / previousWidth,
+				y: body.position.y + floorY - previousFloor
+			});
+			matter!.Body.setVelocity(body, { x: 0, y: 0 });
+			matter!.Body.setAngularVelocity(body, 0);
+			matter!.Sleeping.set(body, true);
+		});
+		containBodies();
+		draw();
+	};
 	const observer = new ResizeObserver(() => {
 		if (
 			engine &&
 			(Math.abs(node.clientWidth - width) > 1 || Math.abs(node.clientHeight - height) > 1)
 		)
-			build();
+			resize();
 	});
+	const sizeBreakpoints = [640, 1280].map((width) => window.matchMedia(`(min-width: ${width}px)`));
+	sizeBreakpoints.forEach((query) => query.addEventListener('change', resize));
 	observer.observe(node);
 	node.addEventListener('pointerdown', down);
 	node.addEventListener('pointermove', move);
@@ -374,6 +419,7 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 			disposed = true;
 			reset();
 			observer.disconnect();
+			sizeBreakpoints.forEach((query) => query.removeEventListener('change', resize));
 			node.removeEventListener('pointerdown', down);
 			node.removeEventListener('pointermove', move);
 			node.removeEventListener('pointerup', up);

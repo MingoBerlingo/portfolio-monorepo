@@ -63,12 +63,12 @@
 	button {
 		display: block;
 		max-width: min(360px, 80vw);
-		padding: 12px 24px;
+		padding: 10px 20px;
 		border-radius: 9999px;
 		background: var(--color-foreground-1);
 		color: var(--color-background);
 		font-family: var(--font-display);
-		font-size: clamp(1.125rem, 2vw, 1.5rem);
+		font-size: 1rem;
 		font-weight: 500;
 		line-height: 1.2;
 		white-space: nowrap;
@@ -94,6 +94,17 @@
 	}
 	.chip-scene:global([data-physics='true']) button:active {
 		cursor: grabbing;
+	}
+	@media (min-width: 640px) {
+		button {
+			padding: 14px 28px;
+			font-size: 1.25rem;
+		}
+	}
+	@media (min-width: 1280px) {
+		button {
+			font-size: 1.875rem;
+		}
 	}
 	@media (min-width: 768px) {
 		.chip-scene {
