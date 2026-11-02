@@ -20,7 +20,7 @@
 
 	let {
 		frames = defaultFrames,
-		interval = 3000,
+		interval = 2400,
 		frameDelay = 20,
 		ariaLabel = 'Animated ASCII art showcasing design skills',
 		class: className
@@ -186,7 +186,7 @@
 					if (!entered) {
 						entered = true;
 						lines = blankFrame();
-						morph(frames[currentIndex], 500);
+						morph(frames[currentIndex], 150);
 					}
 					cycleInterval = setInterval(morphNextFrame, interval);
 				}

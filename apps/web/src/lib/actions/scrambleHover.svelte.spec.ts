@@ -23,7 +23,7 @@ function mount() {
 	return label;
 }
 
-it('preserves link name, destination and width, then restores immediately on pointer leave', async () => {
+it('preserves link name, destination and width, finishes after pointer leave', async () => {
 	mockMotion(false);
 	const label = mount();
 	const width = label.getBoundingClientRect().width;
@@ -36,7 +36,8 @@ it('preserves link name, destination and width, then restores immediately on poi
 		.toBeInTheDocument();
 	expect(anchor.href).toBe('https://example.com/projects');
 	anchor.dispatchEvent(new PointerEvent('pointerleave', { pointerType: 'mouse' }));
-	expect(label.dataset.active).toBeUndefined();
+	expect(label.dataset.active).toBe('true');
+	await vi.waitFor(() => expect(label.dataset.active).toBeUndefined());
 });
 
 it('does not scramble touch or reduced-motion interactions and cancels when keyboard focus arrives', () => {
@@ -108,5 +109,6 @@ it('keeps the visible space between separately formatted pieces of a CMS link', 
 		result.destroy();
 		root.remove();
 	};
-	expect(anchor.getBoundingClientRect().width).toBe(width);
+	// Inline-block boundaries can round by a fraction of a CSS pixel.
+	expect(anchor.getBoundingClientRect().width).toBeCloseTo(width, 1);
 });

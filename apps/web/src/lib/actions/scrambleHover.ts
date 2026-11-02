@@ -52,7 +52,6 @@ export const scrambleHover: Action<HTMLElement> = (node) => {
 		update(started);
 	};
 	anchor.addEventListener('pointerenter', start);
-	anchor.addEventListener('pointerleave', reset);
 	anchor.addEventListener('pointerdown', reset);
 	anchor.addEventListener('focus', reset);
 	motion.addEventListener('change', reset);
@@ -61,7 +60,6 @@ export const scrambleHover: Action<HTMLElement> = (node) => {
 		destroy() {
 			reset();
 			anchor.removeEventListener('pointerenter', start);
-			anchor.removeEventListener('pointerleave', reset);
 			anchor.removeEventListener('pointerdown', reset);
 			anchor.removeEventListener('focus', reset);
 			motion.removeEventListener('change', reset);
