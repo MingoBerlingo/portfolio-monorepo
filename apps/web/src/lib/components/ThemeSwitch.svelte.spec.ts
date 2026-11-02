@@ -52,8 +52,13 @@ it('expands the new theme in a circle centered on the switch', async () => {
 	render(ThemeSwitch);
 	const button = document.querySelector<HTMLButtonElement>('[role="switch"]')!;
 	const bounds = button.getBoundingClientRect();
+	const slide = vi.spyOn(button.querySelector<HTMLElement>('.thumb')!, 'animate');
 	await page.getByRole('switch', { name: 'Dark theme' }).click();
 	await expect.poll(() => animate.mock.calls.length).toBe(1);
+	expect(slide).toHaveBeenCalledWith(
+		{ transform: ['translateX(0px)', 'translateX(32px)'] },
+		expect.objectContaining({ duration: 180 })
+	);
 	const [keyframes, options] = animate.mock.calls[0];
 	expect(keyframes).toEqual({
 		clipPath: [

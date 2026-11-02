@@ -38,12 +38,25 @@
 			await apply();
 			return;
 		}
-		const bounds = (event.currentTarget as HTMLButtonElement).getBoundingClientRect();
+		const button = event.currentTarget as HTMLButtonElement;
+		const bounds = button.getBoundingClientRect();
 		const x = bounds.left + bounds.width / 2;
 		const y = bounds.top + bounds.height / 2;
 		const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
 		root.dataset.themeTransition = 'true';
 		try {
+			// Move the live knob before the page snapshot freezes its appearance.
+			dark = next;
+			await tick();
+			const knob = button.querySelector<HTMLElement>('.thumb')!;
+			await knob.animate(
+				{
+					transform: next
+						? ['translateX(0px)', 'translateX(32px)']
+						: ['translateX(32px)', 'translateX(0px)']
+				},
+				{ duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+			).finished;
 			const transition = document.startViewTransition(apply);
 			// A skipped transition still applies the selected theme.
 			void transition.finished.catch(() => {});
@@ -106,8 +119,8 @@
 		border: 0;
 		background: light-dark(var(--color-zinc-100), var(--color-zinc-900));
 		box-shadow:
-			inset 2px 3px 6px rgb(0 0 0 / 18%),
-			inset -2px -2px 5px rgb(255 255 255 / 14%);
+			inset 1px 2px 4px rgb(0 0 0 / 10%),
+			inset -1px -1px 3px rgb(255 255 255 / 10%);
 		cursor: pointer;
 	}
 	svg {
@@ -135,7 +148,7 @@
 		border-radius: 50%;
 		background: var(--color-zinc-50);
 		border: 0;
-		box-shadow: none;
+		box-shadow: 0 2px 4px rgb(0 0 0 / 18%);
 		transition: transform 200ms var(--motion-ease-interactive);
 	}
 	:global(html[data-theme-transition]) .thumb {
