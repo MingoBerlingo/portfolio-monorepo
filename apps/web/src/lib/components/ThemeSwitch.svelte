@@ -1,3 +1,9 @@
+<script module lang="ts">
+	let activeTransition: ViewTransition | undefined;
+	let revealAnimation: Animation | undefined;
+	let revision = 0;
+</script>
+
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	let dark = $state(false);
@@ -22,10 +28,13 @@
 	});
 	async function toggle(event: MouseEvent) {
 		const root = document.documentElement;
-		if (root.dataset.themeTransition) return;
+		const current = ++revision;
+		activeTransition?.skipTransition();
+		revealAnimation?.cancel();
 		const next = !dark;
+		dark = next;
 		const apply = async () => {
-			dark = next;
+			if (current !== revision) return;
 			root.dataset.theme = next ? 'dark' : 'light';
 			try {
 				localStorage.setItem('theme', root.dataset.theme);
@@ -36,6 +45,7 @@
 		};
 		if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) {
 			await apply();
+			delete root.dataset.themeTransition;
 			return;
 		}
 		const button = event.currentTarget as HTMLButtonElement;
@@ -44,37 +54,34 @@
 		const y = bounds.top + bounds.height / 2;
 		const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
 		root.dataset.themeTransition = 'true';
+		let transition: ViewTransition | undefined;
 		try {
-			// Move the live knob before the page snapshot freezes its appearance.
-			dark = next;
-			await tick();
-			const knob = button.querySelector<HTMLElement>('.thumb')!;
-			await knob.animate(
-				{
-					transform: next
-						? ['translateX(0px)', 'translateX(32px)']
-						: ['translateX(32px)', 'translateX(0px)']
-				},
-				{ duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
-			).finished;
-			const transition = document.startViewTransition(apply);
+			transition = document.startViewTransition(apply);
+			activeTransition = transition;
 			// A skipped transition still applies the selected theme.
 			void transition.finished.catch(() => {});
 			await transition.ready;
-			await root.animate(
+			if (current !== revision) return;
+			revealAnimation = root.animate(
 				{ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
 				{
 					duration: 450,
 					easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
 					pseudoElement: '::view-transition-new(root)'
 				}
-			).finished;
+			);
+			await revealAnimation.finished;
 			// Keep UA fades disabled until the snapshot overlay has been removed.
 			await transition.finished;
 		} catch {
 			/* A skipped snapshot needs no animation fallback. */
 		} finally {
-			delete root.dataset.themeTransition;
+			await transition?.finished.catch(() => {});
+			if (current === revision) {
+				delete root.dataset.themeTransition;
+				activeTransition = undefined;
+				revealAnimation = undefined;
+			}
 		}
 	}
 </script>
@@ -87,116 +94,60 @@
 	aria-checked={dark}
 	onclick={toggle}
 >
-	<svg
-		class="sun"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		stroke-width="1.7"
-		aria-hidden="true"
-		><circle cx="12" cy="12" r="4" /><path
-			d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
-		/></svg
-	>
-	<svg
-		class="moon"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		stroke-width="1.7"
-		aria-hidden="true"><path d="M20.5 14A9 9 0 0 1 10 3.5 9 9 0 1 0 20.5 14Z" /></svg
-	>
 	<span class="thumb" aria-hidden="true"></span>
 </button>
 
 <style>
 	.theme-switch {
-		/* Custom charcoal tones preserve the tuned dark appearance. */
-		--switch-track: light-dark(var(--color-zinc-100), #151515);
-		--switch-thumb-top: light-dark(var(--color-white), #222222);
-		--switch-thumb-bottom: light-dark(var(--color-zinc-100), #1c1c1c);
-		--switch-track-shadow: light-dark(
-			color-mix(in srgb, var(--color-black) 10%, transparent),
-			color-mix(in srgb, var(--color-black) 50%, transparent)
-		);
-		--switch-track-highlight: light-dark(
-			color-mix(in srgb, var(--color-white) 10%, transparent),
-			color-mix(in srgb, var(--color-white) 1%, transparent)
-		);
-		--switch-track-rim: light-dark(
-			color-mix(in srgb, var(--color-white) 0%, transparent),
-			color-mix(in srgb, var(--color-white) 10%, transparent)
-		);
-		--switch-thumb-shadow: light-dark(
-			color-mix(in srgb, var(--color-black) 18%, transparent),
-			color-mix(in srgb, var(--color-black) 35%, transparent)
-		);
-		--switch-thumb-highlight: light-dark(
-			color-mix(in srgb, var(--color-white) 90%, transparent),
-			color-mix(in srgb, var(--color-white) 10%, transparent)
-		);
-		--switch-thumb-shade: light-dark(
-			color-mix(in srgb, var(--color-black) 4%, transparent),
-			color-mix(in srgb, var(--color-black) 15%, transparent)
-		);
-
+		--rocker-face: light-dark(var(--color-zinc-50), var(--color-zinc-800));
+		--rocker-shade: light-dark(var(--color-zinc-100), #222222);
 		position: relative;
-		width: 68px;
-		height: 36px;
+		width: 52px;
+		height: 28px;
 		flex-shrink: 0;
-		border-radius: 999px;
 		border: 0;
-		background: var(--switch-track);
+		border-radius: 11px;
+		background: light-dark(var(--color-zinc-200), var(--color-zinc-950));
 		box-shadow:
-			inset 1px 0 8px var(--switch-track-shadow),
-			inset 11px -5px 14px var(--switch-track-highlight),
-			0 -1px 0 var(--switch-track-rim);
+			inset 0 1px 3px light-dark(rgb(0 0 0 / 12%), rgb(0 0 0 / 50%)),
+			0 1px 1px light-dark(rgb(255 255 255 / 90%), rgb(255 255 255 / 18%));
 		cursor: pointer;
-	}
-	svg {
-		position: absolute;
-		top: 10px;
-		width: 16px;
-		height: 16px;
-		color: var(--color-foreground-2);
-		filter: drop-shadow(0 1px 0 rgb(255 255 255 / 18%));
-		z-index: 2;
-		pointer-events: none;
-	}
-	.sun {
-		left: 10px;
-	}
-	.moon {
-		right: 10px;
 	}
 	.thumb {
 		position: absolute;
-		top: 3px;
-		left: 3px;
-		width: 30px;
-		height: 30px;
-		border-radius: 50%;
-		background: linear-gradient(145deg, var(--switch-thumb-top), var(--switch-thumb-bottom) 65%);
-		border: 0;
+		inset: 2px;
+		border-radius: 9px;
+		background: linear-gradient(90deg, var(--rocker-face) 0 49.5%, var(--rocker-shade) 50% 100%);
 		box-shadow:
-			0 1px 4px var(--switch-thumb-shadow),
-			inset 0 0 1px var(--switch-thumb-highlight),
-			inset 0 -1px 2px var(--switch-thumb-shade);
-		transition: transform 200ms var(--motion-ease-interactive);
+			-2px 2px 3px light-dark(rgb(0 0 0 / 10%), rgb(0 0 0 / 28%)),
+			inset 0 1px 1px light-dark(rgb(255 255 255 / 80%), rgb(255 255 255 / 18%)),
+			inset 0 -1px 1px light-dark(rgb(0 0 0 / 5%), rgb(0 0 0 / 20%));
+		transform: perspective(160px) rotateY(-16deg);
+		transition:
+			transform 180ms var(--motion-ease-interactive),
+			box-shadow 180ms var(--motion-ease-interactive);
+	}
+	.thumb::after {
+		content: '';
+		position: absolute;
+		inset: 1px auto 1px 50%;
+		width: 1px;
+		background: light-dark(rgb(0 0 0 / 2%), rgb(0 0 0 / 5%));
+	}
+	.theme-switch[aria-checked='true'] .thumb {
+		transform: perspective(160px) rotateY(16deg);
+		box-shadow:
+			2px 2px 3px light-dark(rgb(0 0 0 / 12%), rgb(0 0 0 / 40%)),
+			inset 0 1px 1px light-dark(rgb(255 255 255 / 80%), rgb(255 255 255 / 18%)),
+			inset 0 -1px 1px light-dark(rgb(0 0 0 / 5%), rgb(0 0 0 / 20%));
+		background: linear-gradient(90deg, var(--rocker-shade) 0 49.5%, var(--rocker-face) 50% 100%);
 	}
 	:global(html[data-theme-transition]) .thumb {
 		transition: none;
 	}
-	.theme-switch[aria-checked='true'] .thumb {
-		transform: translateX(32px);
-	}
-	.theme-switch[aria-checked='false'] .sun,
-	.theme-switch[aria-checked='true'] .moon {
-		color: light-dark(var(--color-slate-700), var(--color-zinc-50));
-	}
 	.theme-switch:focus-visible {
 		outline: 2px solid var(--color-primary);
-		outline-offset: 4px;
+		outline-offset: 5px;
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.thumb {

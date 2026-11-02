@@ -348,8 +348,9 @@ body {
 }
 
 /* Reveal the new theme over the old snapshot, from the switch position. */
-html[data-theme-transition]::view-transition-old(root),
-html[data-theme-transition]::view-transition-new(root) {
+/* Keep UA fades disabled even while Chromium tears down the finished snapshot. */
+html::view-transition-old(root),
+html::view-transition-new(root) {
 	animation: none;
 	mix-blend-mode: normal;
 }
@@ -358,4 +359,9 @@ html[data-theme-transition]::view-transition-old(root) {
 }
 html[data-theme-transition]::view-transition-new(root) {
 	z-index: 2;
+}
+
+/* Keep controls clickable while the decorative snapshot is revealing. */
+html[data-theme-transition]::view-transition {
+	pointer-events: none;
 }

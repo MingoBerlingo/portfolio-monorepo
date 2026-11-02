@@ -52,13 +52,8 @@ it('expands the new theme in a circle centered on the switch', async () => {
 	render(ThemeSwitch);
 	const button = document.querySelector<HTMLButtonElement>('[role="switch"]')!;
 	const bounds = button.getBoundingClientRect();
-	const slide = vi.spyOn(button.querySelector<HTMLElement>('.thumb')!, 'animate');
 	await page.getByRole('switch', { name: 'Dark theme' }).click();
 	await expect.poll(() => animate.mock.calls.length).toBe(1);
-	expect(slide).toHaveBeenCalledWith(
-		{ transform: ['translateX(0px)', 'translateX(32px)'] },
-		expect.objectContaining({ duration: 180 })
-	);
 	const [keyframes, options] = animate.mock.calls[0];
 	expect(keyframes).toEqual({
 		clipPath: [
@@ -70,4 +65,18 @@ it('expands the new theme in a circle centered on the switch', async () => {
 	await expect.poll(() => document.documentElement.dataset.themeTransition).toBeUndefined();
 	observer.disconnect();
 	expect(restartedFades).toEqual([]);
+});
+
+it('responds to rapid clicks without waiting for the previous reveal', async () => {
+	mockMotion(false);
+	document.documentElement.dataset.theme = 'light';
+	render(ThemeSwitch);
+	const button = document.querySelector<HTMLButtonElement>('[role="switch"]')!;
+	button.click();
+	await expect.poll(() => document.documentElement.dataset.theme).toBe('dark');
+	// This second click happens while the first 450ms reveal is active.
+	button.click();
+	await expect.poll(() => document.documentElement.dataset.theme).toBe('light');
+	await expect.poll(() => document.documentElement.dataset.themeTransition).toBeUndefined();
+	expect(localStorage.getItem('theme')).toBe('light');
 });
