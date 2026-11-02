@@ -117,10 +117,10 @@
 		flex-shrink: 0;
 		border-radius: 999px;
 		border: 0;
-		background: light-dark(var(--color-zinc-100), var(--color-zinc-900));
+		background: light-dark(var(--color-zinc-100), var(--color-zinc-950));
 		box-shadow:
-			inset 1px 2px 4px rgb(0 0 0 / 10%),
-			inset -1px -1px 3px rgb(255 255 255 / 10%);
+			inset 1px 2px 4px light-dark(rgb(0 0 0 / 10%), rgb(0 0 0 / 45%)),
+			inset -1px -1px 3px light-dark(rgb(255 255 255 / 10%), rgb(255 255 255 / 24%));
 		cursor: pointer;
 	}
 	svg {
