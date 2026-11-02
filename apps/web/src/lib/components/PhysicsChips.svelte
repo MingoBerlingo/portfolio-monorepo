@@ -79,6 +79,9 @@
 		outline: 2px solid var(--color-primary);
 		outline-offset: 4px;
 	}
+	.chip-scene:global([data-physics-pending='true']) li {
+		visibility: hidden;
+	}
 	.chip-scene:global([data-physics='true']) li {
 		position: absolute;
 		left: 0;

@@ -11,6 +11,11 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 	let bodies: Body[] = [];
 	let sizes: { width: number; height: number }[] = [];
 	let drag: Constraint | undefined;
+	const host = node.closest('footer') ?? node;
+	const mouseRadius = 28;
+	let mouseBody: Body | undefined;
+	let mouseTarget: { x: number; y: number } | undefined;
+	let mouseChanged = false;
 	let pointer: number | undefined;
 	let frame = 0;
 	let disposed = false;
@@ -34,9 +39,58 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 			node.releasePointerCapture(pointer);
 		pointer = undefined;
 	};
+	const clearMouse = (resume = true) => {
+		const hadMouse = !!mouseTarget;
+		mouseTarget = undefined;
+		mouseChanged = false;
+		if (mouseBody && matter) {
+			matter.Body.setPosition(mouseBody, { x: -1000, y: -1000 });
+			matter.Body.setVelocity(mouseBody, { x: 0, y: 0 });
+		}
+		if (hadMouse && matter) {
+			bodies.forEach((body) => matter!.Sleeping.set(body, false));
+			if (resume) wake();
+		}
+	};
+	const advance = (delta: number) => {
+		if (!engine || !matter) return;
+		if (!mouseBody || !mouseTarget || drag) {
+			matter.Engine.update(engine, delta);
+			return;
+		}
+		const from = { ...mouseBody.position };
+		const target = { ...mouseTarget };
+		const distance = Math.hypot(target.x - from.x, target.y - from.y);
+		const disturb = mouseChanged || distance > 0.1;
+		// Sweep the invisible collider through the pointer's path, so a fast
+		// movement pushes chips instead of teleporting through them.
+		const steps = Math.min(12, Math.max(1, Math.ceil(distance / (mouseRadius * 0.6))));
+		for (let step = 1; step <= steps; step++) {
+			const position = {
+				x: from.x + ((target.x - from.x) * step) / steps,
+				y: from.y + ((target.y - from.y) * step) / steps
+			};
+			const velocity = {
+				x: position.x - mouseBody.position.x,
+				y: position.y - mouseBody.position.y
+			};
+			matter.Body.setPosition(mouseBody, position);
+			matter.Body.setVelocity(mouseBody, velocity);
+			for (const body of disturb ? bodies : []) {
+				const dx = Math.max(body.bounds.min.x - position.x, 0, position.x - body.bounds.max.x);
+				const dy = Math.max(body.bounds.min.y - position.y, 0, position.y - body.bounds.max.y);
+				if (dx * dx + dy * dy < (mouseRadius + 8) ** 2) matter.Sleeping.set(body, false);
+			}
+			matter.Engine.update(engine, delta / steps);
+		}
+		matter.Body.setVelocity(mouseBody, { x: 0, y: 0 });
+		mouseChanged = false;
+	};
 	const reset = () => {
 		stop();
 		release();
+		clearMouse(false);
+		mouseBody = undefined;
 		if (engine && matter) {
 			matter.Composite.clear(engine.world, false);
 			matter.Engine.clear(engine);
@@ -44,6 +98,7 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 		engine = undefined;
 		bodies = [];
 		delete node.dataset.physics;
+		delete node.dataset.physicsPending;
 		buttons.forEach((button) => {
 			button.disabled = true;
 		});
@@ -64,7 +119,7 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 		accumulated += last ? Math.min(now - last, 50) : 1000 / 60;
 		last = now;
 		while (accumulated >= 1000 / 60) {
-			matter.Engine.update(engine, 1000 / 60);
+			advance(1000 / 60);
 			accumulated -= 1000 / 60;
 		}
 		// Keep fast throws and dragging inside the visible world, even if a
@@ -120,33 +175,51 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 			matter.Bodies.rectangle(width + 25, height / 2, 50, height + 200, { isStatic: true }),
 			matter.Bodies.rectangle(width / 2, -25, width + 100, 50, { isStatic: true })
 		];
-		const columns = width < 600 ? 2 : 4;
+		// A concentrated, irregular shower creates a pile instead of columns.
+		const pileCenter = width < 600 ? width * 0.5 : width * 0.78;
+		const spread = Math.min(width * 0.58, 340);
 		bodies = items.map((item, index) => {
 			const size = sizes[index];
 			item.style.width = `${size.width}px`;
-			const x = Math.min(
-				width - size.width / 2 - 4,
-				Math.max(size.width / 2 + 4, (((index % columns) + 0.5) * width) / columns)
+			let angle = (Math.random() - 0.5) * Math.PI * 2;
+			if (
+				Math.abs(Math.sin(angle)) * size.width + Math.abs(Math.cos(angle)) * size.height >
+				floorY - 4
+			)
+				angle = 0;
+			const halfWidth =
+				(Math.abs(Math.cos(angle)) * size.width + Math.abs(Math.sin(angle)) * size.height) / 2;
+			const halfHeight =
+				(Math.abs(Math.sin(angle)) * size.width + Math.abs(Math.cos(angle)) * size.height) / 2;
+			const x = Math.max(
+				halfWidth + 2,
+				Math.min(width - halfWidth - 2, pileCenter + (Math.random() - 0.5) * spread)
 			);
-			const body = matter!.Bodies.rectangle(
-				x,
-				Math.min(floorY - size.height / 2, spawnY + 28 + Math.floor(index / columns) * 50),
-				size.width,
-				size.height,
-				{
-					chamfer: { radius: Math.min(size.height / 2, 18) },
-					restitution: 0.45,
-					friction: 0.35,
-					frictionAir: 0.025,
-					angle: ((index % 3) - 1) * 0.08,
-					sleepThreshold: 50
-				}
+			const y = Math.max(
+				halfHeight + 2,
+				Math.min(floorY - halfHeight - 2, spawnY - 140 + Math.random() * 140)
 			);
-			matter!.Body.setVelocity(body, { x: index % 2 ? 1.2 : -1.2, y: 0 });
+			const body = matter!.Bodies.rectangle(x, y, size.width, size.height, {
+				chamfer: { radius: Math.min(size.height / 2, 18) },
+				restitution: 0.3,
+				friction: 0.6,
+				frictionStatic: 1,
+				frictionAir: 0.018,
+				angle,
+				sleepThreshold: 50
+			});
+			matter!.Body.setVelocity(body, { x: (Math.random() - 0.5) * 1.8, y: Math.random() });
+			matter!.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.08);
 			return body;
 		});
-		matter.Composite.add(engine.world, [...walls, ...bodies]);
+		mouseBody = matter.Bodies.circle(-1000, -1000, mouseRadius, {
+			isStatic: true,
+			friction: 0.2,
+			restitution: 0.45
+		});
+		matter.Composite.add(engine.world, [...walls, ...bodies, mouseBody]);
 		node.dataset.physics = 'true';
+		delete node.dataset.physicsPending;
 		buttons.forEach((button) => {
 			button.disabled = false;
 		});
@@ -158,7 +231,9 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 			reset();
 			return;
 		}
+		if (!engine) node.dataset.physicsPending = 'true';
 		if (!active || document.hidden) {
+			clearMouse(false);
 			stop();
 			release();
 			return;
@@ -197,6 +272,7 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 		const button = (event.target as Element).closest('button');
 		const index = buttons.indexOf(button as HTMLButtonElement);
 		if (index < 0) return;
+		clearMouse(false);
 		const body = bodies[index];
 		const location = point(event);
 		matter.Sleeping.set(body, false);
@@ -225,6 +301,29 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 			wake();
 		}
 	};
+	const hoverMove = (event: PointerEvent) => {
+		if (
+			event.pointerType !== 'mouse' ||
+			drag ||
+			!active ||
+			motion.matches ||
+			!engine ||
+			!matter ||
+			!mouseBody
+		)
+			return;
+		const rect = node.getBoundingClientRect();
+		const next = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+		if (next.x < 0 || next.x > width || next.y < 0 || next.y > floorY) {
+			clearMouse();
+			return;
+		}
+		mouseChanged = !mouseTarget || Math.hypot(next.x - mouseTarget.x, next.y - mouseTarget.y) > 0.1;
+		if (!mouseTarget) matter.Body.setPosition(mouseBody, next);
+		mouseTarget = next;
+		wake();
+	};
+	const hoverLeave = () => clearMouse();
 	const keyboardToss = (event: MouseEvent) => {
 		if (event.detail !== 0 || !matter || !engine || motion.matches) return;
 		const index = buttons.indexOf((event.target as Element).closest('button') as HTMLButtonElement);
@@ -247,6 +346,8 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 	node.addEventListener('pointercancel', up);
 	node.addEventListener('lostpointercapture', up);
 	node.addEventListener('click', keyboardToss);
+	host.addEventListener('pointermove', hoverMove);
+	host.addEventListener('pointerleave', hoverLeave);
 	const changed = () => {
 		void sync();
 	};
@@ -268,6 +369,8 @@ export const chipPhysics: Action<HTMLElement, boolean> = (node, active) => {
 			node.removeEventListener('pointercancel', up);
 			node.removeEventListener('lostpointercapture', up);
 			node.removeEventListener('click', keyboardToss);
+			host.removeEventListener('pointermove', hoverMove);
+			host.removeEventListener('pointerleave', hoverLeave);
 			motion.removeEventListener('change', changed);
 			document.removeEventListener('visibilitychange', changed);
 		}

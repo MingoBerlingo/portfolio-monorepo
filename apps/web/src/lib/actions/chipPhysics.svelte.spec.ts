@@ -67,3 +67,50 @@ it('keeps a tossed chip inside the visible scene, including its rotated bounds',
 	expect(chip.top).toBeGreaterThanOrEqual(bounds.top - 1);
 	expect(chip.bottom).toBeLessThanOrEqual(bounds.bottom + 1);
 });
+
+it('lets mouse movement push a sleeping chip without a click', async () => {
+	mockMotion(false);
+	vi.spyOn(document, 'hidden', 'get').mockReturnValue(false);
+	vi.spyOn(Math, 'random').mockReturnValue(0.5);
+	const frames = new Map<number, FrameRequestCallback>();
+	let id = 0;
+	vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+		frames.set(++id, callback);
+		return id;
+	});
+	vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((frame) => {
+		frames.delete(frame);
+	});
+	root = document.createElement('ul');
+	root.style.cssText = 'width:600px;height:300px;position:relative;margin:0;padding:0';
+	root.innerHTML =
+		'<li style="position:absolute;left:0;top:0;display:inline-block"><button style="width:100px;height:40px">Svelte</button></li>';
+	document.body.append(root);
+	cleanup = (chipPhysics(root, true) as { destroy: () => void }).destroy;
+	await vi.waitFor(() => expect(root.dataset.physics).toBe('true'), { timeout: 5000 });
+	let time = performance.now();
+	const advance = (count: number) => {
+		for (let step = 0; step < count; step++) {
+			time += 1000 / 60;
+			const pending = [...frames.values()];
+			frames.clear();
+			pending.forEach((callback) => callback(time));
+		}
+	};
+	advance(240);
+	const item = root.querySelector('li')!;
+	const before = item.style.transform;
+	const rect = item.getBoundingClientRect();
+	root.dispatchEvent(
+		new PointerEvent('pointermove', {
+			pointerType: 'mouse',
+			clientX: rect.left + 8,
+			clientY: rect.top + rect.height / 2,
+			bubbles: true
+		})
+	);
+	advance(20);
+	expect(item.style.transform).not.toBe(before);
+	advance(360);
+	expect(frames.size).toBe(0);
+});
