@@ -15,22 +15,35 @@ vi.mock('@payloadcms/ui', () => ({
     addFieldRow: state.addFieldRow,
     getFields: () => ({ items: { rows: [{ id: 'existing' }] } }),
   }),
-  useListDrawer: () => [
-    ({ onBulkSelect }: { onBulkSelect: (map: Map<string, boolean>) => void }) =>
-      React.createElement(
-        'button',
-        {
-          onClick: () =>
-            onBulkSelect(
-              new Map([
-                ['a', true],
-                ['ignored', false],
-                ['b', true],
-              ]),
+  // Match Payload: its returned drawer component identity depends on filterOptions.
+  useListDrawer: ({ filterOptions }: { filterOptions: unknown }) => [
+    React.useMemo(
+      () =>
+        ({ onBulkSelect }: { onBulkSelect: (map: Map<string, boolean>) => void }) =>
+          React.createElement(
+            'button',
+            {
+              onClick: () =>
+                onBulkSelect(
+                  new Map([
+                    ['a', true],
+                    ['ignored', false],
+                    ['b', true],
+                  ]),
+                ),
+            },
+            React.createElement(
+              React.Fragment,
+              null,
+              'Confirm selection',
+              React.createElement('input', {
+                'aria-label': 'New media alt text',
+                defaultValue: '',
+              }),
             ),
-        },
-        'Confirm selection',
-      ),
+          ),
+      [filterOptions],
+    ),
     null,
     { openDrawer: vi.fn(), closeDrawer: state.closeDrawer },
   ],
@@ -68,6 +81,15 @@ describe('visual media grid editor', () => {
     expect((screen.getByRole('button', { name: 'Full width' }) as HTMLButtonElement).disabled).toBe(
       true,
     )
+  })
+  it('keeps a new media draft mounted when the parent form rerenders', () => {
+    const props = { path: 'items', field: { name: 'items' } } as never
+    const view = render(React.createElement(MediaGridEditor, props))
+    const input = screen.getByRole('textbox', { name: 'New media alt text' }) as HTMLInputElement
+    fireEvent.change(input, { target: { value: 'Draft image description' } })
+    view.rerender(React.createElement(MediaGridEditor, props))
+    expect(screen.getByRole('textbox', { name: 'New media alt text' })).toBe(input)
+    expect(input.value).toBe('Draft image description')
   })
   it('appends all selected media in order and ignores unchecked entries', () => {
     render(

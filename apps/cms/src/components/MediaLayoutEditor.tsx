@@ -4,22 +4,23 @@ import React from 'react'
 import { ArrayField, FieldError, useField, useForm, useListDrawer } from '@payloadcms/ui'
 import type { ArrayFieldClientComponent, SelectFieldClientComponent } from 'payload'
 
+// Payload memoizes the returned drawer component by these option identities.
+// Recreating the filters remounts an open picker and its nested create-media form.
+const mediaDrawerOptions: Parameters<typeof useListDrawer>[0] = {
+  collectionSlugs: ['media'],
+  uploads: true,
+  filterOptions: {
+    media: {
+      or: [{ mimeType: { contains: 'image/' } }, { mimeType: { in: ['video/mp4', 'video/webm'] } }],
+    },
+  },
+}
+
 /** Payload owns all item state, upload drawers, validation and drag sorting. */
 export const MediaGridEditor: ArrayFieldClientComponent = (props) => {
   const path = props.path || props.field.name
   const { addFieldRow, getFields } = useForm()
-  const [ListDrawer, , { openDrawer, closeDrawer }] = useListDrawer({
-    collectionSlugs: ['media'],
-    uploads: true,
-    filterOptions: {
-      media: {
-        or: [
-          { mimeType: { contains: 'image/' } },
-          { mimeType: { in: ['video/mp4', 'video/webm'] } },
-        ],
-      },
-    },
-  })
+  const [ListDrawer, , { openDrawer, closeDrawer }] = useListDrawer(mediaDrawerOptions)
   const appendMedia = (ids: (number | string)[]) => {
     if (props.readOnly) return
     const start = getFields()[path]?.rows?.length || 0
