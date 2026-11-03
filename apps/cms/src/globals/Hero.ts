@@ -57,5 +57,16 @@ export const Hero: GlobalConfig = {
         },
       ],
     },
+    {
+      name: 'featuredProjects',
+      type: 'relationship',
+      relationTo: 'project',
+      hasMany: true,
+      label: 'Featured projects',
+      admin: {
+        isSortable: true,
+        description: 'Select projects for the homepage and drag to set their order. Leave empty to use the four most recent projects marked as featured.',
+      },
+    },
   ],
 }

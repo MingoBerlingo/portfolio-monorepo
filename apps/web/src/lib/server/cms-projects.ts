@@ -1,4 +1,4 @@
-import type { Project } from '@portfolio/types';
+import type { Hero, Project } from '@portfolio/types';
 import { cmsQuery, type PaginatedResponse } from './cms-client';
 import { localizeImage, localizeHtmlImages } from './cms-images';
 
@@ -136,4 +136,26 @@ export async function getProjectBySlug(slug: string): Promise<Project> {
 		throw new Error(`Project not found: ${slug}`);
 	}
 	return localizeProjectImages(project);
+}
+
+/** A curated list is ordered by the editor, independent of project dates/flags. */
+export async function getHomepageFeaturedProjects(
+	selected: Hero['featuredProjects']
+): Promise<Project[]> {
+	if (!selected?.length) return (await getFeaturedProjects()).docs;
+	const ids = [
+		...new Set(
+			selected.flatMap((project) => {
+				const id = typeof project === 'string' ? project : project?.id;
+				return id ? [id] : [];
+			})
+		)
+	];
+	if (!ids.length) return [];
+	const { docs } = await getProjects({ limit: ids.length, where: { id: { in: ids } } });
+	const projects = new Map(docs.map((project) => [project.id, project]));
+	return ids.flatMap((id) => {
+		const project = projects.get(id);
+		return project ? [project] : [];
+	});
 }

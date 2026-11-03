@@ -553,6 +553,10 @@ export interface Hero {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Select projects for the homepage and drag to set their order. Leave empty to use the four most recent projects marked as featured.
+   */
+  featuredProjects?: (string | Project)[] | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -624,6 +628,7 @@ export interface HeroSelect<T extends boolean = true> {
         alt?: T;
         id?: T;
       };
+  featuredProjects?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -5,6 +5,7 @@ import { localizeImage } from './cms-images';
 export async function getHero(): Promise<Hero> {
 	const { Hero: hero } = await cmsQuery<{ Hero: Hero }>(`query { Hero {
   greeting nameLine introduction homepageIntroduction
+  featuredProjects { id }
   homepageImages { key alt image { id url mimeType } }
  } }`);
 	return {
