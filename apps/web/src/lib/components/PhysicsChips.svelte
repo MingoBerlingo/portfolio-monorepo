@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { MediaQuery } from 'svelte/reactivity';
 	import type { Keyword } from '@portfolio/types';
 	import { chipPhysics } from '$lib/actions/chipPhysics';
 	let {
@@ -6,6 +7,8 @@
 		active = false,
 		fullFooter = false
 	}: { keywords: Keyword[]; active?: boolean; fullFooter?: boolean } = $props();
+	const mobile = new MediaQuery('(max-width: 767px)', false);
+	const visibleKeywords = $derived(mobile.current ? keywords.slice(0, 12) : keywords);
 </script>
 
 {#if keywords.length}
@@ -13,9 +16,9 @@
 		{#if !fullFooter}<p class="mb-3 text-xs text-foreground-2">
 				A few things I work with <span aria-hidden="true">↘</span>
 			</p>{/if}
-		{#key JSON.stringify(keywords.map(({ id, label }) => [id, label]))}
+		{#key JSON.stringify(visibleKeywords.map(({ id, label }) => [id, label]))}
 			<ul class="chip-scene" aria-label="Project keywords" use:chipPhysics={active}>
-				{#each keywords as keyword (keyword.id)}
+				{#each visibleKeywords as keyword (keyword.id)}
 					<li>
 						<button type="button" disabled aria-label={`Toss ${keyword.label} keyword`}
 							>{keyword.label}</button

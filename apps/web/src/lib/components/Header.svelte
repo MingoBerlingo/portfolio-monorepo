@@ -69,7 +69,7 @@
 
 <header
 	data-menu-open={menuOpen}
-	class={cn('fixed top-0 left-0 z-50 w-full px-6 py-5 transition-transform motion-base', {
+	class={cn('fixed top-0 left-0 z-50 w-full px-4 py-5 transition-transform md:px-6 motion-base', {
 		'-translate-y-full': hidden && !menuOpen,
 		'translate-y-0': !hidden || menuOpen
 	})}

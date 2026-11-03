@@ -254,6 +254,7 @@
 
 /* Base styles */
 body {
+	text-wrap: pretty;
 	font-family: var(--font-sans);
 	font-weight: lighter;
 	background-color: var(--color-background);

@@ -26,3 +26,23 @@ it('recreates the physics scene when CMS keyword identities or labels change', a
 	);
 	expect(document.querySelector<HTMLButtonElement>('.chip-scene button')?.disabled).toBe(false);
 });
+
+it('limits mobile chips to twelve and restores the complete set on wider screens', async () => {
+	mockMotion(true);
+	const original = window.matchMedia.bind(window);
+	const viewport = new EventTarget() as MediaQueryList;
+	Object.defineProperty(viewport, 'matches', { value: true, configurable: true });
+	vi.spyOn(window, 'matchMedia').mockImplementation((query) =>
+		query === '(max-width: 767px)' ? viewport : original(query)
+	);
+	render(PhysicsChips, {
+		keywords: Array.from({ length: 16 }, (_, index) => ({
+			id: String(index),
+			label: `Keyword ${index}`
+		})) as Keyword[]
+	});
+	await vi.waitFor(() => expect(document.querySelectorAll('.chip-scene button')).toHaveLength(12));
+	Object.defineProperty(viewport, 'matches', { value: false, configurable: true });
+	viewport.dispatchEvent(new Event('change'));
+	await vi.waitFor(() => expect(document.querySelectorAll('.chip-scene button')).toHaveLength(16));
+});
