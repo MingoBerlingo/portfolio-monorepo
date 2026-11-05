@@ -5,7 +5,7 @@ export function validateLocale(locale) {
 }
 
 /** Reads only; never changes CMS content. Locale fallback is deliberately disabled. */
-export async function readCV({ baseURL = 'http://localhost:3000', locale, token, fetcher = fetch }) {
+export async function readCV({ baseURL = 'http://localhost:3000', locale, token, cookie, fetcher = fetch }) {
   validateLocale(locale);
   const base = new URL(baseURL);
   if (!['http:', 'https:'].includes(base.protocol)) throw new Error('CMS URL must use HTTP or HTTPS.');
@@ -15,9 +15,9 @@ export async function readCV({ baseURL = 'http://localhost:3000', locale, token,
   }
   const get = async (path, page) => {
     const url = new URL(`${base.pathname.replace(/\/$/, '')}/api/${path}`, base.origin);
-    url.search = new URLSearchParams({ locale, 'fallback-locale': 'none', depth: '0', ...(page ? { page: String(page), limit: '100', sort: '-startDate' } : {}) });
+    url.search = new URLSearchParams({ locale, 'fallback-locale': 'none', depth: '0', ...(page ? { page: String(page), limit: '100', sort: path === 'experiences' || path === 'education' ? '-startDate' : '-createdAt' } : {}) });
     const response = await fetcher(url, {
-      headers: token ? { Authorization: `JWT ${token}` } : {},
+      headers: { ...(token ? { Authorization: `JWT ${token}` } : {}), ...(cookie ? { Cookie: cookie } : {}) },
       signal: AbortSignal.timeout(30_000),
       redirect: 'error',
     });
@@ -36,8 +36,8 @@ export async function readCV({ baseURL = 'http://localhost:3000', locale, token,
       page = result.nextPage;
     }
   };
-  const [profile, curriculum, experiences, education] = await Promise.all([
-    get('globals/profile'), get('globals/curriculum'), collection('experiences'), collection('education'),
+  const [profile, experiences, education, publications, research] = await Promise.all([
+    get('globals/profile'), collection('experiences'), collection('education'), collection('publications'), collection('research'),
   ]);
-  return { profile, curriculum, experiences, education };
+  return { profile, experiences, education, publications, research };
 }

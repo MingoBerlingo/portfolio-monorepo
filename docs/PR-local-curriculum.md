@@ -1,63 +1,68 @@
-# Draft PR: Generate multilingual CV PDFs in a separate local app
+# Draft PR: Local curriculum editor with shared multilingual CMS content
 
 ## Problem and result
 
-The CV was maintained separately in Figma, allowing its content to drift from the portfolio CMS. This adds a private `apps/curriculum` workspace that reads the same profile, work experience and education records and exports Italian or English CV PDFs on demand.
+CV content was maintained separately from the portfolio. This branch adds a separate local curriculum web app that imports the same CMS profile, experience and education, allows job-specific edits to a working copy, saves named browser-only versions with dates, and downloads the edited copy as PDF.
 
-CV preview and export are independent of the portfolio app. No CV route, download link, PDF, or HTML snapshot is added to the published website. Exports stay in ignored `apps/curriculum/output/`; nothing is pushed or published by this change.
+The CMS uses its existing fields for Italian/English translations. CV-only contact/skills/language fields live inside Profile; Publications and Research are independent collections. Duplicate translation groups and the Curriculum global are removed.
 
-## Commit sequence
+## Behavior
 
-1. `feat(cms): add private curriculum content and additive translations`
-   - Add Italian/English localization only to new CV translation groups and CV-only fields.
-   - Keep existing portfolio fields and their storage unchanged, avoiding a data migration.
-   - Add an authenticated Curriculum global for contact details, skills, languages, publications and research.
-   - Regenerate shared types.
-2. `feat(curriculum): render bilingual CVs from shared CMS records`
-   - Read CMS collections with pagination, explicit locale and no translation fallback.
-   - Recreate the Figma visual structure as semantic, escaped HTML with safe links.
-   - Add fictional fixtures and renderer/reader tests.
-3. `feat(curriculum): add local preview and PDF export workflow`
-   - Add loopback-only preview and Chromium PDF commands.
-   - Improve print pagination, preserve CMS rich-text line boundaries, and add real CMS access/translation tests.
-   - Document login, translations, output locations, independent operation and the local PR draft.
+- **🇬🇧 EN / 🇮🇹 IT** in both language selectors, with space between the CMS selector and avatar.
+- Import canonical CMS fields without silently substituting a different language.
+- Edit all printable fields; add/remove/reorder entries; reorder or hide sections; view a live preview.
+- Save requires a name. History stores the complete document, language, section visibility/order and timestamp in this browser; load/delete from History.
+- No autosave. Unsaved changes trigger guards for reload/close, locale switch, CMS reload and history load. Failed storage writes retain edits and do not claim success.
+- Delayed imports lock document-changing controls. Canceling sign-in invalidates its response so it cannot replace newer work.
+- PDF download prints exactly the current copy, including unsaved changes, without marking it saved or retaining it on the server.
+- CMS requests reuse the existing local CMS session or a memory-only login. CV edits/history never write to the CMS.
+- App binds to loopback and rejects cross-origin requests. Only fixed CMS read/login routes are proxied. Print content is escaped, validated and printed without network access.
 
-## Usage
+## Local commit sequence
 
-Follow `apps/curriculum/README.md` for setup and CMS authentication. Then:
+The first three commits establish the original local PDF feature:
+
+1. `8af47b3` — CMS CV content and additive translations.
+2. `33eccac` — bilingual renderer, CMS reader and fixtures.
+3. `128eb79` — preview/PDF workflow and initial documentation.
+
+Three follow-up commits implement the approved editor and revised CMS design:
+
+4. `e15dcf6` — `refactor(cms): share localized profile fields and split CV collections`
+   - Replace duplicate groups with native localization, move CV fields to Profile, create collections, migrate/back up existing storage and update shared types.
+5. `1582602` — `feat(curriculum): add editable working copies and named browser history`
+   - Canonical document model, browser editor/live preview, local snapshots, unsaved guards and safe edited-document renderer.
+6. `feat(curriculum): serve local editor and download tailored PDFs`
+   - Loopback app server, session-aware CMS import/login, direct PDF download, browser E2E, CLI compatibility and documentation.
+
+## Run
 
 ```sh
-pnpm curriculum:preview --locale it
-pnpm curriculum:pdf --locale it
-pnpm curriculum:pdf --locale en
+pnpm dev
+# or, with the CMS already running:
+pnpm curriculum:dev
 ```
 
-The fixtures can be used before entering translations or authenticating:
+Open `http://localhost:4174`. Use that same origin for future access to saved versions. Existing CMS login on localhost is reused; otherwise use Connect CMS. See `apps/curriculum/README.md` for setup, optional CLI export and fictional demos.
 
-```sh
-pnpm curriculum:pdf --locale it --fixture test/fixtures/it.json
-pnpm curriculum:pdf --locale en --fixture test/fixtures/en.json
-```
+## Data preservation
+
+The localization storage migration has been applied locally after a private BSON-preserving backup to ignored `.local/cv-before-canonical-2026-11-05.json`. Original English content remains canonical; existing locale overrides fill missing canonical translations. Legacy raw fields remain for recovery but are no longer exposed by the removed schemas. A repeat dry run reports **zero updates**, verifying idempotence. The backup is not committed.
+
+On another checkout/database, stop the CMS and use `apps/cms/scripts/migrate-canonical-cv.ts` before editing with the new schema. Its default is a read-only dry run; `--apply` requires a new backup path. Review migrated translation rows because old textarea lines are matched by row order.
 
 ## Validation
 
-- `pnpm curriculum:test`: 2 CMS schema tests and 12 reader/renderer tests pass.
-- `pnpm --filter cms test:int`: 34 integration tests pass, including translation storage preserving original text and anonymous access denial.
-- `pnpm --filter cms exec tsc --noEmit`: passes.
-- Existing portfolio suite: 37 tests pass, including browser tests.
-- Local preview smoke check: Italian content, response headers and unknown-route handling pass; long-content PDF generation succeeds.
-- Italian and English fictional fixtures: both print to two A4 pages, with education starting on page two. Rendered pages were visually inspected; selectable text and clickable links verified.
-- A stress PDF preserves all 100 experience bullets across four pages.
-- `pnpm test` was attempted. The existing CMS browser test `Frontend > can go on homepage` cannot launch because its Playwright 1.54.1 Chromium executable (revision 1181) is not installed. The curriculum app uses Playwright 1.55.1, matching the portfolio's installed browser. This browser failure is not a passing full-suite result.
+- Full `pnpm test`: passes (28 curriculum tests, 34 CMS integration tests, 1 CMS browser test, 37 portfolio tests).
+- `pnpm --filter cms test:curriculum`: 5 schema/migration-transform tests pass.
+- CMS TypeScript check and portfolio Svelte check: pass (0 errors/warnings).
+- Editor browser E2E passes: canonical import, all-field edits, entry add/remove/reorder, section visibility/order, named/date saves, reload and history restoration, before-unload and locale-change guards, storage quota errors, delayed CMS import, canceled sign-in, language selection, responsive layout and actual PDF download.
+- Parsed downloaded PDF: all expected local edits present, hidden section omitted, text selectable; rendered pages visually inspected.
+- Actual local CMS session imports the existing profile in the app; current English fields preserved and duplicate groups absent in CMS.
+- Existing CMS browser dependency was installed locally so the previously blocked test now passes.
 
-## Draft limitations and editorial work
+## Scope and practical limits
 
-- These are working sample exports, not a populated translation of the user's real CV. Enter and review Italian translations and CV-only content in the CMS before generating the real CV. No real content was imported from Figma or rewritten.
-- Original shared fields are treated as English. Italian uses new translation groups; English can optionally override source copy. Optional CV-only sections are independently authored per locale and omitted if blank; they never silently fall back to another language.
-- Layout follows the Figma reference with blue labels and aligned content. Fonts use Arial/sans-serif from the local machine. Content flows across pages; an expanded CV can exceed two pages.
-- Research entries can reference a portfolio project but use explicit concise CV text, not the full case-study content.
-- Existing portfolio queries still read the original fields. Translating the entire public website is outside this PR.
+No CV route, PDF, link or editor is added to the published portfolio. Website build/publish scripts remain unchanged. No push, remote PR, merge or publication was performed.
 
-## Local state
-
-Branch: `codex/local-curriculum`. Three local commits; no remote PR, push, merge or website publication.
+History is browser/device/origin-specific, subject to available storage, and disappears if site data is cleared. It is not synced or automatically saved. Browsers control close-warning wording and can suppress lifecycle warnings in some environments. PDF pagination flows; long CVs may exceed two pages. Existing missing translations must be authored in the CMS or filled in the local working copy.

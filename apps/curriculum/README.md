@@ -1,8 +1,8 @@
-# Local curriculum
+# Curriculum Studio
 
-Generate Italian and English CVs from the portfolio CMS. This private Node app has no website routes and does not participate in `build:site` or `publish:static`. PDFs and HTML are written exclusively to ignored `apps/curriculum/output/`. The template follows the Figma reference's blue section labels and two-column layout. Education starts on a new printed page after work experience; longer content can use additional pages.
+A separate local web app for adapting your CMS profile into job-specific Italian or English CVs. Edit a working copy, save named versions in this browser, and download the current version as a selectable-text PDF. The app never writes your edits back to the CMS or adds CV files to the published portfolio.
 
-## Setup
+## Start
 
 From the repository root:
 
@@ -10,72 +10,74 @@ From the repository root:
 pnpm install
 pnpm --filter curriculum exec playwright install chromium
 pnpm docker:up
+pnpm dev
+```
+
+`pnpm dev` starts the portfolio, CMS and curriculum app. Alternatively run the CMS and curriculum in separate terminals:
+
+```sh
 pnpm cms:dev
+pnpm curriculum:dev
 ```
 
-Restart the CMS after pulling these schema changes. No migration or export command writes to your existing records. Existing English portfolio fields stay in their original format; only newly added fields use Payload localization. If your existing source fields are not English, translate those before using the English export.
+Open **http://localhost:4174**. Use the same URL consistently: browser history is scoped to the origin, so `localhost:4174` and `127.0.0.1:4174` have separate saved versions. The app binds only to loopback.
 
-## Edit content
+If you are signed in to the CMS on `localhost:3000`, the local app reuses that session for read requests to the same CMS host. Otherwise use **Connect CMS** and your existing CMS account. That login's JWT stays in memory; passwords and tokens are never stored with saved versions. `CMS_API_URL` defaults to `http://localhost:3000`. A remote CMS requires HTTPS. Optional `CMS_TOKEN` can be supplied to the server for command-line/local use.
 
-- **Profile**: shared name, role, introduction, email, LinkedIn and GitHub.
-- **Experiences**: shared company, dates, industries and activities.
-- **Education**: shared school, dates and qualification. New optional `details` is English text with one bullet per line.
-- Select **Italian** in the CMS locale selector and fill **CV translation** on each shared record. Translate the role/introduction, experience roles/industries/activities, and education titles/details. One activity or industry per line. Names, companies, dates and links stay shared.
-- **Curriculum (local export)**: CV-only phone, location, skills, languages, additional information, publications and research. Skills/languages/additional information/publications/research are localized; fill each locale you want to export. Location and phone are shared. Research can optionally reference an existing project; its title and description are deliberately concise CV copy rather than a full portfolio case study.
-- English CV translation overrides are optional. Without an override the renderer uses the original English portfolio fields. Italian shared text requires a translation whenever the source field has content; missing translations fail with the record and field to edit.
-- New CV-only sections are optional and omitted when empty in the requested locale. They do not fall back to the other language. Check that you have filled both locales if you want the same optional sections in both PDFs.
+## CMS content
 
-Translation fields can support a future multilingual portfolio, but the current portfolio still reads its existing source fields. No automatic translation service is called.
+- **Profile:** existing name, surname, professional title, rich-text presentation, email and links. Phone, location, skills, languages and additional information are also here; those CV-only fields require authenticated reads.
+- **Experiences / Education:** existing records with directly localized text fields. Company/school names, dates and links remain shared. Industry and activity text is localized inside the existing array rows.
+- **Publications / Research:** independent collections, with localized titles/descriptions and shared links. Research can reference an existing portfolio project. That CMS relationship is metadata; the CV prints the authored research title/description/link.
+- Select **🇬🇧 EN / 🇮🇹 IT** in the CMS to author each language. There are no duplicate “CV translation” fields or Curriculum global.
 
-## Authenticate
+The app requests the selected locale with fallback disabled. Missing translations remain blank for you to fill locally or in the CMS; they are never silently replaced by the other language. Portfolio queries continue reading English by default.
 
-Curriculum contains contact information and is readable only by a logged-in CMS user. Obtain a JWT using the existing Payload login endpoint. This reads your password without putting it into shell history and keeps the returned token in the environment:
+### Updating from the previous CV schema
 
-```sh
-read 'CMS_EMAIL?CMS email: '
-read -s 'CMS_PASSWORD?CMS password: '; echo
-export CMS_EMAIL CMS_PASSWORD
-export CMS_TOKEN="$(node --input-type=module <<'JS'
-const response = await fetch(`${process.env.CMS_API_URL || 'http://localhost:3000'}/api/users/login`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email: process.env.CMS_EMAIL, password: process.env.CMS_PASSWORD }),
-});
-if (!response.ok) throw new Error(`CMS login failed (${response.status})`);
-const { token } = await response.json();
-if (!token) throw new Error('CMS returned no token');
-process.stdout.write(token);
-JS
-)"
-unset CMS_PASSWORD
-```
+The existing plain English storage must be converted before using the new localized fields. See **Canonical CV migration** in `apps/cms/README.md`. The migration backs up affected raw documents before any write and retains legacy raw fields for recovery. It moves old CV-only content into Profile and old publication/research arrays into collections. Original canonical English values take precedence; existing Italian overrides are carried over where canonical translations are missing. Review arrays after migration because old textarea translations are aligned by row order.
 
-The prompts above use the repository's macOS/zsh environment. `CMS_API_URL` defaults to `http://localhost:3000`. Use HTTPS for a remote CMS. JWT expiry follows your CMS settings; log in again if it expires. Do not commit tokens or contact data into fixtures.
+In this checkout the conversion has been applied, and a second dry run reports zero updates. The private backup is in ignored `.local/cv-before-canonical-2026-11-05.json`.
 
-## Preview and export
+## Working on a version
+
+1. Choose **🇬🇧 EN / 🇮🇹 IT** and load from CMS.
+2. Edit Profile, Introduction, Skills & languages, Experience, Education, Publications, Research or Additional info. Add, remove or reorder list entries. Use section controls to reorder sections or omit them from the PDF.
+3. The preview updates from your working copy. The CMS is unchanged.
+4. Click **Save version**, provide a name and save. History records the complete copy, language, section order and save date. Load or delete saved versions from **History**.
+5. Click **Download PDF** to download exactly the current edited copy. Downloading does not save an editable history version or clear the unsaved state.
+
+There is no autosave. Closing/reloading the page, switching language, reloading the CMS or loading another version warns when there are unsaved changes. Browsers control the exact wording of close-page warnings and may suppress them on some mobile/browser lifecycle paths. Storage failures are reported, leave your edits intact and do not mark them saved.
+
+Saved versions stay in this browser on this device until deleted or browser site data is cleared. Up to 50 versions are supported, subject to the browser's available storage. Clearing site data removes the history; the CMS is not a backup of your tailored versions.
+
+## PDF output
+
+The renderer uses the Figma CV's blue section labels and two-column layout. Education starts on a new page when it follows work experience. Longer content can use additional pages. Text is selectable, HTTP(S) links are clickable and the printer loads no external assets. Arial/sans-serif fonts use the local system. Preview shows the content at A4 width; the PDF adds automatic print pagination.
+
+Web downloads are streamed directly to the browser: the server does not keep the edited documents or PDFs. For optional command-line export:
 
 ```sh
-pnpm curriculum:preview --locale it
 pnpm curriculum:pdf --locale it
 pnpm curriculum:pdf --locale en
 ```
 
-Preview is available at `http://127.0.0.1:4174`; it binds only to loopback and keeps data in memory. Restart it after editing CMS content. Use `--port 4175` to change its port.
+These CLI commands require `CMS_TOKEN` for private content and write ignored files to `apps/curriculum/output/`. They do not access browser history. No CV command participates in `build:site` or `publish:static`.
 
-PDF export writes `cv-it.pdf` or `cv-en.pdf`, plus the corresponding HTML snapshot, into `apps/curriculum/output/`. Running an export again replaces that locale's files. These are local files; neither export nor preview publishes or uploads them.
-
-The HTML uses semantic text, not screenshots, so text is selectable in the PDF. HTTP(S) links are clickable. CMS strings are escaped, executable URLs are excluded, and no remote fonts or images are loaded. Fonts use the local Arial/sans-serif stack; line wrapping can vary across operating systems. This is a flowing recreation of the reference, not a fixed-position Figma export.
-
-## Verify without the CMS
-
-The fixtures contain fictional content:
+## Verification and fictional samples
 
 ```sh
 pnpm curriculum:test
-pnpm --filter curriculum test:smoke  # requires Chromium; tests preview and long-content printing
-pnpm curriculum:preview --locale it --fixture test/fixtures/it.json
-pnpm curriculum:pdf --locale it --fixture test/fixtures/it.json
-pnpm curriculum:pdf --locale en --fixture test/fixtures/en.json
+pnpm --filter curriculum test:e2e
+pnpm --filter cms test:int
 ```
 
-Fixture paths are resolved from the app directory when using these pnpm commands. Never save your real CV into committed fixtures. Local artifacts are ignored but still contain personal data; remove them when no longer needed.
+The editor browser test uses a temporary local server and fictional fixtures. It verifies editing, entry and section controls, exact named snapshots, reopening history, date metadata, unsaved-change guards, storage-quota failures, delayed import/login cancellation, language switching, responsive layout and PDF download. Browser test screenshots and a sample edited PDF are written only into ignored `apps/curriculum/output/`.
+
+For a local fictional demo with no CMS login:
+
+```sh
+CURRICULUM_FIXTURES=1 pnpm curriculum:dev
+```
+
+Stop the ordinary curriculum server first if port 4174 is occupied. The fixture mode is opt-in and is not used by normal `pnpm dev`.

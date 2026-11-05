@@ -307,10 +307,13 @@ when the chips settle. Drag a chip to move it, or focus its
 button and press Enter/Space to toss it. Reduced motion shows a static list.
 After CMS edits, rebuild the static site with `pnpm build:site` to publish them.
 
-## Local CV generation
+## Local CV editor
 
-The separate [curriculum app](apps/curriculum/README.md) previews and exports Italian
-and English CVs from CMS content. Use `pnpm curriculum:preview --locale it` or
-`pnpm curriculum:pdf --locale it` after configuring its CMS content and login.
-Output stays in ignored `apps/curriculum/output/`; CV generation is independent of
-website building and publishing.
+The separate [Curriculum Studio app](apps/curriculum/README.md) loads Italian or
+English content from the CMS, lets you tailor a working copy, saves named versions
+with dates in this browser, and downloads the edited copy as PDF.
+
+Run `pnpm dev` for all apps or `pnpm curriculum:dev` for the editor alone, then open
+`http://localhost:4174`. The CMS must be running to import fresh content. CV edits
+and browser history stay separate from the CMS and published website. Optional
+`pnpm curriculum:pdf --locale it` remains available for command-line exports.

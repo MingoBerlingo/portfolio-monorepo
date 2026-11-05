@@ -4,9 +4,13 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "test:smoke": "node scripts/smoke.mjs",
-    "preview": "node src/cli.mjs preview",
-    "pdf": "node src/cli.mjs pdf"
+    "test:smoke": "node scripts/editor.e2e.mjs",
+    "preview": "node src/server.mjs",
+    "pdf": "node src/cli.mjs pdf",
+    "dev": "node --watch src/server.mjs",
+    "test:e2e": "node scripts/editor.e2e.mjs"
   },
-  "dependencies": { "playwright": "1.55.1" }
+  "dependencies": {
+    "playwright": "1.55.1"
+  }
 }
