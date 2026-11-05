@@ -22,7 +22,18 @@ pnpm curriculum:dev
 
 Open **http://localhost:4174**. Use the same URL consistently: browser history is scoped to the origin, so `localhost:4174` and `127.0.0.1:4174` have separate saved versions. The app binds only to loopback.
 
-If you are signed in to the CMS on `localhost:3000`, the local app reuses that session for read requests to the same CMS host. Otherwise use **Connect CMS** and your existing CMS account. That login's JWT stays in memory; passwords and tokens are never stored with saved versions. `CMS_API_URL` defaults to `http://localhost:3000`. A remote CMS requires HTTPS. Optional `CMS_TOKEN` can be supplied to the server for command-line/local use.
+The local app reads the CMS database through this checkout's Payload configuration.
+No browser login, cookie, CMS token or Connect button is needed. It uses
+`apps/cms/.env`, so MongoDB must be running and the CMS dependencies installed;
+the CMS web server itself does not have to be running to import a CV.
+
+The bridge reads only Profile, Experiences, Education, Publications and Research
+in the selected locale. It does not write CV data. Private field and collection
+permissions on the CMS HTTP API remain unchanged. Database configuration never
+reaches the browser.
+
+If you explicitly point `CMS_API_URL` at a remote CMS, configure `CMS_TOKEN` on
+the local app server. There is no interactive connection form in the editor.
 
 ## CMS content
 
@@ -62,7 +73,7 @@ pnpm curriculum:pdf --locale it
 pnpm curriculum:pdf --locale en
 ```
 
-These CLI commands require `CMS_TOKEN` for private content and write ignored files to `apps/curriculum/output/`. They do not access browser history. No CV command participates in `build:site` or `publish:static`.
+These CLI commands use the same local reader and write ignored files to `apps/curriculum/output/`. They do not access browser history. No CV command participates in `build:site` or `publish:static`.
 
 ## Verification and fictional samples
 
@@ -72,9 +83,9 @@ pnpm --filter curriculum test:e2e
 pnpm --filter cms test:int
 ```
 
-The editor browser test uses a temporary local server and fictional fixtures. It verifies editing, entry and section controls, exact named snapshots, reopening history, date metadata, unsaved-change guards, storage-quota failures, delayed import/login cancellation, language switching, responsive layout and PDF download. Browser test screenshots and a sample edited PDF are written only into ignored `apps/curriculum/output/`.
+The editor browser test uses a temporary local server and fictional fixtures. It verifies editing, entry and section controls, exact named snapshots, reopening history, date metadata, unsaved-change guards, storage-quota failures, delayed imports, language switching, responsive layout and PDF download. Browser test screenshots and a sample edited PDF are written only into ignored `apps/curriculum/output/`.
 
-For a local fictional demo with no CMS login:
+For a local fictional demo with no database:
 
 ```sh
 CURRICULUM_FIXTURES=1 pnpm curriculum:dev

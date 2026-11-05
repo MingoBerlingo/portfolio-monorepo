@@ -2,7 +2,8 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname } from 'node:path';
 import { parseArgs } from 'node:util';
-import { readCV, validateLocale } from './cms.mjs';
+import { validateLocale } from './cms.mjs';
+import { readAppCV } from './local-cms.mjs';
 import { normalizeCV } from './model.mjs';
 import { renderCV } from './render.mjs';
 import { printCV } from './pdf.mjs';
@@ -15,9 +16,7 @@ try {
   else {
     if (positionals.length !== 1 || positionals[0] !== 'pdf') throw Error('Use pnpm curriculum:dev for the web editor or pnpm curriculum:pdf for command-line export.');
     validateLocale(values.locale);
-    const source = values.fixture ? JSON.parse(await readFile(resolve(values.fixture), 'utf8')) : await readCV({
-      baseURL: process.env.CMS_API_URL, locale: values.locale, token: process.env.CMS_TOKEN,
-    });
+    const source = values.fixture ? JSON.parse(await readFile(resolve(values.fixture), 'utf8')) : await readAppCV({ locale: values.locale });
     const document = normalizeCV(source, values.locale);
     const pdf = await printCV(document);
     const output = resolve(dirname(fileURLToPath(import.meta.url)), '../output');

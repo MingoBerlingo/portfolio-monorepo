@@ -13,7 +13,7 @@ const field = (path, label, type = 'text', hint = '', rows = 4) => {
   return `<div class="field"><label for="${id}">${label}</label>${type === 'textarea' ? `<textarea id="${id}" data-path="${path}" rows="${rows}">${escape(value)}</textarea>` : `<input id="${id}" data-path="${path}" type="${type}" value="${escape(type === 'date' ? value?.slice(0,10) : value)}">`}${hint ? `<p class="field-hint">${hint}</p>` : ''}</div>`;
 };
 const row = (...fields) => `<div class="field-row">${fields.join('')}</div>`;
-const state = { doc: null, baseline: null, section: 'profile', name: '', token: '', loading: false, printing: false, loginAttempt: 0, loginController: null };
+const state = { doc: null, baseline: null, section: 'profile', name: '', loading: false, printing: false };
 let previewTimer;
 function dirty() { return Boolean(state.doc && isDirty(state.doc, state.baseline)); }
 function notify(message, error = false) { $('notice').textContent = message; $('notice').classList.toggle('error', error); $('notice').hidden = !message; }
@@ -28,7 +28,6 @@ function updateStatus() {
   $('locale').disabled = state.loading;
   $('editor-fields').disabled = state.loading;
   $('section-controls').querySelectorAll('input,button').forEach(control=>control.disabled=state.loading);
-  $('connect').disabled = state.loading;
   $('history').disabled = state.loading;
 }
 function historyCount() { try { $('history-count').textContent = listVersions().length; } catch { $('history-count').textContent = '!'; } }
@@ -103,7 +102,7 @@ async function loadCMS(locale, confirmed = false) {
   if(state.loading || (!confirmed && !guard())) { if(state.doc)$('locale').value=state.doc.locale;return; }
   state.loading=true;updateStatus();notify('Loading your content from the CMS…');
   try {
-    const response=await fetch(`/api/cv?locale=${locale}`,{headers:state.token?{Authorization:`JWT ${state.token}`}:{}});
+    const response=await fetch(`/api/cv?locale=${locale}`);
     const data=await response.json();
     if(!response.ok)throw Error(data.error||'Unable to load CMS content.');
     adopt(normalizeCV(data,locale));
@@ -114,21 +113,6 @@ async function loadCMS(locale, confirmed = false) {
 $('reload').addEventListener('click',()=>loadCMS($('locale').value));
 $('empty-load').addEventListener('click',()=>loadCMS($('locale').value));
 $('locale').addEventListener('change',()=>loadCMS($('locale').value));
-$('connect').addEventListener('click',()=>{if(!guard())return;$('connect-error').hidden=true;$('connect-submit').disabled=false;$('connect-dialog').showModal();});
-$('connect-form').addEventListener('submit', async event=>{
-  event.preventDefault();$('connect-submit').disabled=true;$('connect-error').hidden=true;
-  const attempt=++state.loginAttempt;
-  const controller=new AbortController();state.loginController=controller;
-  try {
-    const response=await fetch('/api/login',{signal:controller.signal,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value,password:$('password').value})});
-    const data=await response.json();if(attempt!==state.loginAttempt||!$('connect-dialog').open)return;if(!response.ok)throw Error(data.error||'CMS login failed.');
-    state.token=data.token;$('password').value='';$('connect-dialog').close();$('connect').textContent='CMS connected';await loadCMS($('locale').value,true);
-  } catch(error) {if(attempt===state.loginAttempt && error.name!=='AbortError'){$('connect-error').textContent=error.message;$('connect-error').hidden=false;}}
-  finally {if(attempt===state.loginAttempt){$('connect-submit').disabled=false;state.loginController=null;}}
-});
-function cancelLogin(){state.loginAttempt++;state.loginController?.abort();state.loginController=null;$('password').value='';}
-$('connect-dialog').addEventListener('close',cancelLogin);
-$('connect-dialog').addEventListener('cancel',cancelLogin);
 $('save').addEventListener('click',()=>{$('version-name').value=state.name;$('save-error').hidden=true;$('save-dialog').showModal();$('version-name').focus();});
 $('save-form').addEventListener('submit', event=>{
   event.preventDefault();

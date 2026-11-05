@@ -1,7 +1,8 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { readCV, validateLocale } from './cms.mjs';
+import { validateLocale } from './cms.mjs';
+import { readAppCV } from './local-cms.mjs';
 import { normalizeCV, validateDocument, MAX_DOCUMENT_BYTES } from './model.mjs';
 import { printCV } from './pdf.mjs';
 
@@ -17,7 +18,7 @@ async function body(req) {
   try { return JSON.parse(Buffer.concat(parts).toString('utf8')); } catch { throw Error('Invalid JSON request.'); }
 }
 /** Fixed CMS destination. No endpoint writes CV data into the CMS or disk. */
-export function createApp({ read = readCV, print = printCV, fixture, fetcher = fetch } = {}) {
+export function createApp({ read = readAppCV, print = printCV, fixture } = {}) {
   let printing = false;
   return createServer(async (req, res) => {
     res.setHeader('Cache-Control','no-store'); res.setHeader('X-Content-Type-Options','nosniff');
@@ -35,21 +36,8 @@ export function createApp({ read = readCV, print = printCV, fixture, fetcher = f
       }
       if (req.method==='GET' && url.pathname==='/api/cv') {
         const locale = url.searchParams.get('locale');validateLocale(locale);
-        const token = req.headers.authorization?.match(/^JWT (.+)$/)?.[1] || process.env.CMS_TOKEN;
-        const cmsHost = new URL(process.env.CMS_API_URL || 'http://localhost:3000').hostname;
-        const cookie = cmsHost === host.split(':')[0] ? req.headers.cookie : undefined;
-        const data=fixture ? await fixture(locale) : await read({ baseURL:process.env.CMS_API_URL,locale,token,cookie });
+        const data=fixture ? await fixture(locale) : await read({locale});
         json(res,200,normalizeCV(data,locale));return;
-      }
-      if (req.method==='POST' && url.pathname==='/api/login') {
-        const credentials=await body(req);
-        if(typeof credentials.email!=='string'||typeof credentials.password!=='string'||credentials.email.length>320||credentials.password.length>1000)throw Error('Enter your CMS email and password.');
-        const base=new URL(process.env.CMS_API_URL || 'http://localhost:3000');
-        if(base.username||base.password||!['http:','https:'].includes(base.protocol)||(base.protocol!=='https:'&&!['localhost','127.0.0.1','[::1]'].includes(base.hostname)))throw Error('Remote CMS login requires HTTPS.');
-        const response=await fetcher(`${base.href.replace(/\/$/,'')}/api/users/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:credentials.email,password:credentials.password}),signal:AbortSignal.timeout(30000),redirect:'error'});
-        if(!response.ok){json(res,401,{error:'CMS sign-in failed. Check your email and password.'});return;}
-        const data=await response.json();if(typeof data.token!=='string')throw Error('CMS did not return a session token.');
-        json(res,200,{token:data.token});return;
       }
       if(req.method==='POST' && url.pathname==='/api/pdf') {
         const document=await body(req);validateDocument(document);
@@ -65,8 +53,7 @@ export function createApp({ read = readCV, print = printCV, fixture, fetcher = f
     } catch(error) {
       // Never return upstream bodies or credentials to the browser.
       const message=error instanceof Error?error.message:'Request failed.';
-      const auth=/\((401|403)\)/.test(message);
-      json(res,auth?401:400,{error:auth?'Connect your CMS account to load private CV content.':message.includes('fetch failed')?'The CMS is unavailable. Start it and try again.':message});
+      json(res,400,{error:message.includes('fetch failed')?'The CMS is unavailable. Check its configuration and try again.':message});
     }
   });
 }

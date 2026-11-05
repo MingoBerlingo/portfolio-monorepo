@@ -314,6 +314,6 @@ English content from the CMS, lets you tailor a working copy, saves named versio
 with dates in this browser, and downloads the edited copy as PDF.
 
 Run `pnpm dev` for all apps or `pnpm curriculum:dev` for the editor alone, then open
-`http://localhost:4174`. The CMS must be running to import fresh content. CV edits
+`http://localhost:4174`. MongoDB must be running to import fresh content; no CMS browser login is needed. CV edits
 and browser history stay separate from the CMS and published website. Optional
 `pnpm curriculum:pdf --locale it` remains available for command-line exports.
