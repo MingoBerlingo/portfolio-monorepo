@@ -1,0 +1,11 @@
+{
+  "name": "curriculum",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "preview": "node src/cli.mjs preview",
+    "pdf": "node src/cli.mjs pdf"
+  },
+  "dependencies": { "playwright": "1.55.1" }
+}

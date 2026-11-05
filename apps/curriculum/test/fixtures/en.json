@@ -1,0 +1,176 @@
+{
+  "profile": {
+    "name": "Ada",
+    "surname": "Rossi",
+    "jobPosition": "UX/UI Designer & Frontend Developer",
+    "email": "ada@example.test",
+    "linkedin": {
+      "url": "https://example.test/ada",
+      "label": "LinkedIn"
+    },
+    "presentation": {
+      "root": {
+        "type": "root",
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "text": "Designer working across interfaces and frontend development."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "curriculum": {
+    "phone": "+39 000 0000000",
+    "location": "Milan, Italy",
+    "skills": "Figma, design system, Svelte, TypeScript",
+    "languages": "Italian (native), English (C1)",
+    "publications": [
+      {
+        "title": "Designing consistent digital experiences",
+        "description": "Rossi, A. (2025). Example publication for layout verification.",
+        "url": "https://example.test/publication"
+      }
+    ],
+    "research": [
+      {
+        "title": "Visual Content Assessment Tool",
+        "date": "2023-10-01",
+        "description": "Dashboard for exploring visual content and research data.",
+        "url": "https://example.test/research"
+      }
+    ]
+  },
+  "experiences": [
+    {
+      "company": "Studio 1",
+      "role": "UX/UI Designer and frontend developer",
+      "startDate": "2025-01-01",
+      "endDate": null,
+      "industries": [
+        {
+          "industry": "Digital products, design systems"
+        }
+      ],
+      "activities": [
+        {
+          "activity": "Design and implementation of reusable components and accessible user interfaces."
+        },
+        {
+          "activity": "User research and interactive prototypes to validate flows and design decisions."
+        },
+        {
+          "activity": "Collaboration with developers to maintain consistency between design and production."
+        }
+      ]
+    },
+    {
+      "company": "Studio 2",
+      "role": "UX/UI Designer and frontend developer",
+      "startDate": "2024-01-01",
+      "endDate": "2024-12-01",
+      "industries": [
+        {
+          "industry": "Digital products, design systems"
+        }
+      ],
+      "activities": [
+        {
+          "activity": "Design and implementation of reusable components and accessible user interfaces."
+        },
+        {
+          "activity": "User research and interactive prototypes to validate flows and design decisions."
+        },
+        {
+          "activity": "Collaboration with developers to maintain consistency between design and production."
+        }
+      ]
+    },
+    {
+      "company": "Studio 3",
+      "role": "UX/UI Designer and frontend developer",
+      "startDate": "2023-01-01",
+      "endDate": "2023-12-01",
+      "industries": [
+        {
+          "industry": "Digital products, design systems"
+        }
+      ],
+      "activities": [
+        {
+          "activity": "Design and implementation of reusable components and accessible user interfaces."
+        },
+        {
+          "activity": "User research and interactive prototypes to validate flows and design decisions."
+        },
+        {
+          "activity": "Collaboration with developers to maintain consistency between design and production."
+        }
+      ]
+    },
+    {
+      "company": "Studio 4",
+      "role": "UX/UI Designer and frontend developer",
+      "startDate": "2022-01-01",
+      "endDate": "2022-12-01",
+      "industries": [
+        {
+          "industry": "Digital products, design systems"
+        }
+      ],
+      "activities": [
+        {
+          "activity": "Design and implementation of reusable components and accessible user interfaces."
+        },
+        {
+          "activity": "User research and interactive prototypes to validate flows and design decisions."
+        },
+        {
+          "activity": "Collaboration with developers to maintain consistency between design and production."
+        }
+      ]
+    },
+    {
+      "company": "Studio 5",
+      "role": "UX/UI Designer and frontend developer",
+      "startDate": "2021-01-01",
+      "endDate": "2021-12-01",
+      "industries": [
+        {
+          "industry": "Digital products, design systems"
+        }
+      ],
+      "activities": [
+        {
+          "activity": "Design and implementation of reusable components and accessible user interfaces."
+        },
+        {
+          "activity": "User research and interactive prototypes to validate flows and design decisions."
+        },
+        {
+          "activity": "Collaboration with developers to maintain consistency between design and production."
+        }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "title": "Master in Communication Design",
+      "school": "Example University",
+      "startDate": "2020-09-01",
+      "endDate": "2023-10-01",
+      "details": "Interaction design and data visualization\nPrototyping and design research"
+    },
+    {
+      "title": "Bachelor in Communication Design",
+      "school": "Example University",
+      "startDate": "2017-09-01",
+      "endDate": "2020-10-01",
+      "details": "Interaction design and data visualization\nPrototyping and design research"
+    }
+  ]
+}
