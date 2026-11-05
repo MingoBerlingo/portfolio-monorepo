@@ -68,3 +68,43 @@ test('reads all collection pages and disables localized fallback', async () => {
 test('reports authentication errors without exposing credentials', async () => {
   await assert.rejects(readCV({ baseURL: 'http://localhost:3000', locale: 'en', token: 'secret', fetcher: async () => new Response('secret', { status: 403 }) }), /403/);
 });
+
+test('starts education on a new printed page when experience is present', () => {
+  assert.match(renderCV(data(), 'en'), /<section class="new-page"><h2>Education/);
+  const cv = data();
+  cv.experiences = [];
+  assert.doesNotMatch(renderCV(cv, 'en'), /<section class="new-page">/);
+});
+
+test('preserves every bullet in oversized entries', () => {
+  const cv = data();
+  cv.experiences[0].activities = Array.from({ length: 100 }, (_, n) => ({ activity: `Bullet ${n}` }));
+  const html = renderCV(cv, 'en');
+  assert.match(html, /Bullet 99/);
+  assert.equal((html.match(/<li>Bullet /g) ?? []).length, 100);
+});
+
+test('rejects pagination that would loop forever', async () => {
+  await assert.rejects(readCV({ baseURL: 'http://localhost:3000', locale: 'en', fetcher: async url => Response.json(String(url).includes('/globals/') ? {} : { docs: [], hasNextPage: true, nextPage: 1 }) }), /pagination/);
+});
+
+test('does not forward a token through a redirect or remote plaintext request', async () => {
+  await assert.rejects(readCV({ baseURL: 'http://example.test', locale: 'en', token: 'secret' }), /HTTPS/);
+  await readCV({ baseURL: 'http://localhost:3000', locale: 'en', token: 'secret', fetcher: async (url, options) => {
+    assert.equal(options.redirect, 'error');
+    return Response.json(String(url).includes('/globals/') ? {} : { docs: [], hasNextPage: false });
+  } });
+});
+
+test('preserves explicit line breaks and list item boundaries in source introductions', () => {
+  const cv = data();
+  cv.profile.presentation = { root: { type: 'root', children: [
+    { type: 'paragraph', children: [{ text: 'First line' }, { type: 'linebreak' }, { text: 'Second line' }] },
+    { type: 'list', children: [
+      { type: 'listitem', children: [{ text: 'First item' }] },
+      { type: 'listitem', children: [{ text: 'Second item' }] },
+    ] },
+  ] } };
+  const html = renderCV(cv, 'en');
+  assert.match(html, /<p>First line<\/p><p>Second line<\/p><p>First item<\/p><p>Second item<\/p>/);
+});

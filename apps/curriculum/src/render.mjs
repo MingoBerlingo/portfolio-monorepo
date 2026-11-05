@@ -14,8 +14,9 @@ const safeURL = value => {
 const link = (url, label) => safeURL(url) ? `<a href="${escape(safeURL(url))}">${escape(label || url)}</a>` : '';
 const richText = node => {
   if (!node) return '';
+  if (node.type === 'linebreak') return '\n';
   if (node.text) return node.text;
-  const separator = node.type === 'root' ? '\n' : '';
+  const separator = ['root', 'list'].includes(node.type) ? '\n' : '';
   return (node.children ?? []).map(richText).join(separator);
 };
 
@@ -36,7 +37,7 @@ export function renderCV({ profile, curriculum = {}, experiences = [], education
     if (Number.isNaN(d.getTime())) throw new Error(`Invalid CV date: ${value}`);
     return new Intl.DateTimeFormat(locale === 'it' ? 'it-IT' : 'en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(d);
   };
-  const section = (title, body) => body ? `<section><h2>${escape(title)}</h2><div class="section-body">${body}</div></section>` : '';
+  const section = (title, body, pageBreak = false) => body ? `<section${pageBreak ? ' class="new-page"' : ''}><h2>${escape(title)}</h2><div class="section-body">${body}</div></section>` : '';
   const entry = (heading, body, period = '') => `<article>${period ? `<p class="date">${escape(period)}</p>` : ''}<h3>${escape(heading)}</h3>${body}</article>`;
   const title = translated(profile, 'jobPosition', profile.jobPosition, 'Profile');
   const intro = translated(profile, 'presentation', richText(profile.presentation?.root), 'Profile');
@@ -64,11 +65,12 @@ export function renderCV({ profile, curriculum = {}, experiences = [], education
   .date { color: #4234ff; font-size: 8pt; break-after: avoid; }
   ul { padding-left: 4mm; margin: 1mm 0 0; } li { margin-bottom: 1mm; break-inside: avoid; }
   p { orphans: 3; widows: 3; } a { color: inherit; text-decoration: underline; overflow-wrap: anywhere; } h1,h2,h3,p,li { overflow-wrap: anywhere; }
+  @media print { .new-page { break-before: page; } }
   @media screen { body { background: #e8e8e8; padding: 12mm; } main { background: white; padding: 15mm 12mm; max-width: 210mm; min-height: 297mm; } }
   @media screen and (max-width: 650px) { body { padding: 8px; } main { padding: 16px; } section { padding-left: 0; } h2 { position: static; width: auto; margin-bottom: 8px; } }
   </style></head><body><main><header><h1>${escape(fullName)}</h1><p class="role">${escape(title)}</p><div class="contact">${paragraphs(profile.email)}${paragraphs(curriculum.phone)}${paragraphs(curriculum.location)}${link(profile.linkedin?.url, profile.linkedin?.label || 'LinkedIn')} ${link(profile.github?.url, profile.github?.label || 'GitHub')}</div></header>
   ${section(t.introduction, paragraphs(intro))}
   ${section(t.skills, paragraphs(curriculum.skills) + (curriculum.languages ? `<p><strong>${t.languages}:</strong> ${escape(curriculum.languages)}</p>` : ''))}
-  ${section(t.experience, experienceHTML)}${section(t.education, educationHTML)}${section(t.publications, extras('publications'))}${section(t.research, extras('research'))}${section(t.additional, paragraphs(curriculum.additionalInfo))}
+  ${section(t.experience, experienceHTML)}${section(t.education, educationHTML, Boolean(experienceHTML))}${section(t.publications, extras('publications'))}${section(t.research, extras('research'))}${section(t.additional, paragraphs(curriculum.additionalInfo))}
   </main></body></html>`;
 }

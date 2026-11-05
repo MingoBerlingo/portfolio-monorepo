@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
+    "test:smoke": "node scripts/smoke.mjs",
     "preview": "node src/cli.mjs preview",
     "pdf": "node src/cli.mjs pdf"
   },
