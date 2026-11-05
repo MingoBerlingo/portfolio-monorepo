@@ -96,13 +96,15 @@ export interface Config {
     footer: Footer;
     hero: Hero;
     profile: Profile;
+    curriculum: Curriculum;
   };
   globalsSelect: {
     footer: FooterSelect<false> | FooterSelect<true>;
     hero: HeroSelect<false> | HeroSelect<true>;
     profile: ProfileSelect<false> | ProfileSelect<true>;
+    curriculum: CurriculumSelect<false> | CurriculumSelect<true>;
   };
-  locale: null;
+  locale: 'en' | 'it';
   user: User & {
     collection: 'users';
   };
@@ -255,6 +257,20 @@ export interface Keyword {
  */
 export interface Experience {
   id: string;
+  /**
+   * CV translations. Original portfolio fields are English; fill these fields in Italian. Blank English overrides use the original fields.
+   */
+  cvTranslation?: {
+    role?: string | null;
+    /**
+     * One industry per line.
+     */
+    industries?: string | null;
+    /**
+     * One bullet per line.
+     */
+    activities?: string | null;
+  };
   company: string;
   role: string;
   startDate: string;
@@ -279,6 +295,20 @@ export interface Experience {
  */
 export interface Education {
   id: string;
+  /**
+   * Optional education bullets, one per line (English).
+   */
+  details?: string | null;
+  /**
+   * CV translations. Original portfolio fields are English; fill these fields in Italian. Blank English overrides use the original fields.
+   */
+  cvTranslation?: {
+    title?: string | null;
+    /**
+     * One bullet per line.
+     */
+    details?: string | null;
+  };
   startDate: string;
   endDate: string;
   title: string;
@@ -440,6 +470,13 @@ export interface ProjectSelect<T extends boolean = true> {
  * via the `definition` "experiences_select".
  */
 export interface ExperiencesSelect<T extends boolean = true> {
+  cvTranslation?:
+    | T
+    | {
+        role?: T;
+        industries?: T;
+        activities?: T;
+      };
   company?: T;
   role?: T;
   startDate?: T;
@@ -464,6 +501,13 @@ export interface ExperiencesSelect<T extends boolean = true> {
  * via the `definition` "education_select".
  */
 export interface EducationSelect<T extends boolean = true> {
+  details?: T;
+  cvTranslation?:
+    | T
+    | {
+        title?: T;
+        details?: T;
+      };
   startDate?: T;
   endDate?: T;
   title?: T;
@@ -566,6 +610,13 @@ export interface Hero {
  */
 export interface Profile {
   id: string;
+  /**
+   * CV translations. Original portfolio fields are English; fill these fields in Italian. Blank English overrides use the original fields.
+   */
+  cvTranslation?: {
+    jobPosition?: string | null;
+    presentation?: string | null;
+  };
   name: string;
   surname: string;
   jobPosition: string;
@@ -596,6 +647,41 @@ export interface Profile {
     url: string;
     id?: string | null;
   };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "curriculum".
+ */
+export interface Curriculum {
+  id: string;
+  phone?: string | null;
+  location?: string | null;
+  skills?: string | null;
+  languages?: string | null;
+  additionalInfo?: string | null;
+  publications?:
+    | {
+        title: string;
+        description?: string | null;
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  research?:
+    | {
+        title: string;
+        date?: string | null;
+        description?: string | null;
+        url?: string | null;
+        /**
+         * Optional link to the corresponding portfolio project; title/description above are the concise CV text.
+         */
+        project?: (string | null) | Project;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -638,6 +724,12 @@ export interface HeroSelect<T extends boolean = true> {
  * via the `definition` "profile_select".
  */
 export interface ProfileSelect<T extends boolean = true> {
+  cvTranslation?:
+    | T
+    | {
+        jobPosition?: T;
+        presentation?: T;
+      };
   name?: T;
   surname?: T;
   jobPosition?: T;
@@ -656,6 +748,38 @@ export interface ProfileSelect<T extends boolean = true> {
     | {
         label?: T;
         url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "curriculum_select".
+ */
+export interface CurriculumSelect<T extends boolean = true> {
+  phone?: T;
+  location?: T;
+  skills?: T;
+  languages?: T;
+  additionalInfo?: T;
+  publications?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        url?: T;
+        id?: T;
+      };
+  research?:
+    | T
+    | {
+        title?: T;
+        date?: T;
+        description?: T;
+        url?: T;
+        project?: T;
         id?: T;
       };
   updatedAt?: T;

@@ -1,3 +1,4 @@
+import { cvTranslation } from '../fields/cvTranslation'
 import type { GlobalConfig } from 'payload'
 import { convertLexicalToHTMLAsync } from '@payloadcms/richtext-lexical/html-async'
 import type { SerializedEditorState } from 'lexical'
@@ -26,6 +27,10 @@ export const Profile: GlobalConfig = {
     ],
   },
   fields: [
+    cvTranslation([
+      { name: 'jobPosition', type: 'text' },
+      { name: 'presentation', type: 'textarea' },
+    ]),
     {
       name: 'name',
       type: 'text',

@@ -8,4 +8,5 @@ export type {
   Footer,
   Experience,
   Education,
+  Curriculum,
 } from "./payload-types";

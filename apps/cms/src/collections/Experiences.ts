@@ -1,3 +1,4 @@
+import { cvTranslation } from '../fields/cvTranslation'
 import type { CollectionConfig } from 'payload'
 
 export const Experiences: CollectionConfig = {
@@ -9,6 +10,11 @@ export const Experiences: CollectionConfig = {
     read: () => true,
   },
   fields: [
+    cvTranslation([
+      { name: 'role', type: 'text' },
+      { name: 'industries', type: 'textarea', admin: { description: 'One industry per line.' } },
+      { name: 'activities', type: 'textarea', admin: { description: 'One bullet per line.' } },
+    ]),
     {
       name: 'company',
       type: 'text',
