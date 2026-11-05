@@ -1,4 +1,3 @@
-import { cvTranslation } from '../fields/cvTranslation'
 import type { CollectionConfig } from 'payload'
 
 export const Education: CollectionConfig = {
@@ -10,11 +9,7 @@ export const Education: CollectionConfig = {
     read: () => true,
   },
   fields: [
-    { name: 'details', type: 'textarea', admin: { description: 'Optional education bullets, one per line (English).' } },
-    cvTranslation([
-      { name: 'title', type: 'text' },
-      { name: 'details', type: 'textarea', admin: { description: 'One bullet per line.' } },
-    ]),
+    { name: 'details', localized: true, type: 'textarea', admin: { description: 'Optional education bullets, one per line (English).' } },
     {
       name: 'startDate',
       type: 'date',
@@ -38,7 +33,7 @@ export const Education: CollectionConfig = {
       },
     },
     {
-      name: 'title',
+      name: 'title', localized: true,
       type: 'text',
       required: true,
     },

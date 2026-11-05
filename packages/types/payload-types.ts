@@ -73,6 +73,8 @@ export interface Config {
     experiences: Experience;
     education: Education;
     keywords: Keyword;
+    publications: Publication;
+    research: Research;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -85,6 +87,8 @@ export interface Config {
     experiences: ExperiencesSelect<false> | ExperiencesSelect<true>;
     education: EducationSelect<false> | EducationSelect<true>;
     keywords: KeywordsSelect<false> | KeywordsSelect<true>;
+    publications: PublicationsSelect<false> | PublicationsSelect<true>;
+    research: ResearchSelect<false> | ResearchSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -96,13 +100,11 @@ export interface Config {
     footer: Footer;
     hero: Hero;
     profile: Profile;
-    curriculum: Curriculum;
   };
   globalsSelect: {
     footer: FooterSelect<false> | FooterSelect<true>;
     hero: HeroSelect<false> | HeroSelect<true>;
     profile: ProfileSelect<false> | ProfileSelect<true>;
-    curriculum: CurriculumSelect<false> | CurriculumSelect<true>;
   };
   locale: 'en' | 'it';
   user: User & {
@@ -257,20 +259,6 @@ export interface Keyword {
  */
 export interface Experience {
   id: string;
-  /**
-   * CV translations. Original portfolio fields are English; fill these fields in Italian. Blank English overrides use the original fields.
-   */
-  cvTranslation?: {
-    role?: string | null;
-    /**
-     * One industry per line.
-     */
-    industries?: string | null;
-    /**
-     * One bullet per line.
-     */
-    activities?: string | null;
-  };
   company: string;
   role: string;
   startDate: string;
@@ -299,20 +287,36 @@ export interface Education {
    * Optional education bullets, one per line (English).
    */
   details?: string | null;
-  /**
-   * CV translations. Original portfolio fields are English; fill these fields in Italian. Blank English overrides use the original fields.
-   */
-  cvTranslation?: {
-    title?: string | null;
-    /**
-     * One bullet per line.
-     */
-    details?: string | null;
-  };
   startDate: string;
   endDate: string;
   title: string;
   school: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publications".
+ */
+export interface Publication {
+  id: string;
+  title: string;
+  description?: string | null;
+  url?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "research".
+ */
+export interface Research {
+  id: string;
+  title: string;
+  description?: string | null;
+  url?: string | null;
+  date?: string | null;
+  project?: (string | null) | Project;
   updatedAt: string;
   createdAt: string;
 }
@@ -346,6 +350,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'keywords';
         value: string | Keyword;
+      } | null)
+    | ({
+        relationTo: 'publications';
+        value: string | Publication;
+      } | null)
+    | ({
+        relationTo: 'research';
+        value: string | Research;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -470,13 +482,6 @@ export interface ProjectSelect<T extends boolean = true> {
  * via the `definition` "experiences_select".
  */
 export interface ExperiencesSelect<T extends boolean = true> {
-  cvTranslation?:
-    | T
-    | {
-        role?: T;
-        industries?: T;
-        activities?: T;
-      };
   company?: T;
   role?: T;
   startDate?: T;
@@ -502,12 +507,6 @@ export interface ExperiencesSelect<T extends boolean = true> {
  */
 export interface EducationSelect<T extends boolean = true> {
   details?: T;
-  cvTranslation?:
-    | T
-    | {
-        title?: T;
-        details?: T;
-      };
   startDate?: T;
   endDate?: T;
   title?: T;
@@ -523,6 +522,30 @@ export interface KeywordsSelect<T extends boolean = true> {
   label?: T;
   showInFooter?: T;
   order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publications_select".
+ */
+export interface PublicationsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  url?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "research_select".
+ */
+export interface ResearchSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  url?: T;
+  date?: T;
+  project?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -610,13 +633,11 @@ export interface Hero {
  */
 export interface Profile {
   id: string;
-  /**
-   * CV translations. Original portfolio fields are English; fill these fields in Italian. Blank English overrides use the original fields.
-   */
-  cvTranslation?: {
-    jobPosition?: string | null;
-    presentation?: string | null;
-  };
+  phone?: string | null;
+  location?: string | null;
+  skills?: string | null;
+  languages?: string | null;
+  additionalInfo?: string | null;
   name: string;
   surname: string;
   jobPosition: string;
@@ -647,41 +668,6 @@ export interface Profile {
     url: string;
     id?: string | null;
   };
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "curriculum".
- */
-export interface Curriculum {
-  id: string;
-  phone?: string | null;
-  location?: string | null;
-  skills?: string | null;
-  languages?: string | null;
-  additionalInfo?: string | null;
-  publications?:
-    | {
-        title: string;
-        description?: string | null;
-        url?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  research?:
-    | {
-        title: string;
-        date?: string | null;
-        description?: string | null;
-        url?: string | null;
-        /**
-         * Optional link to the corresponding portfolio project; title/description above are the concise CV text.
-         */
-        project?: (string | null) | Project;
-        id?: string | null;
-      }[]
-    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -724,12 +710,11 @@ export interface HeroSelect<T extends boolean = true> {
  * via the `definition` "profile_select".
  */
 export interface ProfileSelect<T extends boolean = true> {
-  cvTranslation?:
-    | T
-    | {
-        jobPosition?: T;
-        presentation?: T;
-      };
+  phone?: T;
+  location?: T;
+  skills?: T;
+  languages?: T;
+  additionalInfo?: T;
   name?: T;
   surname?: T;
   jobPosition?: T;
@@ -748,38 +733,6 @@ export interface ProfileSelect<T extends boolean = true> {
     | {
         label?: T;
         url?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "curriculum_select".
- */
-export interface CurriculumSelect<T extends boolean = true> {
-  phone?: T;
-  location?: T;
-  skills?: T;
-  languages?: T;
-  additionalInfo?: T;
-  publications?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        url?: T;
-        id?: T;
-      };
-  research?:
-    | T
-    | {
-        title?: T;
-        date?: T;
-        description?: T;
-        url?: T;
-        project?: T;
         id?: T;
       };
   updatedAt?: T;

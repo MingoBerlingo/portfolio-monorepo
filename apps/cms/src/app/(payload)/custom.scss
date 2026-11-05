@@ -180,3 +180,10 @@
     pointer-events: none;
   }
 }
+
+// The locale popup is absolutely positioned; reserve its full width and a gap.
+.app-header__localizer.localizer { margin-inline-end: 16px; }
+.app-header__localizer-spacing { padding-inline-end: 16px; }
+
+// Locale labels already include their short code.
+.localizer__locale-code { display: none; }
