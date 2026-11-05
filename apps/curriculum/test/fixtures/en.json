@@ -22,28 +22,11 @@
           }
         ]
       }
-    }
-  },
-  "curriculum": {
+    },
     "phone": "+39 000 0000000",
     "location": "Milan, Italy",
     "skills": "Figma, design system, Svelte, TypeScript",
-    "languages": "Italian (native), English (C1)",
-    "publications": [
-      {
-        "title": "Designing consistent digital experiences",
-        "description": "Rossi, A. (2025). Example publication for layout verification.",
-        "url": "https://example.test/publication"
-      }
-    ],
-    "research": [
-      {
-        "title": "Visual Content Assessment Tool",
-        "date": "2023-10-01",
-        "description": "Dashboard for exploring visual content and research data.",
-        "url": "https://example.test/research"
-      }
-    ]
+    "languages": "Italian (native), English (C1)"
   },
   "experiences": [
     {
@@ -171,6 +154,21 @@
       "startDate": "2017-09-01",
       "endDate": "2020-10-01",
       "details": "Interaction design and data visualization\nPrototyping and design research"
+    }
+  ],
+  "publications": [
+    {
+      "title": "Designing consistent digital experiences",
+      "description": "Rossi, A. (2025). Example publication for layout verification.",
+      "url": "https://example.test/publication"
+    }
+  ],
+  "research": [
+    {
+      "title": "Visual Content Assessment Tool",
+      "date": "2023-10-01",
+      "description": "Dashboard for exploring visual content and research data.",
+      "url": "https://example.test/research"
     }
   ]
 }

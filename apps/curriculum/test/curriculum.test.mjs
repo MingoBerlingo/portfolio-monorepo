@@ -2,10 +2,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderCV } from '../src/render.mjs';
 import { readCV } from '../src/cms.mjs';
+import { normalizeCV } from '../src/model.mjs';
+import { readFile } from 'node:fs/promises';
 
 const data = () => ({
-  profile: { name: 'Ada', surname: 'Rossi', jobPosition: 'Designer', email: 'ada@example.test' },
-  curriculum: { skills: 'Design', languages: 'English', publications: [], research: [] },
+  profile: { name: 'Ada', surname: 'Rossi', jobPosition: 'Designer', email: 'ada@example.test', skills: 'Design', languages: 'English' },
+  publications: [], research: [],
   experiences: [{ company: 'Studio', role: 'Developer', startDate: '2020-01-01', activities: [{ activity: 'Build interfaces' }], industries: [] }],
   education: [{ title: 'Design degree', school: 'University', startDate: '2015-01-01', endDate: '2018-01-01' }]
 });
@@ -19,19 +21,24 @@ test('renders original English records as selectable semantic text and omits bla
   assert.match(html, /@page/);
 });
 
-test('requires Italian translations instead of silently mixing languages', () => {
-  assert.throws(() => renderCV(data(), 'it'), /translation/i);
+test('missing localized content stays empty and editable', () => {
+  const cv = data(); cv.profile.jobPosition = null; cv.experiences[0].role = null;
+  const normalized = normalizeCV(cv, 'it');
+  assert.equal(normalized.profile.jobPosition, ''); assert.equal(normalized.experiences[0].role, '');
+  const html = renderCV(normalized);
+  assert.match(html, /Esperienza lavorativa/); assert.doesNotMatch(html, /Designer|Developer/);
 });
 
-test('uses Italian translations and localized headings and dates', () => {
+test('uses canonical Italian fields and localized headings and dates', () => {
   const cv = data();
-  cv.profile.cvTranslation = { jobPosition: 'Progettista' };
-  cv.experiences[0].cvTranslation = { role: 'Sviluppatore', activities: 'Creo interfacce' };
-  cv.education[0].cvTranslation = { title: 'Laurea in design' };
+  cv.profile.jobPosition = 'Progettista';
+  cv.experiences[0].role = 'Sviluppatore'; cv.experiences[0].activities = [{ activity: 'Creo interfacce' }];
+  cv.education[0].title = 'Laurea in design';
   const html = renderCV(cv, 'it');
   assert.match(html, /Esperienza lavorativa/);
   assert.match(html, /Creo interfacce/);
   assert.match(html, /In corso/);
+  assert.match(html, /gennaio 2020/); assert.match(html, /Laurea in design/); assert.match(html, /Progettista/);
   assert.doesNotMatch(html, /Build interfaces/);
 });
 
@@ -39,7 +46,7 @@ test('escapes CMS text and rejects executable links', () => {
   const cv = data();
   cv.profile.name = '<script>alert(1)</script>';
   cv.profile.linkedin = { url: 'javascript:alert(1)' };
-  cv.curriculum.research = [{ title: 'Research', description: '<img onerror=bad>', url: 'https://example.test/?a=1&b=2' }];
+  cv.research = [{ title: 'Research', description: '<img onerror=bad>', url: 'https://example.test/?a=1&b=2' }];
   const html = renderCV(cv, 'en');
   assert.doesNotMatch(html, /<script>|href="javascript:/);
   assert.match(html, /&lt;img onerror=bad&gt;/);
@@ -62,7 +69,11 @@ test('reads all collection pages and disables localized fallback', async () => {
   const result = await readCV({ baseURL: 'http://localhost:3000', locale: 'it', token: 'secret', fetcher });
   assert.equal(result.experiences.length, 2);
   assert.equal(result.education.length, 2);
-  assert.equal(urls.length, 6);
+  assert.equal(result.publications.length, 2);
+  assert.equal(result.research.length, 2);
+  assert.equal(urls.length, 9);
+  assert.ok(urls.every(url => new URL(url).searchParams.get('locale') === 'it'));
+  assert.ok(urls.every(url => !new URL(url).pathname.includes('curriculum')));
 });
 
 test('reports authentication errors without exposing credentials', async () => {
@@ -107,4 +118,40 @@ test('preserves explicit line breaks and list item boundaries in source introduc
   ] } };
   const html = renderCV(cv, 'en');
   assert.match(html, /<p>First line<\/p><p>Second line<\/p><p>First item<\/p><p>Second item<\/p>/);
+});
+
+
+test('renders changed local copies without changing the imported source', () => {
+  const source = data(); const working = normalizeCV(source, 'en');
+  working.profile.name = 'Edited'; working.experiences[0].activities = 'Custom achievement';
+  working.education[0].endDate = '2026-11-05';
+  const html = renderCV(working);
+  assert.match(html, /Edited Rossi/); assert.match(html, /Custom achievement/); assert.match(html, /November 2026/);
+  assert.doesNotMatch(html, /Build interfaces/); assert.equal(source.profile.name, 'Ada');
+  assert.equal(source.experiences[0].activities[0].activity, 'Build interfaces');
+});
+
+test('respects reordered and hidden sections including printed page breaks', () => {
+  const working = normalizeCV(data(), 'en');
+  working.sectionOrder = ['education', 'experience', 'skills', 'introduction', 'publications', 'research', 'additional'];
+  let html = renderCV(working);
+  assert.ok(html.indexOf('<h2>Education') < html.indexOf('<h2>Work experience'));
+  assert.doesNotMatch(html, /<section class="new-page">/);
+  working.hiddenSections = ['experience', 'skills']; html = renderCV(working);
+  assert.doesNotMatch(html, /Build interfaces|Work experience|Skills and competencies|<strong>Languages:/);
+  assert.match(html, /Design degree/);
+});
+
+test('canonical fixtures render their supplied language content', async () => {
+  for (const [locale, expected, absent] of [['en', 'Design and implementation', 'Progettazione e sviluppo'], ['it', 'Progettazione e sviluppo', 'Design and implementation']]) {
+    const fixture = JSON.parse(await readFile(new URL(`./fixtures/${locale}.json`, import.meta.url), 'utf8'));
+    const html = renderCV(fixture, locale);
+    assert.ok(html.includes(expected)); assert.ok(!html.includes(absent));
+    assert.ok(html.includes(fixture.profile.location)); assert.match(html, /example.test\/research/);
+  }
+});
+
+test('invalid edited dates are reported instead of printed as misleading values', () => {
+  const working = normalizeCV(data(), 'en'); working.experiences[0].startDate = 'invalid';
+  assert.throws(() => renderCV(working), /Invalid CV date/);
 });

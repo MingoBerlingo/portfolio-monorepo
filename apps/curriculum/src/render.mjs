@@ -1,4 +1,5 @@
 import { validateLocale } from './cms.mjs';
+import { normalizeCV } from './model.mjs';
 
 const labels = {
   en: { introduction: 'Introduction', skills: 'Skills and competencies', languages: 'Languages', experience: 'Work experience', education: 'Education', publications: 'Publications', research: 'Research projects', additional: 'Additional information', present: 'Present' },
@@ -12,25 +13,11 @@ const safeURL = value => {
   try { const u = new URL(value); return ['https:', 'http:'].includes(u.protocol) ? u.href : null; } catch { return null; }
 };
 const link = (url, label) => safeURL(url) ? `<a href="${escape(safeURL(url))}">${escape(label || url)}</a>` : '';
-const richText = node => {
-  if (!node) return '';
-  if (node.type === 'linebreak') return '\n';
-  if (node.text) return node.text;
-  const separator = ['root', 'list'].includes(node.type) ? '\n' : '';
-  return (node.children ?? []).map(richText).join(separator);
-};
-
-/** Semantic HTML only: every CMS string is escaped, including translated text. */
-export function renderCV({ profile, curriculum = {}, experiences = [], education = [] }, locale) {
+/** Render the exact edited working copy; the browser and PDF use the same template. */
+export function renderCV(source, locale = source.locale) {
   validateLocale(locale);
-  if (!profile?.name || !profile?.surname || !profile?.email || !profile?.jobPosition) throw new Error('Complete the CMS Profile name, surname, email and job position before exporting.');
+  const { profile, experiences, education, publications, research, sectionOrder, hiddenSections } = normalizeCV(source, locale);
   const t = labels[locale];
-  const translated = (record, field, original, context) => {
-    const value = record.cvTranslation?.[field];
-    if (value?.trim()) return value;
-    if (locale === 'en' || !original?.trim()) return original ?? '';
-    throw new Error(`Missing ${locale} translation: ${context}.${field}. Fill CV translation in the CMS.`);
-  };
   const date = value => {
     if (!value) return t.present;
     const d = new Date(value);
@@ -39,17 +26,18 @@ export function renderCV({ profile, curriculum = {}, experiences = [], education
   };
   const section = (title, body, pageBreak = false) => body ? `<section${pageBreak ? ' class="new-page"' : ''}><h2>${escape(title)}</h2><div class="section-body">${body}</div></section>` : '';
   const entry = (heading, body, period = '') => `<article>${period ? `<p class="date">${escape(period)}</p>` : ''}<h3>${escape(heading)}</h3>${body}</article>`;
-  const title = translated(profile, 'jobPosition', profile.jobPosition, 'Profile');
-  const intro = translated(profile, 'presentation', richText(profile.presentation?.root), 'Profile');
-  const experienceHTML = experiences.map(e => {
-    const role = translated(e, 'role', e.role, `Experience ${e.company}`);
-    const industries = translated(e, 'industries', (e.industries ?? []).map(x => x.industry).join('\n'), `Experience ${e.company}`);
-    const activities = translated(e, 'activities', (e.activities ?? []).map(x => x.activity).join('\n'), `Experience ${e.company}`);
-    return entry(`${role} – ${e.company}`, paragraphs(industries) + bullets(activities), `${date(e.startDate)} – ${date(e.endDate)}`);
-  }).join('');
-  const educationHTML = education.map(e => entry(translated(e, 'title', e.title, `Education ${e.school}`), paragraphs(e.school) + bullets(translated(e, 'details', e.details, `Education ${e.school}`)), `${date(e.startDate)} – ${date(e.endDate)}`)).join('');
-  const extras = key => (curriculum[key] ?? []).map(e => entry(e.title, paragraphs(e.description) + link(e.url), e.date ? date(e.date) : '')).join('');
-  const fullName = `${profile.name} ${profile.surname}`;
+  const experienceHTML = experiences.map(e => entry([e.role, e.company].filter(Boolean).join(' – '), paragraphs(e.industries) + bullets(e.activities), [e.startDate ? date(e.startDate) : '', date(e.endDate)].filter(Boolean).join(' – '))).join('');
+  const educationHTML = education.map(e => entry(e.title, paragraphs(e.school) + bullets(e.details), [e.startDate ? date(e.startDate) : '', e.endDate ? date(e.endDate) : ''].filter(Boolean).join(' – '))).join('');
+  const extras = entries => entries.map(e => entry(e.title, paragraphs(e.description) + link(e.url), e.date ? date(e.date) : '')).join('');
+  const fullName = `${profile.name} ${profile.surname}`.trim();
+  const bodies = {
+    introduction: paragraphs(profile.presentation),
+    skills: paragraphs(profile.skills) + (profile.languages ? `<p><strong>${t.languages}:</strong> ${escape(profile.languages)}</p>` : ''),
+    experience: experienceHTML, education: educationHTML,
+    publications: extras(publications), research: extras(research), additional: paragraphs(profile.additionalInfo),
+  };
+  const visible = sectionOrder.filter(key => !hiddenSections.includes(key) && bodies[key]);
+  const content = visible.map((key, index) => section(t[key], bodies[key], key === 'education' && index > 0 && visible.slice(0,index).includes('experience'))).join('');
   return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(fullName)} – CV (${locale})</title><style>
   @page { size: A4; margin: 15mm 12mm; }
   * { box-sizing: border-box; }
@@ -66,11 +54,8 @@ export function renderCV({ profile, curriculum = {}, experiences = [], education
   ul { padding-left: 4mm; margin: 1mm 0 0; } li { margin-bottom: 1mm; break-inside: avoid; }
   p { orphans: 3; widows: 3; } a { color: inherit; text-decoration: underline; overflow-wrap: anywhere; } h1,h2,h3,p,li { overflow-wrap: anywhere; }
   @media print { .new-page { break-before: page; } }
-  @media screen { body { background: #e8e8e8; padding: 12mm; } main { background: white; padding: 15mm 12mm; max-width: 210mm; min-height: 297mm; } }
-  @media screen and (max-width: 650px) { body { padding: 8px; } main { padding: 16px; } section { padding-left: 0; } h2 { position: static; width: auto; margin-bottom: 8px; } }
-  </style></head><body><main><header><h1>${escape(fullName)}</h1><p class="role">${escape(title)}</p><div class="contact">${paragraphs(profile.email)}${paragraphs(curriculum.phone)}${paragraphs(curriculum.location)}${link(profile.linkedin?.url, profile.linkedin?.label || 'LinkedIn')} ${link(profile.github?.url, profile.github?.label || 'GitHub')}</div></header>
-  ${section(t.introduction, paragraphs(intro))}
-  ${section(t.skills, paragraphs(curriculum.skills) + (curriculum.languages ? `<p><strong>${t.languages}:</strong> ${escape(curriculum.languages)}</p>` : ''))}
-  ${section(t.experience, experienceHTML)}${section(t.education, educationHTML, Boolean(experienceHTML))}${section(t.publications, extras('publications'))}${section(t.research, extras('research'))}${section(t.additional, paragraphs(curriculum.additionalInfo))}
+  @media screen { body { background: #eae9f0; padding: 20px; width: 834px; } main { background: white; padding: 15mm 12mm; width: 794px; max-width: none; min-height: 1123px; box-shadow: 0 2px 8px #22113312; } }
+  </style></head><body><main><header><h1>${escape(fullName)}</h1><p class="role">${escape(profile.jobPosition)}</p><div class="contact">${paragraphs(profile.email)}${paragraphs(profile.phone)}${paragraphs(profile.location)}${link(profile.linkedin?.url, profile.linkedin?.label || 'LinkedIn')} ${link(profile.github?.url, profile.github?.label || 'GitHub')}</div></header>
+  ${content}
   </main></body></html>`;
 }
