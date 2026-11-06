@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeCV} from '../src/model.mjs';
-import {HISTORY_KEY,listVersions,saveVersion,deleteVersion} from '../src/history.mjs';
+import {normalizeCV} from '../src/model.ts';
+import {HISTORY_KEY,listVersions,saveVersion,deleteVersion} from '../src/history.ts';
 const memory=()=>{const data=new Map();return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)}};
 test('named versions persist independent complete snapshots and delete by id',()=>{
  const storage=memory(),doc=normalizeCV({},'it');doc.hiddenSections=['education'];

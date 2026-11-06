@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { renderCV } from '../src/render.mjs';
-import { readCV } from '../src/cms.mjs';
-import { normalizeCV } from '../src/model.mjs';
+import { renderCV } from '../src/render.ts';
+import { readCV } from '../src/cms.ts';
+import { normalizeCV } from '../src/model.ts';
 import { readFile } from 'node:fs/promises';
 
 const data = () => ({

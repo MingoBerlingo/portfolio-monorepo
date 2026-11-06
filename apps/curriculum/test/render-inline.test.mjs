@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeCV} from '../src/model.mjs';
-import {renderCV} from '../src/render.mjs';
+import {normalizeCV} from '../src/model.ts';
+import {renderCV} from '../src/render.ts';
 const document=()=>normalizeCV({profile:{name:'Ada'},experiences:[{role:'Designer',company:'Studio',activities:'First\n\nThird'}],education:[{}],publications:[{}],research:[{}]},'en');
 test('editable canvas exposes canonical fields, stable bullet indexes and contextual controls',()=>{
  const html=renderCV(document(),'en',{editable:true});

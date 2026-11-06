@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeCV, validateDocument, fingerprint, isDirty} from '../src/model.mjs';
+import {normalizeCV, validateDocument, fingerprint, isDirty} from '../src/model.ts';
 
 test('canonical fields normalize without legacy translation or curriculum fallback', () => {
  const doc = normalizeCV({profile:{name:'Ada',cvTranslation:{it:{name:'Wrong'}},skills:'Design'},curriculum:{phone:'wrong'},experiences:[{industries:[{industry:'Web'},{industry:'Print'}],activities:[{activity:'Build'}]}],research:[{project:{id:4,title:'Project'}}]},'it');
@@ -29,4 +29,19 @@ test('old named history documents upgrade portfolio without losing legacy fields
  assert.equal(validateDocument(old),old);
  const upgraded=normalizeCV(old);assert.deepEqual(upgraded.profile.portfolio,{label:'',url:''});assert.equal(upgraded.profile.additionalInfo,'Legacy');assert.equal(Object.hasOwn(old.profile,'portfolio'),false);
  assert.throws(()=>validateDocument({...upgraded,profile:{...upgraded.profile,portfolio:{label:'x',url:42}}}));
+});
+
+test('legacy documents preserve arbitrary section order and deleted entries across normalization',()=>{
+ const legacy=normalizeCV({profile:{additionalInfo:'Retain me'},experiences:[{company:'Deleted'},{company:'Kept'}]},'it');
+ delete legacy.profile.portfolio;
+ legacy.sectionOrder=['research','education','skills','additional','publications','introduction','experience'];
+ legacy.hiddenSections=['experience','additional'];
+ legacy.experiences.splice(0,1);
+ const copy=normalizeCV(legacy);
+ assert.deepEqual(copy.sectionOrder,legacy.sectionOrder);
+ assert.deepEqual(copy.hiddenSections,legacy.hiddenSections);
+ assert.deepEqual(copy.experiences.map(entry=>entry.company),['Kept']);
+ assert.equal(copy.profile.additionalInfo,'Retain me');
+ assert.equal(validateDocument(copy),copy);
+ assert.notEqual(copy.experiences,legacy.experiences);
 });

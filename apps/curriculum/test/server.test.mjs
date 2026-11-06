@@ -1,57 +1,63 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createApp } from '../src/server.mjs';
+import { createHandlers } from '../src/lib/server/api.ts';
+import { requestViolation } from '../src/lib/server/security.ts';
+import { normalizeCV, MAX_DOCUMENT_BYTES } from '../src/model.ts';
+const pdfRequest = body => new Request('http://127.0.0.1:4174/api/pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
 
-async function request(path, options = {}, dependencies = {}) {
-  const server = createApp(dependencies);
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  try { return await fetch(`http://127.0.0.1:${server.address().port}${path}`, options); }
-  finally { server.closeAllConnections(); server.close(); }
-}
-
-test('serves the editor without fetching or modifying CMS content', async () => {
-  const res = await request('/');
-  assert.equal(res.status, 200);
-  assert.match(await res.text(), /Curriculum/);
-  assert.match(res.headers.get('cache-control'), /no-store/);
-});
-
-test('only imports canonical CMS content for supported locales', async () => {
-  let calls = 0;
-  const read = async ({ locale }) => { calls++; assert.equal(locale, 'it'); return { profile: { name: 'Ada' } }; };
-  const result = await request('/api/cv?locale=it', { headers: { Authorization: 'JWT session' } }, { read });
-  assert.equal(result.status, 200);
-  assert.equal((await result.json()).profile.name, 'Ada');
-  const bad = await request('/api/cv?locale=fr', {}, { read });
-  assert.equal(bad.status, 400);
-  assert.equal(calls, 1);
-});
-
-test('rejects cross-origin PDF requests before rendering', async () => {
-  const res = await request('/api/pdf', { method: 'POST', headers: { Origin: 'https://example.test', 'Content-Type': 'application/json' }, body: '{}' }, { print: () => { throw new Error('must not print'); } });
-  assert.equal(res.status, 403);
-});
-
-test('does not serve arbitrary files or allow CMS writes', async () => {
-  assert.equal((await request('/src/../../package.json')).status, 404);
-  assert.equal((await request('/api/cv?locale=en', { method: 'POST' })).status, 404);
-});
-
-test('rejects malformed documents before PDF generation', async () => {
-  const res = await request('/api/pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ locale: 'fr' }) });
-  assert.equal(res.status, 400);
-});
-
-test('imports CV content with no browser session and never forwards browser credentials', async () => {
+test('imports canonical CMS content without forwarding browser credentials', async () => {
   let options;
-  const res=await request('/api/cv?locale=en',{headers:{Cookie:'payload-token=browser-cookie',Authorization:'JWT browser-token'}},{read:async args=>{options=args;return {profile:{name:'Ada'}};}});
-  assert.equal(res.status,200);
-  assert.equal((await res.json()).profile.name,'Ada');
-  assert.deepEqual(options,{locale:'en'});
+  const handlers = createHandlers({ read: async args => { options = args; return { profile: { name: 'Ada' } }; } });
+  const response = await handlers.cv(new URL('http://127.0.0.1:4174/api/cv?locale=en'));
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).profile.name, 'Ada');
+  assert.deepEqual(options, { locale: 'en' });
+  assert.equal((await handlers.cv(new URL('http://127.0.0.1:4174/api/cv?locale=fr'))).status, 400);
 });
 
-test('editor has no connection form and does not accept browser login credentials', async () => {
-  const page=await request('/');
-  assert.doesNotMatch(await page.text(),/Connect CMS|connect-dialog|connect-form/);
-  assert.equal((await request('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).status,404);
+test('rejects external hosts, cross-origin requests and cross-site browser requests', () => {
+  const req = headers => new Request('http://127.0.0.1:4174/api/pdf', { headers });
+  assert.equal(requestViolation(req({ Host: '127.0.0.1:4174', Origin: 'http://127.0.0.1:4174' })), null);
+  assert.match(requestViolation(req({ Host: 'evil.test:4174' })), /local/);
+  assert.match(requestViolation(req({ Origin: 'https://evil.test' })), /Cross-origin/);
+  assert.match(requestViolation(req({ 'Sec-Fetch-Site': 'cross-site' })), /Cross-origin/);
+});
+
+test('rejects malformed, oversized and non-JSON documents before printing', async () => {
+  const handlers = createHandlers({ print: async () => { assert.fail('must not print'); } });
+  assert.equal((await handlers.pdf(pdfRequest('{'))).status, 400);
+  assert.equal((await handlers.pdf(pdfRequest(JSON.stringify({ locale: 'fr' })))).status, 400);
+  assert.equal((await handlers.pdf(pdfRequest(' '.repeat(MAX_DOCUMENT_BYTES + 1)))).status, 413);
+  assert.equal((await handlers.pdf(new Request('http://127.0.0.1:4174/api/pdf', { method: 'POST', body: '{}' }))).status, 400);
+});
+
+test('sanitizes unexpected CMS and PDF exceptions', async () => {
+  const secret = 'private mongodb://credential';
+  const handlers = createHandlers({ read: async () => { throw Error(secret); }, print: async () => { throw Error(secret); } });
+  const cms = await handlers.cv(new URL('http://127.0.0.1:4174/api/cv?locale=it'));
+  assert.equal(cms.status, 503); assert.doesNotMatch(await cms.text(), /credential/);
+  const pdf = await handlers.pdf(pdfRequest(JSON.stringify(normalizeCV({}, 'it'))));
+  assert.equal(pdf.status, 500); assert.doesNotMatch(await pdf.text(), /credential/);
+});
+
+test('allows one PDF at a time and releases the guard after printing', async () => {
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  let started;
+  const ready = new Promise(resolve => { started = resolve; });
+  const handlers = createHandlers({ print: async () => { started(); await gate; return Buffer.from('%PDF'); } });
+  const body = JSON.stringify(normalizeCV({}, 'en'));
+  const first = handlers.pdf(pdfRequest(body)); await ready;
+  assert.equal((await handlers.pdf(pdfRequest(body))).status, 429);
+  release(); const response = await first;
+  assert.equal(response.status, 200); assert.match(response.headers.get('content-disposition'), /cv-en.pdf/);
+  assert.equal((await handlers.pdf(pdfRequest(body))).status, 200);
+});
+
+test('releases the PDF guard when printing fails', async () => {
+  let calls = 0;
+  const handlers = createHandlers({ print: async () => { if (++calls === 1) throw Error('printer failure'); return Buffer.from('%PDF'); } });
+  const body = JSON.stringify(normalizeCV({}, 'en'));
+  assert.equal((await handlers.pdf(pdfRequest(body))).status, 500);
+  assert.equal((await handlers.pdf(pdfRequest(body))).status, 200);
 });

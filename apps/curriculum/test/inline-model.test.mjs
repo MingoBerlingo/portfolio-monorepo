@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeCV, isDirty } from '../src/model.mjs';
-import { applyTextEdit, addBullet, splitBullet, mergeBullet, removeEntry, moveEntry, addEntry } from '../src/inline-model.mjs';
+import { normalizeCV, isDirty } from '../src/model.ts';
+import { applyTextEdit, addBullet, splitBullet, mergeBullet, removeEntry, moveEntry, addEntry } from '../src/inline-model.ts';
 
 const source=()=>normalizeCV({profile:{name:'Ada'},experiences:[{role:'Designer',activities:'First result\nSecond result'}]},'en');
 test('inline text and bullet edits change only the working copy',()=>{

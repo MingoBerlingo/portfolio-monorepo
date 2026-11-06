@@ -1,5 +1,7 @@
 # Curriculum Studio
 
+Built with Svelte 5, SvelteKit, strict TypeScript and Tailwind CSS. The editor uses dnd-kit’s Svelte sortable primitives; CMS/PDF operations run in server-only routes.
+
 A separate local web app for adapting your CMS profile into job-specific Italian or English CVs. Edit directly on the CV layout, save named versions in this browser, and download the current version as a selectable-text PDF. The app never writes your edits back to the CMS or adds CV files to the published portfolio.
 
 ## Start
@@ -37,7 +39,7 @@ the local app server. There is no interactive connection form in the editor.
 
 ## CMS content
 
-- **Profile:** existing name, surname, professional title, rich-text presentation, email and links. Phone, location, skills, languages and additional information are also here; those CV-only fields require authenticated reads.
+- **Profile:** existing name, surname, professional title, rich-text presentation, email and links. Phone, location, skills, languages and portfolio link are also here; those CV-only fields require authenticated reads.
 - **Experiences / Education:** existing records with directly localized text fields. Company/school names, dates and links remain shared. Industry and activity text is localized inside the existing array rows.
 - **Publications / Research:** independent collections, with localized titles/descriptions and shared links. Research can reference an existing portfolio project. That CMS relationship is metadata; the CV prints the authored research title/description/link.
 - Select **🇬🇧 EN / 🇮🇹 IT** in the CMS to author each language. There are no duplicate “CV translation” fields or Curriculum global.
@@ -54,7 +56,7 @@ In this checkout the conversion has been applied, and a second dry run reports z
 
 1. Choose **🇬🇧 EN / 🇮🇹 IT** and load from CMS.
 2. Click text directly on the paper to edit it. Empty fields have faint editor-only placeholders. Paragraphs accept multiline text; each bullet can be edited separately. Enter splits a bullet and Backspace at its start merges it with the previous one.
-3. Hover over dates or links for their compact editing controls. Use entry controls to move/remove an entry, or **Add entry** for a new one. The section controls on the left let you reorder sections or omit them from the PDF. On narrow screens, choose a section from the compact selector.
+3. Hover over dates or links for their compact editing controls. Hover or focus a section or entry to reveal its drag handle and delete button. Drag sections as whole blocks, or entries within their section; keyboard users press Space, use arrow keys, then Space to drop or Escape to cancel. Section deletion removes it from this working CV and offers Restore in the sidebar. Use **Add entry** for new entries. On narrow screens, choose a section from the compact selector.
 4. Use **Fit**, **100%** or **125%** to adjust the paper zoom. All text edits update the working copy immediately; there is no separate form and preview.
 5. Click **Save version**, provide a name and save. History records the complete copy, language, section order and save date. Existing saved versions remain compatible. Load or delete saved versions from **History**.
 6. Click **Download PDF** to download exactly the current edited copy. Downloading does not save an editable history version or clear the unsaved state.
@@ -65,7 +67,7 @@ Saved versions stay in this browser on this device until deleted or browser site
 
 ## PDF output
 
-The renderer uses the Figma CV's blue section labels and two-column layout. DM Sans is bundled locally for the app and editable paper; static DM Sans faces are embedded in each PDF, so no installed font or external font service is required. The bundled SIL Open Font License is in `public/fonts/OFL.txt`. Education starts on a new page when it follows work experience. Longer content can use additional pages. Text is selectable, HTTP(S) links are clickable and the printer loads no external assets. The editable paper uses A4 width; the PDF adds automatic print pagination. Editing outlines, placeholders and controls are excluded from PDF output. Paragraph line breaks are retained.
+The renderer uses the Figma CV's blue section labels and two-column layout. DM Sans is bundled locally for the app and editable paper; static DM Sans faces are embedded in each PDF, so no installed font or external font service is required. The bundled SIL Open Font License is in `static/fonts/OFL.txt`. Content paginates naturally; longer CVs use additional pages. Text is selectable, HTTP(S) links are clickable and the printer loads no external assets. The editable paper uses A4 width; the PDF adds automatic print pagination. Editing outlines, placeholders and controls are excluded from PDF output. Paragraph line breaks are retained.
 
 Web downloads are streamed directly to the browser: the server does not keep the edited documents or PDFs. For optional command-line export:
 
@@ -79,7 +81,9 @@ These CLI commands use the same local reader and write ignored files to `apps/cu
 ## Verification and fictional samples
 
 ```sh
+pnpm --filter curriculum check
 pnpm curriculum:test
+pnpm --filter curriculum build
 pnpm --filter curriculum test:e2e
 pnpm --filter cms test:int
 ```
@@ -93,3 +97,5 @@ CURRICULUM_FIXTURES=1 pnpm curriculum:dev
 ```
 
 Stop the ordinary curriculum server first if port 4174 is occupied. The fixture mode is opt-in and is not used by normal `pnpm dev`.
+
+For a production-style local run, build first (`pnpm --filter curriculum build`), then use `pnpm curriculum:preview`. The launcher binds to loopback and protects static assets as well as API routes. The separate app is never included in portfolio publication.

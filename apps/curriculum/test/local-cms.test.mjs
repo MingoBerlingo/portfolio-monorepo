@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readAppCV } from '../src/local-cms.mjs';
+import { readAppCV } from '../src/local-cms.ts';
 
 test('local reader rejects unsupported locales before accessing the database', async () => {
   await assert.rejects(readAppCV({locale:'fr'}),/Unsupported locale/);
