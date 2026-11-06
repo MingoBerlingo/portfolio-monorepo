@@ -1,6 +1,6 @@
 # Curriculum Studio
 
-A separate local web app for adapting your CMS profile into job-specific Italian or English CVs. Edit a working copy, save named versions in this browser, and download the current version as a selectable-text PDF. The app never writes your edits back to the CMS or adds CV files to the published portfolio.
+A separate local web app for adapting your CMS profile into job-specific Italian or English CVs. Edit directly on the CV layout, save named versions in this browser, and download the current version as a selectable-text PDF. The app never writes your edits back to the CMS or adds CV files to the published portfolio.
 
 ## Start
 
@@ -53,10 +53,11 @@ In this checkout the conversion has been applied, and a second dry run reports z
 ## Working on a version
 
 1. Choose **🇬🇧 EN / 🇮🇹 IT** and load from CMS.
-2. Edit Profile, Introduction, Skills & languages, Experience, Education, Publications, Research or Additional info. Add, remove or reorder list entries. Use section controls to reorder sections or omit them from the PDF.
-3. The preview updates from your working copy. The CMS is unchanged.
-4. Click **Save version**, provide a name and save. History records the complete copy, language, section order and save date. Load or delete saved versions from **History**.
-5. Click **Download PDF** to download exactly the current edited copy. Downloading does not save an editable history version or clear the unsaved state.
+2. Click text directly on the paper to edit it. Empty fields have faint editor-only placeholders. Paragraphs accept multiline text; each bullet can be edited separately. Enter splits a bullet and Backspace at its start merges it with the previous one.
+3. Hover over dates or links for their compact editing controls. Use entry controls to move/remove an entry, or **Add entry** for a new one. The section controls on the left let you reorder sections or omit them from the PDF. On narrow screens, choose a section from the compact selector.
+4. Use **Fit**, **100%** or **125%** to adjust the paper zoom. All text edits update the working copy immediately; there is no separate form and preview.
+5. Click **Save version**, provide a name and save. History records the complete copy, language, section order and save date. Existing saved versions remain compatible. Load or delete saved versions from **History**.
+6. Click **Download PDF** to download exactly the current edited copy. Downloading does not save an editable history version or clear the unsaved state.
 
 There is no autosave. Closing/reloading the page, switching language, reloading the CMS or loading another version warns when there are unsaved changes. Browsers control the exact wording of close-page warnings and may suppress them on some mobile/browser lifecycle paths. Storage failures are reported, leave your edits intact and do not mark them saved.
 
@@ -64,7 +65,7 @@ Saved versions stay in this browser on this device until deleted or browser site
 
 ## PDF output
 
-The renderer uses the Figma CV's blue section labels and two-column layout. Education starts on a new page when it follows work experience. Longer content can use additional pages. Text is selectable, HTTP(S) links are clickable and the printer loads no external assets. Arial/sans-serif fonts use the local system. Preview shows the content at A4 width; the PDF adds automatic print pagination.
+The renderer uses the Figma CV's blue section labels and two-column layout. DM Sans is bundled locally for the app and editable paper; static DM Sans faces are embedded in each PDF, so no installed font or external font service is required. The bundled SIL Open Font License is in `public/fonts/OFL.txt`. Education starts on a new page when it follows work experience. Longer content can use additional pages. Text is selectable, HTTP(S) links are clickable and the printer loads no external assets. The editable paper uses A4 width; the PDF adds automatic print pagination. Editing outlines, placeholders and controls are excluded from PDF output. Paragraph line breaks are retained.
 
 Web downloads are streamed directly to the browser: the server does not keep the edited documents or PDFs. For optional command-line export:
 
@@ -83,7 +84,7 @@ pnpm --filter curriculum test:e2e
 pnpm --filter cms test:int
 ```
 
-The editor browser test uses a temporary local server and fictional fixtures. It verifies editing, entry and section controls, exact named snapshots, reopening history, date metadata, unsaved-change guards, storage-quota failures, delayed imports, language switching, responsive layout and PDF download. Browser test screenshots and a sample edited PDF are written only into ignored `apps/curriculum/output/`.
+The editor browser test uses a temporary local server and fictional fixtures. It verifies inline text/multiline/bullet editing, paste safety, contextual dates/links, entry and section controls, exact named snapshots, reopening history, date metadata, unsaved-change guards, storage-quota failures, delayed imports, language switching, delayed font loading, responsive layout, embedded fonts and PDF download. Browser test screenshots and a sample edited PDF are written only into ignored `apps/curriculum/output/`.
 
 For a local fictional demo with no database:
 

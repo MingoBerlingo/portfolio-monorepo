@@ -310,7 +310,7 @@ After CMS edits, rebuild the static site with `pnpm build:site` to publish them.
 ## Local CV editor
 
 The separate [Curriculum Studio app](apps/curriculum/README.md) loads Italian or
-English content from the CMS, lets you tailor a working copy, saves named versions
+English content from the CMS, lets you edit the CV layout directly, saves named versions
 with dates in this browser, and downloads the edited copy as PDF.
 
 Run `pnpm dev` for all apps or `pnpm curriculum:dev` for the editor alone, then open
