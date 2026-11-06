@@ -1,105 +1,38 @@
-# Draft PR: Local curriculum editor with shared multilingual CMS content
+# Draft PR: Local SvelteKit CV studio with shared multilingual CMS content
 
-## Problem and result
+CV content was maintained separately from the portfolio. This branch adds a separate local app that reads the same CMS, lets the user tailor a CV directly on its layout, saves named versions in the browser and downloads the current working copy as PDF.
 
-CV content was maintained separately from the portfolio. This branch adds a separate local curriculum web app that imports the same CMS profile, experience and education, allows job-specific edits to a working copy, saves named browser-only versions with dates, and downloads the edited copy as PDF.
+## Implementation
 
-The CMS uses its existing fields for Italian/English translations. CV-only contact/skills/language fields live inside Profile; Publications and Research are independent collections. Duplicate translation groups and the Curriculum global are removed.
+- Svelte 5 components, strict TypeScript, SvelteKit server routes and Tailwind CSS. The standalone imperative JavaScript editor/server are removed.
+- dnd-kit Svelte sortable primitives provide handle-only section and entry dragging, live sorting transitions, pointer/touch/keyboard support and cancellation. Profile stays pinned; entries stay within their own sections. Hovering or selecting a block reveals drag/delete controls. Deleted sections can be restored; entry deletion requires confirmation. These changes affect the working copy only.
+- Canonical localized CMS fields supply 🇬🇧 EN / 🇮🇹 IT without cross-language fallback. CV-only information lives in Profile; Publications and Research are dedicated collections. Duplicate translation groups and the Curriculum global are removed.
+- Italian Figma content is populated locally: profile, six separate experience records, two education records, one publication and two research projects. Original English work/education text, dates and row identifiers are preserved. Location comes from the existing Hero introduction; portfolio URL comes from the configured Pages repository.
+- Save requires a name and records the entire document, language, order, visibility and date. Existing browser versions remain compatible. No autosave: close/reload, language/CMS refresh and history loading guard unsaved changes; storage failure keeps edits and does not mark them saved.
+- PDF downloads include current unsaved edits. The print renderer embeds DM Sans, escapes text, validates bounded documents and makes no network requests. UI controls are excluded; longer content paginates naturally. Web downloads are not retained on the server.
 
-## Behavior
+## Local-only boundaries
 
-- **🇬🇧 EN / 🇮🇹 IT** in both language selectors, with space between the CMS selector and avatar.
-- Import canonical CMS fields without silently substituting a different language.
-- Edit printable text directly on the CV layout; use contextual date/link controls; add/remove/reorder entries and reorder or hide sections. No separate input form or preview pane.
-- Save requires a name. History stores the complete document, language, section visibility/order and timestamp in this browser; load/delete from History.
-- No autosave. Unsaved changes trigger guards for reload/close, locale switch, CMS reload and history load. Failed storage writes retain edits and do not claim success.
-- Delayed imports lock document-changing controls. Imports lock section controls until the new document is ready.
-- PDF download prints exactly the current copy, including unsaved changes, without marking it saved or retaining it on the server.
-- The local server uses a read-only Payload bridge with the checkout's CMS configuration. No browser login or Connect button; Chrome and other browsers work independently of CMS cookies. CV edits/history never write to the CMS.
-- App binds to loopback and rejects cross-origin requests. The local data bridge has a fixed set of read operations and only accepts en/it. Print content is escaped, validated and printed without network access.
+The Node adapter launcher binds to loopback. Static assets and server routes reject external Host/cross-origin requests; development has equivalent request checks and denies private environment/CMS/backup paths. PDF requests have a streamed 1 MB limit and a single-print guard. Unexpected errors are sanitized. The local reader performs fixed read-only Payload operations using `apps/cms/.env`; credentials never enter client code and no browser CMS login is needed. The curriculum app is separate from portfolio publication.
 
-## Local commit sequence
+Raw BSON-preserving backups and import source data remain in ignored `.local/`. The canonical migration retains legacy storage for recovery; its education/research collection names match Mongo storage. On another database, review the migration's dry run before applying it with a new backup path.
 
-The first three commits establish the original local PDF feature:
-
-1. `8af47b3` — CMS CV content and additive translations.
-2. `33eccac` — bilingual renderer, CMS reader and fixtures.
-3. `128eb79` — preview/PDF workflow and initial documentation.
-
-Three follow-up commits implement the approved editor and revised CMS design:
-
-4. `e15dcf6` — `refactor(cms): share localized profile fields and split CV collections`
-   - Replace duplicate groups with native localization, move CV fields to Profile, create collections, migrate/back up existing storage and update shared types.
-5. `1582602` — `feat(curriculum): add editable working copies and named browser history`
-   - Canonical document model, browser editor/live preview, local snapshots, unsaved guards and safe edited-document renderer.
-6. `feat(curriculum): serve local editor and download tailored PDFs`
-   - Loopback app server, CMS import, direct PDF download, browser E2E, CLI compatibility and documentation.
-
-Additional local follow-ups:
-
-7. `5b822fc` — load local CMS content without a browser login.
-8. `4c6ed8e` — inline renderer/model support and bundled DM Sans with static PDF embedding.
-9. `feat(curriculum): edit directly on the CV canvas` — minimal direct-edit interface, contextual controls, responsive zoom, browser verification and updated documentation.
-
-## Run
+## Run and verify
 
 ```sh
-pnpm dev
-# or, with the CMS already running:
 pnpm curriculum:dev
+# http://127.0.0.1:4174/
+
+pnpm --filter curriculum check
+pnpm curriculum:test
+pnpm --filter curriculum build
+pnpm --filter curriculum test:e2e
+# Production-style local run after building:
+pnpm curriculum:preview
 ```
 
-Open `http://localhost:4174`. Use that same origin for future access to saved versions. No CMS browser login is needed. MongoDB and the CMS environment configuration must be available locally. See `apps/curriculum/README.md` for setup, optional CLI export and fictional demos.
+Use the same origin consistently: `localhost:4174` and `127.0.0.1:4174` have separate browser histories. MongoDB and the CMS environment configuration must be available; the CMS HTTP server itself need not run. `CURRICULUM_FIXTURES=1` opts into fictional demo data. CLI export remains available through `pnpm curriculum:pdf --locale it|en`.
 
-## Data preservation
+Validation covers strict Svelte/TypeScript checks with no warnings, the production build, 47 curriculum unit tests, native CMS schema checks, and the real adapter-node browser flow. Browser tests exercise pointer/touch/keyboard reordering and cancellation, deletion/restoration, section navigation, text/bullet/IME/paste editing, dates/links, legacy/named history, unsaved guards, storage failure, loading locks, responsive layout and PDF download. Real HTTP assertions cover static-asset origin/Host guards, invalid locale and oversized requests. Actual downloaded and real CMS PDFs were checked for selectable current text, omitted hidden content and DM Sans; the Italian export remains two A4 pages.
 
-The localization storage migration has been applied locally after a private BSON-preserving backup to ignored `.local/cv-before-canonical-2026-11-05.json`. Original English content remains canonical; existing locale overrides fill missing canonical translations. Legacy raw fields remain for recovery but are no longer exposed by the removed schemas. A repeat dry run reports **zero updates**, verifying idempotence. The backup is not committed.
-
-On another checkout/database, stop the CMS and use `apps/cms/scripts/migrate-canonical-cv.ts` before editing with the new schema. Its default is a read-only dry run; `--apply` requires a new backup path. Review migrated translation rows because old textarea lines are matched by row order.
-
-## Validation
-
-- Full `pnpm test`: passes (44 curriculum tests, 34 CMS integration tests, 1 CMS browser test, 37 portfolio tests).
-- `pnpm --filter cms test:curriculum`: 5 schema/migration-transform tests pass.
-- CMS TypeScript check and portfolio Svelte check: pass (0 errors/warnings).
-- Editor browser E2E passes: canonical import, all-field edits, entry add/remove/reorder, section visibility/order, named/date saves, reload and history restoration, before-unload and locale-change guards, storage quota errors, delayed CMS import, language selection, responsive layout and actual PDF download.
-- Parsed downloaded PDF: all expected local edits present, hidden section omitted, text selectable; rendered pages visually inspected.
-- Actual local CMS data imports in a fresh browser without a login; current English fields preserved and duplicate groups absent in CMS.
-- Existing CMS browser dependency was installed locally so the previously blocked test now passes.
-
-## Scope and practical limits
-
-No CV route, PDF, link or editor is added to the published portfolio. Website build/publish scripts remain unchanged. No push, remote PR, merge or publication was performed.
-
-History is browser/device/origin-specific, subject to available storage, and disappears if site data is cleared. It is not synced or automatically saved. Browsers control close-warning wording and can suppress lifecycle warnings in some environments. PDF pagination flows; long CVs may exceed two pages. Existing missing translations must be authored in the CMS or filled in the local working copy.
-
-## Cross-browser connection fix
-
-The original session-based importer worked only when that browser was already
-signed into the CMS. It has been replaced with a one-shot, read-only Payload
-bridge. The local server loads the CMS configuration and reads the five allowed
-sources directly; neither browser credentials nor a browser login endpoint are
-used. The worker flushes its result, closes MongoDB and exits. Public CMS access
-rules are unchanged. A fresh Google Chrome session with zero cookies successfully
-loads the real profile; anonymous access to the protected CMS collections remains
-denied. Named browser history is unchanged.
-
-## Inline layout and UI refinement
-
-The form/preview interface is replaced with one editable A4 paper. Text and bullets edit in place; dates and links use compact contextual controls. Wide screens keep section controls beside the canvas; smaller screens use a section selector. Fit/100%/125% zoom is available. The header has padded locale controls, and the introductory marketing copy, footer, sidebar note and persistent success banners are removed.
-
-The same renderer produces editable paper and print markup. Editing attributes, placeholders and controls never appear in PDFs. A same-page ShadowRoot scopes the CV stylesheet; event handlers bind once and update the same plain document model. Named history remains compatible. Browser tests cover rapid editing with delayed font loading, paste safety, bullet splitting/merging, entry operations and all existing save/unsaved guards.
-
-DM Sans is bundled with its SIL Open Font License. The app uses a variable WOFF2; PDF output embeds official static faces for weights 400–700, uses Unicode mappings and disables ligatures for clean text extraction. Actual downloaded PDF verification confirms the expected edited text, date/link values, hidden-content omission, and embedded Type0/FontFile2 DM Sans fonts. No runtime request to Google Fonts is needed.
-
-Verification note: an initial parallel run hit the existing `ThemeSwitch.svelte.spec.ts > expands the new theme in a circle centered on the switch` timing assertion. The isolated portfolio rerun and the subsequent clean full-suite run passed; no portfolio source or tests were changed.
-
-## Figma content and annotated layout follow-up
-
-Imported Italian content from Figma section `1577:2` into the existing native localized fields. Filled Profile contact/competency data and created the publication and two research entries. Existing English work/education text, array identifiers and dates are preserved; the six experience records stay separate. Location comes from the existing Hero introduction (Lecco, Italy); portfolio URL comes from the configured portfolio Pages repository. A raw BSON-preserving backup and the import source remain in ignored `.local/`, outside Git. A repeat import required zero changes.
-
-Profile now has an optional private portfolio link. Additional information is removed from CMS UI and CV output; legacy history still validates and its stored data is retained. Corrected the canonical migration's raw Mongo collection names for education and research. Research imports use descending research date.
-
-Sections reorder through canvas/sidebar drag handles with mouse, touch and keyboard arrows. Profile stays pinned. Labeled contact links, inline Sectors/Settore, language-first skills and bold competency prefixes share the editor/PDF renderer. Natural pagination produces a two-page Italian PDF. Old saved versions normalize before editing, including adding the new portfolio link; the original stored snapshot stays unchanged. Literal replacement tokens in skills are rendered safely.
-
-Validation: 48 curriculum unit tests, 5 schema tests, 34 CMS integration tests, CMS TypeScript check and the complete browser suite pass. Browser coverage includes mouse/touch drag and cancellation, keyboard ordering, legacy history editing, named saves, unsaved guards and PDF export. The real CMS Italian export was visually checked on both A4 pages and its extracted text checked for the imported content and removed section. Database-dependent checks were rerun successfully with local database access after the restricted run timed out. No remote PR, push or publication.
+The dependency lock reuses existing workspace versions for shared tools. Work remains local: no remote PR, push, merge or publication.
