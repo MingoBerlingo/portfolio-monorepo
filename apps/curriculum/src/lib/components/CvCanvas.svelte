@@ -12,6 +12,7 @@
   } from "../../inline-model.ts";
   import SortableBlock from "./SortableBlock.svelte";
   import EntryList from "./EntryList.svelte";
+  import ContactList from "./ContactList.svelte";
   import Editable from "./Editable.svelte";
   type Props = ComponentProps<typeof DragDropProvider>;
   let {
@@ -19,6 +20,8 @@
     disabled = false,
     zoom = "fit",
     selected = "profile",
+    selectedBlock = null,
+    onblockselect,
     onchange,
     onselect,
     ondetails,
@@ -28,7 +31,12 @@
     disabled?: boolean;
     zoom?: string;
     selected?: string;
-    onchange: (v: CVDocument) => void;
+    selectedBlock?: string | null;
+    onblockselect?: (key: string | null) => void;
+    onchange: (
+      v: CVDocument,
+      meta?: { group?: string; transaction?: "begin" | "commit" | "cancel" },
+    ) => void;
     onselect: (v: string) => void;
     ondetails: (type: "dates" | "link", path: string) => void;
     onerror: (message: string) => void;
@@ -67,7 +75,8 @@
   );
   const visible: SectionKey[] = $derived(
     doc.sectionOrder.filter(
-      (k: SectionKey) => k !== "additional" && !doc.hiddenSections.includes(k),
+      (k: SectionKey) =>
+        k !== "additional" && !(doc.deletedSections ?? []).includes(k),
     ),
   );
   onMount(() => {
@@ -81,7 +90,9 @@
   });
   function text(path: string, value: string, line?: number) {
     try {
-      onchange(applyTextEdit(doc, path, value, line));
+      onchange(applyTextEdit(doc, path, value, line), {
+        group: "text:" + path + (line === undefined ? "" : `:${line}`),
+      });
     } catch (e) {
       onerror(e instanceof Error ? e.message : "Unable to edit");
     }
@@ -100,7 +111,10 @@
     onchange(next);
   }
   function remove(key: SectionKey) {
-    onchange({ ...doc, hiddenSections: [...doc.hiddenSections, key] });
+    onchange({
+      ...doc,
+      deletedSections: [...(doc.deletedSections ?? []), key],
+    });
   }
   const over: Props["onDragOver"] = (event) => {
     const { source, target } = event.operation;
@@ -122,9 +136,10 @@
     });
   };
   const end: Props["onDragEnd"] = (event) => {
-    if (event.canceled) onchange({ ...doc, sectionOrder: snapshot });
+    onchange(event.canceled ? { ...doc, sectionOrder: snapshot } : doc, {
+      transaction: event.canceled ? "cancel" : "commit",
+    });
   };
-  const links = ["linkedin", "portfolio", "github"] as const;
 </script>
 
 <div
@@ -175,81 +190,21 @@
               onchange={text}
             />
           </p>
-          <div class="contact">
-            <p>
-              <span class="contact-label">Mail:</span>
-              <strong
-                ><Editable
-                  path="profile.email"
-                  value={doc.profile.email}
-                  label="Email"
-                  {disabled}
-                  onchange={text}
-                /></strong
-              >
-            </p>
-            <p>
-              <span class="contact-label">Tel:</span>
-              <strong
-                ><Editable
-                  path="profile.phone"
-                  value={doc.profile.phone}
-                  label="Phone"
-                  {disabled}
-                  onchange={text}
-                /></strong
-              >
-            </p>
-            <p>
-              <span class="contact-label"
-                >{doc.locale === "it" ? "Località" : "Location"}:</span
-              >
-              <Editable
-                path="profile.location"
-                value={doc.profile.location}
-                label="Location"
-                {disabled}
-                onchange={text}
-              />
-            </p>
-            {#each links as key}{@const link =
-                doc.profile[
-                  key
-                ]}{#if link && (key !== "github" || link.url || link.label)}<p>
-                  <span class="contact-label"
-                    >{key === "linkedin"
-                      ? "LinkedIn"
-                      : key === "portfolio"
-                        ? "Portfolio"
-                        : "GitHub"}:</span
-                  >
-                  <span class="contact-link"
-                    ><Editable
-                      path={`profile.${key}.label`}
-                      value={link.label ||
-                        link.url.replace(/^https?:\/\//i, "")}
-                      label={key === "linkedin"
-                        ? "LinkedIn"
-                        : key === "portfolio"
-                          ? "Portfolio"
-                          : "GitHub"}
-                      {disabled}
-                      onchange={text}
-                    /></span
-                  ><button
-                    class="detail-button"
-                    type="button"
-                    data-details="link"
-                    data-path={`profile.${key}`}
-                    {disabled}
-                    onclick={() => ondetails("link", `profile.${key}`)}
-                    >Edit link</button
-                  >
-                </p>{/if}{/each}
-          </div>
+          <ContactList
+            {doc}
+            {disabled}
+            {selectedBlock}
+            {onblockselect}
+            {onchange}
+            ontext={text}
+            {ondetails}
+          />
         </header>
         <DragDropProvider
-          onDragStart={() => (snapshot = [...doc.sectionOrder])}
+          onDragStart={() => {
+            snapshot = [...doc.sectionOrder];
+            onchange(doc, { transaction: "begin" });
+          }}
           onDragOver={over}
           onDragEnd={end}
         >
@@ -262,8 +217,28 @@
               label={`${titles[key]} section`}
               section
               {disabled}
-              selected={selected === key}
-              onselect={() => onselect(key)}
+              selected={selectedBlock === `section:${key}`}
+              hidden={doc.hiddenSections.includes(key)}
+              ontoggle={() =>
+                onchange({
+                  ...doc,
+                  hiddenSections: doc.hiddenSections.includes(key)
+                    ? doc.hiddenSections.filter((k) => k !== key)
+                    : [...doc.hiddenSections, key],
+                })}
+              canMoveUp={index > 0}
+              canMoveDown={index < visible.length - 1}
+              onmove={(direction) => {
+                const order = [...doc.sectionOrder];
+                const from = order.indexOf(key);
+                const to = order.indexOf(visible[index + direction]);
+                [order[from], order[to]] = [order[to], order[from]];
+                onchange({ ...doc, sectionOrder: order });
+              }}
+              onselect={() => {
+                onselect(key);
+                onblockselect?.(`section:${key}`);
+              }}
               ondelete={() => remove(key)}
             >
               <h2>{doc.locale === "it" ? it[key] : titles[key]}</h2>
@@ -305,6 +280,10 @@
                     {doc}
                     collection={collections[key]!}
                     active={selected === key}
+                    {selectedBlock}
+                    {onblockselect}
+                    ontransaction={(transaction) =>
+                      onchange(doc, { transaction })}
                     {disabled}
                     onchange={reorder}
                     ontext={text}

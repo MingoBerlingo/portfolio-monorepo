@@ -11,11 +11,15 @@
     SectionKey,
     CollectionKey,
   } from "../types.ts";
+  import { UndoHistory } from "../undo.ts";
+  import { shortcutFor } from "../shortcuts.ts";
   import CvCanvas from "$lib/components/CvCanvas.svelte";
   let doc = $state.raw<CVDocument | null>(null),
     baseline = $state.raw<CVDocument | null>(null),
     locale = $state<Locale>("en"),
     selected = $state("profile"),
+    selectedBlock = $state<string | null>(null),
+    undoRevision = $state(0),
     name = $state(""),
     versionName = $state(""),
     zoom = $state("fit"),
@@ -31,7 +35,17 @@
     detailsError = $state("");
   let saveDialog: HTMLDialogElement,
     historyDialog: HTMLDialogElement,
-    detailsDialog: HTMLDialogElement;
+    detailsDialog: HTMLDialogElement,
+    shortcutsDialog: HTMLDialogElement;
+  let undoHistory: UndoHistory | null = null;
+  const canUndo = $derived.by(() => {
+    void undoRevision;
+    return !loading && Boolean(undoHistory?.canUndo);
+  });
+  const canRedo = $derived.by(() => {
+    void undoRevision;
+    return !loading && Boolean(undoHistory?.canRedo);
+  });
   let details = $state<{
     type: "dates" | "link";
     path: string;
@@ -90,6 +104,9 @@
     locale = normalized.locale;
     name = version;
     selected = "profile";
+    selectedBlock = null;
+    undoHistory = new UndoHistory(normalized);
+    undoRevision++;
     generation++;
   }
   async function loadCMS(next: Locale) {
@@ -114,6 +131,7 @@
   }
   function select(key: string, scroll = false) {
     selected = key;
+    selectedBlock = key === "profile" ? null : `section:${key}`;
     if (scroll) {
       const node =
         key === "profile"
@@ -122,8 +140,8 @@
       node?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
-  async function openSave() {
-    versionName = name;
+  async function openSave(asNew = false) {
+    versionName = asNew ? "" : name;
     saveError = "";
     saveDialog.showModal();
     await tick();
@@ -135,6 +153,8 @@
     try {
       const version = saveVersion(localStorage, doc, versionName);
       baseline = structuredClone(version.document);
+      undoHistory?.record(doc);
+      undoRevision++;
       name = version.name;
       saveDialog.close();
       countHistory();
@@ -225,7 +245,7 @@
           throw Error("Use an http or https URL.");
         next = applyTextEdit(next, `${details.path}.${f.name}`, f.value);
       }
-      doc = next;
+      change(next);
       detailsDialog.close();
     } catch (e) {
       detailsError = error(e);
@@ -260,13 +280,128 @@
       printing = false;
     }
   }
+  function change(
+    next: CVDocument,
+    meta?: { group?: string; transaction?: "begin" | "commit" | "cancel" },
+  ) {
+    if (loading) return;
+    if (!undoHistory) undoHistory = new UndoHistory(doc ?? next);
+    if (meta?.transaction === "begin") undoHistory.begin();
+    else if (meta?.transaction === "cancel") {
+      doc = undoHistory.cancel() ?? next;
+      undoRevision++;
+      return;
+    } else if (meta?.transaction === "commit") undoHistory.commit(next);
+    else undoHistory.record(next, meta?.group);
+    doc = next;
+    undoRevision++;
+  }
+  async function travel(redo = false) {
+    if (loading || !undoHistory) return;
+    const field =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const path = field?.dataset.field,
+      line = field?.dataset.line;
+    const next = redo ? undoHistory.redo() : undoHistory.undo();
+    if (!next) return;
+    doc = next;
+    undoRevision++;
+    generation++;
+    await tick();
+    if (path) {
+      const node = document.querySelector<HTMLElement>(
+        `#canvas [data-field="${path}"]${line === undefined ? "" : `[data-line="${line}"]`}`,
+      );
+      node?.focus({ preventScroll: true });
+      if (node) {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        range.collapse(false);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+    }
+  }
   function restore(key: SectionKey) {
     if (doc)
-      doc = {
+      change({
         ...doc,
+        deletedSections: (doc.deletedSections ?? []).filter((k) => k !== key),
         hiddenSections: doc.hiddenSections.filter((k) => k !== key),
-      };
+      });
     selected = key;
+    selectedBlock = `section:${key}`;
+  }
+  function keyboard(event: KeyboardEvent) {
+    const target = event.target instanceof Element ? event.target : null;
+    const modal = document.querySelector<HTMLDialogElement>("dialog[open]");
+    const action = shortcutFor(event, {
+      editing: Boolean(
+        target?.closest(
+          'input,textarea,select,[contenteditable="plaintext-only"],[contenteditable="true"]',
+        ),
+      ),
+      dialog: Boolean(modal),
+      selected: Boolean(selectedBlock),
+    });
+    if (!action) return;
+    if (
+      document.querySelector('[data-dnd-placeholder],[aria-grabbed="true"]')
+    ) {
+      if (action !== "escape") event.preventDefault();
+      return;
+    }
+    event.preventDefault();
+    if (action === "escape") {
+      if (modal) modal.close();
+      else {
+        (document.activeElement as HTMLElement)?.blur();
+        selectedBlock = null;
+      }
+      return;
+    }
+    if (action === "save" || action === "save-new") {
+      if (!doc || loading) return;
+      if (modal && modal !== saveDialog) return;
+      if (saveDialog.open && action === "save") {
+        document.querySelector<HTMLFormElement>("#save-form")?.requestSubmit();
+        return;
+      }
+      void openSave(action === "save-new");
+      return;
+    }
+    if (action === "help") {
+      shortcutsDialog.showModal();
+      return;
+    }
+    if (loading || !doc) return;
+    if (action === "undo" || action === "redo") {
+      void travel(action === "redo");
+      return;
+    }
+    if (action === "export") {
+      void download();
+      return;
+    }
+    if (!selectedBlock) return;
+    const block = document.querySelector<HTMLElement>(
+      `#canvas [data-block="${selectedBlock}"]`,
+    );
+    const selector =
+      action === "move-up"
+        ? '[data-move="up"]'
+        : action === "move-down"
+          ? '[data-move="down"]'
+          : action === "delete"
+            ? "[data-delete-block]"
+            : "[data-toggle-visibility]";
+    const control = block?.querySelector<HTMLButtonElement>(
+      `:scope > .block-tools ${selector}`,
+    );
+    if (control && !control.disabled) control.click();
   }
   beforeNavigate((navigation) => {
     if (!navigation.willUnload && !guard()) navigation.cancel();
@@ -284,10 +419,12 @@
       countHistory();
       if (historyDialog.open) showHistory();
     };
+    window.addEventListener("keydown", keyboard);
     window.addEventListener("beforeunload", unload);
     window.addEventListener("storage", storage);
     return () => {
       clearTimeout(timer);
+      window.removeEventListener("keydown", keyboard);
       window.removeEventListener("beforeunload", unload);
       window.removeEventListener("storage", storage);
     };
@@ -295,7 +432,7 @@
 </script>
 
 <svelte:head
-  ><title>Curriculum Studio</title><meta
+  ><title>CV Studio</title><meta
     name="robots"
     content="noindex,nofollow"
   /></svelte:head
@@ -307,11 +444,7 @@
     <span
       class="grid size-9 place-items-center rounded-xl bg-indigo-600 text-2xl text-white"
       >c.</span
-    ><span
-      >Curriculum <span class="hidden font-normal text-stone-500 sm:inline"
-        >Studio</span
-      ></span
-    >
+    ><span>CV <span class="font-normal text-stone-500">Studio</span></span>
   </div>
   <div class="flex items-center gap-3 md:gap-5">
     <span
@@ -360,7 +493,30 @@
       ></button
     >
   </div>
-  <div class="ml-auto flex gap-2">
+  <div class="ml-auto flex flex-wrap gap-2">
+    <button
+      id="undo"
+      class="button"
+      aria-label="Undo"
+      title="Undo (⌘/Ctrl Z)"
+      disabled={!canUndo}
+      onclick={() => travel()}>↶</button
+    >
+    <button
+      id="redo"
+      class="button"
+      aria-label="Redo"
+      title="Redo (⌘/Ctrl Shift Z)"
+      disabled={!canRedo}
+      onclick={() => travel(true)}>↷</button
+    >
+    <button
+      id="shortcuts"
+      class="button"
+      aria-label="Keyboard shortcuts"
+      title="Keyboard shortcuts (?)"
+      onclick={() => shortcutsDialog.showModal()}>?</button
+    >
     <label class="sr-only" for="zoom">Canvas zoom</label><select
       id="zoom"
       bind:value={zoom}
@@ -371,7 +527,7 @@
       id="save"
       class="button"
       disabled={!doc || loading}
-      onclick={openSave}>Save version</button
+      onclick={() => openSave()}>Save version</button
     ><button
       id="download"
       class="button primary"
@@ -402,7 +558,7 @@
           onchange={(e) => select(e.currentTarget.value, true)}
           >{#each sections as key}<option value={key}
               >{titles[key]}{doc.hiddenSections.includes(key as SectionKey)
-                ? " (removed)"
+                ? " (hidden)"
                 : ""}</option
             >{/each}</select
         >
@@ -427,23 +583,6 @@
           id="section-controls"
           class="mt-4 flex flex-col gap-3 border-t border-stone-200 pt-4 text-xs text-stone-500"
         >
-          {#if selected !== "profile"}<label class="flex items-center gap-2"
-              ><input
-                id="section-visible"
-                type="checkbox"
-                checked={!doc.hiddenSections.includes(selected as SectionKey)}
-                disabled={loading}
-                onchange={(e) => {
-                  if (!doc) return;
-                  doc = {
-                    ...doc,
-                    hiddenSections: e.currentTarget.checked
-                      ? doc.hiddenSections.filter((k) => k !== selected)
-                      : [...doc.hiddenSections, selected as SectionKey],
-                  };
-                }}
-              /> Include in PDF</label
-            >{/if}
           {#if collections[selected]}<button
               type="button"
               class="add-entry"
@@ -452,21 +591,38 @@
               disabled={loading}
               onclick={() => {
                 if (doc) {
-                  doc = addEntry(doc, collections[selected]);
-                  doc = {
-                    ...doc,
+                  const next = addEntry(doc, collections[selected]);
+                  change({
+                    ...next,
                     hiddenSections: doc.hiddenSections.filter(
                       (k) => k !== selected,
                     ),
-                  };
+                    deletedSections: (doc.deletedSections ?? []).filter(
+                      (k) => k !== selected,
+                    ),
+                  });
                 }
               }}>+ Add entry</button
             >{/if}
-          {#each doc.hiddenSections.filter((k) => k !== "additional") as key}<button
+          {#each (doc.deletedSections ?? []).filter((k) => k !== "additional") as key}<button
               class="button"
               data-restore={key}
               disabled={loading}
               onclick={() => restore(key)}>Restore {titles[key]}</button
+            >{/each}
+          {#each doc.deletedContacts ?? [] as key}<button
+              class="button"
+              data-restore-contact={key}
+              disabled={loading}
+              onclick={() => {
+                if (doc)
+                  change({
+                    ...doc,
+                    deletedContacts: (doc.deletedContacts ?? []).filter(
+                      (k) => k !== key,
+                    ),
+                  });
+              }}>Restore {key}</button
             >{/each}
         </div>
       </aside>
@@ -475,13 +631,15 @@
           disabled={loading}
           {zoom}
           {selected}
-          onchange={(v) => (doc = v)}
+          onchange={change}
+          {selectedBlock}
+          onblockselect={(key) => (selectedBlock = key)}
           onselect={(k) => (selected = k)}
           ondetails={openDetails}
           onerror={(m) => notify(m, true)}
         />{/key}
     </div>{:else}<div id="empty" class="py-24 text-center">
-      <h1 class="mb-6 text-2xl">Curriculum</h1>
+      <h1 class="mb-6 text-2xl">CV Studio</h1>
       <button
         class="button primary"
         id="empty-load"
@@ -589,4 +747,29 @@
       ><button class="button primary" type="submit">Apply</button>
     </div>
   </form>
+</dialog>
+
+<dialog id="shortcuts-dialog" bind:this={shortcutsDialog}>
+  <div class="dialog-top">
+    <h2>Keyboard shortcuts</h2>
+    <button
+      class="icon-button"
+      aria-label="Close shortcuts"
+      onclick={() => shortcutsDialog.close()}>×</button
+    >
+  </div>
+  <p class="mb-4 text-xs text-stone-500">
+    Use Ctrl instead of ⌘ on Windows/Linux.
+  </p>
+  <dl class="grid grid-cols-[auto_1fr] gap-x-5 gap-y-3 text-sm">
+    {#each [["⌘ Z", "Undo"], ["⌘ Shift Z", "Redo (also Ctrl Y)"], ["⌘ S", "Save a named version"], ["⌘ Shift S", "Save as a new version"], ["⌘ Shift E", "Download PDF"], ["Alt ↑ / ↓", "Move selected block"], ["H", "Hide/show selected section"], ["Delete / Backspace", "Delete selected entry or contact"], ["Space → arrows → Space", "Pick up, move and drop a drag handle"], ["Escape", "Cancel drag, close dialog or clear selection"], ["?", "Show keyboard shortcuts"]] as [keys, action]}<dt
+      >
+        <kbd>{keys}</kbd>
+      </dt>
+      <dd>{action}</dd>{/each}
+  </dl>
+  <p class="mt-5 text-xs text-stone-500">
+    Block shortcuts work outside text fields. Undo/redo applies to this editing
+    session; named versions stay in History.
+  </p>
 </dialog>

@@ -1,4 +1,4 @@
-# Curriculum Studio
+# CV Studio
 
 Built with Svelte 5, SvelteKit, strict TypeScript and Tailwind CSS. The editor uses dnd-kit’s Svelte sortable primitives; CMS/PDF operations run in server-only routes.
 
@@ -56,7 +56,7 @@ In this checkout the conversion has been applied, and a second dry run reports z
 
 1. Choose **🇬🇧 EN / 🇮🇹 IT** and load from CMS.
 2. Click text directly on the paper to edit it. Empty fields have faint editor-only placeholders. Paragraphs accept multiline text; each bullet can be edited separately. Enter splits a bullet and Backspace at its start merges it with the previous one.
-3. Hover over dates or links for their compact editing controls. Hover or focus a section or entry to reveal its drag handle and delete button. Drag sections as whole blocks, or entries within their section; keyboard users press Space, use arrow keys, then Space to drop or Escape to cancel. Section deletion removes it from this working CV and offers Restore in the sidebar. Use **Add entry** for new entries. On narrow screens, choose a section from the compact selector.
+3. Hover over dates or links for their compact editing controls. Hover or select a section, entry or contact row to reveal its controls on the left. Drag or use the up/down arrows to reorder. Main sections use an eye button to hide/show: hidden sections remain dimmed in the editor and are omitted from PDF. Entries and contacts use bin buttons; removed contact rows can be restored from the sidebar. Link details use a pen icon. Keyboard users can press Space on a drag handle, use arrow keys, then Space to drop or Escape to cancel. Use **Add entry** for new entries. On narrow screens, choose a section from the compact selector.
 4. Use **Fit**, **100%** or **125%** to adjust the paper zoom. All text edits update the working copy immediately; there is no separate form and preview.
 5. Click **Save version**, provide a name and save. History records the complete copy, language, section order and save date. Existing saved versions remain compatible. Load or delete saved versions from **History**.
 6. Click **Download PDF** to download exactly the current edited copy. Downloading does not save an editable history version or clear the unsaved state.
@@ -99,3 +99,23 @@ CURRICULUM_FIXTURES=1 pnpm curriculum:dev
 Stop the ordinary curriculum server first if port 4174 is occupied. The fixture mode is opt-in and is not used by normal `pnpm dev`.
 
 For a production-style local run, build first (`pnpm --filter curriculum build`), then use `pnpm curriculum:preview`. The launcher binds to loopback and protects static assets as well as API routes. The separate app is never included in portfolio publication.
+
+## Keyboard shortcuts
+
+Use Ctrl instead of ⌘ on Windows/Linux. The `?` button opens this list in the app.
+
+| Shortcut | Action |
+| --- | --- |
+| ⌘ Z | Undo |
+| ⌘ Shift Z (also Ctrl Y) | Redo |
+| ⌘ S | Open named Save version; submit if already in that dialog |
+| ⌘ Shift S | Save as a new version with a blank name |
+| ⌘ Shift E | Download the current PDF |
+| Alt ↑ / ↓ | Move the selected block |
+| H | Hide/show the selected main section |
+| Delete / Backspace | Delete the selected entry or contact; main sections are protected |
+| Space → arrows → Space | Pick up, move and drop a focused drag handle |
+| Escape | Cancel dragging, close a dialog or clear selection |
+| ? | Show keyboard shortcuts |
+
+Single-key and block-movement shortcuts are disabled while typing. Undo/redo covers the current loaded document and resets on a CMS or saved-version load. Consecutive typing in one field is grouped for 750ms; an entire drag is one action, and cancellation creates no undo step. History is bounded to 100 steps and approximately 16 MiB of serialized snapshots. Named browser versions are independent. Visible undo/redo buttons mirror the shortcuts. Modal text editing retains its native undo behavior.

@@ -10,6 +10,7 @@
     Research,
   } from "../../types.ts";
   import SortableBlock from "./SortableBlock.svelte";
+  import Icon from "./Icon.svelte";
   import Editable from "./Editable.svelte";
   type Props = ComponentProps<typeof DragDropProvider>;
   let {
@@ -17,6 +18,9 @@
     collection,
     disabled,
     active = true,
+    selectedBlock = null,
+    onblockselect,
+    ontransaction,
     onchange,
     ontext,
     onsplit,
@@ -29,6 +33,9 @@
     collection: CollectionKey;
     disabled: boolean;
     active?: boolean;
+    selectedBlock?: string | null;
+    onblockselect?: (key: string | null) => void;
+    ontransaction?: (transaction: "begin" | "commit" | "cancel") => void;
     onchange: (key: CollectionKey, from: number, to: number) => void;
     ontext: (path: string, v: string, line?: number) => void;
     onsplit: (p: string, l: number, o: number) => void;
@@ -38,7 +45,6 @@
     onremove: (key: CollectionKey, i: number) => void;
   } = $props();
   let ids = $state<string[]>([]),
-    selected = $state<string | null>(null),
     snapshot: string[] = [];
   $effect(() => {
     if (ids.length !== doc[collection].length)
@@ -91,12 +97,14 @@
         }
       }
     }
+    ontransaction?.(event.canceled ? "cancel" : "commit");
   };
 </script>
 
 <DragDropProvider
   onDragStart={() => {
     snapshot = [...ids];
+    ontransaction?.("begin");
   }}
   onDragOver={over}
   onDragEnd={end}
@@ -111,8 +119,14 @@
         path={`${collection}.${i}`}
         label={`${collection} entry ${i + 1}`}
         {disabled}
-        selected={active && selected === id}
-        onselect={() => (selected = id)}
+        selected={selectedBlock === `entry:${collection}.${i}`}
+        onselect={() => onblockselect?.(`entry:${collection}.${i}`)}
+        canMoveUp={i > 0}
+        canMoveDown={i < ids.length - 1}
+        onmove={(direction) => {
+          onchange(collection, i, i + direction);
+          onblockselect?.(`entry:${collection}.${i + direction}`);
+        }}
         ondelete={() => remove(i)}
       >
         {#if collection !== "publications"}
@@ -200,7 +214,9 @@
               data-details="link"
               data-path={`${collection}.${i}`}
               onclick={() => ondetails("link", `${collection}.${i}`)}
-              {disabled}>Edit link</button
+              {disabled}
+              aria-label="Edit link"
+              title="Edit link"><Icon name="pen" /></button
             >
           </div>{/if}
         {#if collection === "experiences" || collection === "education"}

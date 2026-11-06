@@ -1,3 +1,4 @@
+import { verifyControlsAndShortcuts } from "./shortcuts.e2e.mjs";
 import { chromium } from "playwright";
 import assert from "node:assert/strict";
 import { readFile, mkdir } from "node:fs/promises";
@@ -110,6 +111,7 @@ try {
   await page.goto(url);
   await field("profile.name").waitFor();
   assert.equal(await field("profile.name").textContent(), "Ada");
+  await verifyControlsAndShortcuts(page);
   assert.equal(
     await page.locator('#sections [data-section="additional"]').count(),
     0,
@@ -259,11 +261,20 @@ try {
   );
   assert.deepEqual(await sectionKeys(), originalOrder);
   await cdp.detach();
+  assert.equal(await frame.locator("[data-section-delete]").count(), 0);
   await frame.locator('[data-section="skills"]').hover();
-  await page.locator('[data-section-delete="skills"]').click();
-  assert.equal(await frame.locator('[data-section="skills"]').count(), 0);
-  await page.locator('[data-restore="skills"]').click();
-  assert.ok((await sectionKeys()).includes("skills"));
+  await frame
+    .locator('[data-section="skills"] [data-toggle-visibility]')
+    .click();
+  assert.ok(
+    await frame
+      .locator('[data-section="skills"]')
+      .evaluate((n) => n.classList.contains("section-hidden")),
+  );
+  await frame
+    .locator('[data-section="skills"] [data-toggle-visibility]')
+    .click();
+  assert.equal(await page.locator("#section-visible").count(), 0);
   assert.equal(
     await page.locator("#locale option:checked").textContent(),
     "🇬🇧 EN",
@@ -366,7 +377,9 @@ try {
     frame.locator('[data-section-drag="research"]'),
     "ArrowUp",
   );
-  await page.getByLabel("Include in PDF", { exact: true }).uncheck();
+  await frame
+    .locator('[data-section="research"] [data-toggle-visibility]')
+    .click();
   await page
     .getByRole("button", { name: "Profile & contact", exact: false })
     .click();
@@ -547,9 +560,7 @@ try {
       request.url().endsWith("/api/pdf") && request.method() === "POST",
   );
   const downloadPromise = page.waitForEvent("download");
-  await page
-    .getByRole("button", { name: "Download PDF", exact: false })
-    .click();
+  await page.keyboard.press("Meta+Shift+e");
   const download = await downloadPromise;
   await download.saveAs(new URL("editor-edited.pdf", output).pathname);
   const pdfDocument = (await pdfRequestPromise).postDataJSON();
@@ -594,7 +605,9 @@ try {
     .click();
   await page.waitForFunction(() => document.querySelector("#reload").disabled);
   assert.equal(
-    await page.getByLabel("Include in PDF", { exact: true }).isEnabled(),
+    await frame
+      .locator('[data-section="research"] [data-toggle-visibility]')
+      .isEnabled(),
     false,
   );
   assert.equal(
