@@ -8,7 +8,8 @@ import { printCV } from './pdf.mjs';
 
 const assets = new Map([
   ['/', ['../public/index.html','text/html']], ['/app.css',['../public/app.css','text/css']], ['/app.mjs',['../public/app.mjs','text/javascript']],
-  ...['render','model','history','cms'].map(name=>[`/modules/${name}.mjs`,[`${name}.mjs`,'text/javascript']]),
+  ['/fonts/dm-sans.woff2', ['../public/fonts/dm-sans.woff2', 'font/woff2']],
+  ...['render','model','history','cms','inline-model'].map(name=>[`/modules/${name}.mjs`,[`${name}.mjs`,'text/javascript']]),
 ]);
 function json(res, status, value) { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(value)); }
 async function body(req) {
@@ -23,7 +24,7 @@ export function createApp({ read = readAppCV, print = printCV, fixture } = {}) {
   return createServer(async (req, res) => {
     res.setHeader('Cache-Control','no-store'); res.setHeader('X-Content-Type-Options','nosniff');
     res.setHeader('Cross-Origin-Resource-Policy','same-origin');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-src 'self' about:; connect-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; frame-ancestors 'none'");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-src 'self' about:; connect-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; frame-ancestors 'none'");
     const host = req.headers.host || '';
     if (!/^(localhost|127\.0\.0\.1):\d+$/.test(host)) { json(res,403,{error:'Use the local app address.'}); return; }
     const origin = `http://${host}`;
@@ -32,7 +33,7 @@ export function createApp({ read = readAppCV, print = printCV, fixture } = {}) {
     try {
       if (req.method==='GET' && assets.has(url.pathname)) {
         const [path,type]=assets.get(url.pathname);
-        res.writeHead(200,{'Content-Type':`${type}; charset=utf-8`});res.end(await readFile(new URL(path,import.meta.url)));return;
+        res.writeHead(200,{'Content-Type':type.startsWith('text/') ? `${type}; charset=utf-8` : type});res.end(await readFile(new URL(path,import.meta.url)));return;
       }
       if (req.method==='GET' && url.pathname==='/api/cv') {
         const locale = url.searchParams.get('locale');validateLocale(locale);
