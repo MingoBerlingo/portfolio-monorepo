@@ -59,3 +59,24 @@ test('editable skills keep replacement tokens literal and escape markup',()=>{
  assert.match(html,/<strong>Tools:<\/strong> \$&amp; \$` \$&#39; &lt;script&gt;bad\(\)&lt;\/script&gt;/);
  assert.doesNotMatch(html,/<script>/);
 });
+
+test('contact metadata controls order and deletion without erasing values',()=>{
+ const doc=document();Object.assign(doc.profile,{email:'retain@example.test',phone:'12345',location:'Rome',github:{label:'GitHub name',url:'https://github.com/ada'}});
+ doc.contactOrder=['github','location','phone','email','linkedin','portfolio'];doc.deletedContacts=['phone'];
+ for(const editable of [false,true]){
+  const html=renderCV(doc,'en',{editable});
+  assert.ok(html.indexOf('GitHub:</span>')<html.indexOf('Location:</span>'));
+  assert.ok(html.indexOf('Location:</span>')<html.indexOf('Mail:</span>'));
+  assert.doesNotMatch(html,/12345|data-field="profile.phone"/);
+ }
+ assert.equal(doc.profile.phone,'12345');
+});
+test('deleted and hidden sections stay absent from print and editable rendering',()=>{
+ const doc=document();doc.profile.presentation='Deleted introduction';doc.hiddenSections=['skills'];doc.deletedSections=['introduction'];
+ for(const editable of [false,true])assert.doesNotMatch(renderCV(doc,'en',{editable}),/Deleted introduction|data-section="introduction"|data-section="skills"/);
+ assert.equal(doc.profile.presentation,'Deleted introduction');
+});
+test('empty contact values remain omitted from print',()=>{
+ const html=renderCV(normalizeCV({}));
+ for(const label of ['Mail','Tel','Location','LinkedIn','Portfolio','GitHub'])assert.ok(!html.includes(label+':</span>'));
+});

@@ -1,4 +1,4 @@
-import type { CVDocument, Locale, SectionKey } from "./types.ts";
+import type { CVDocument, ContactKey, Locale, SectionKey } from "./types.ts";
 export type * from "./types.ts";
 type RecordValue = Record<string, unknown>;
 /** Plain, bounded CV documents shared by the editor, history and PDF endpoint. */
@@ -10,6 +10,14 @@ export const SECTION_ORDER = Object.freeze<SectionKey[]>([
   "publications",
   "research",
   "additional",
+]);
+export const CONTACT_ORDER = Object.freeze<ContactKey[]>([
+  "email",
+  "phone",
+  "location",
+  "linkedin",
+  "portfolio",
+  "github",
 ]);
 export const MAX_DOCUMENT_BYTES = 1024 * 1024;
 const profileFields = [
@@ -77,6 +85,9 @@ export function validateDocument(doc: unknown): CVDocument {
     ...Object.keys(entries),
     "sectionOrder",
     "hiddenSections",
+    ...["contactOrder", "deletedContacts", "deletedSections"].filter(
+      (key) => object(doc) && Object.hasOwn(doc, key),
+    ),
   ]);
   if (doc.locale !== "en" && doc.locale !== "it") fail("unsupported locale");
   if (!object(doc.profile)) fail("invalid profile");
@@ -107,17 +118,33 @@ export function validateDocument(doc: unknown): CVDocument {
       fields.forEach((k) => text(entry[k]));
     }
   }
-  for (const key of ["sectionOrder", "hiddenSections"]) {
+  for (const key of [
+    "sectionOrder",
+    "hiddenSections",
+    "deletedSections",
+    "contactOrder",
+    "deletedContacts",
+  ]) {
+    if (!Object.hasOwn(doc, key)) continue;
     const list = doc[key];
+    const allowed: readonly string[] =
+      key === "contactOrder" || key === "deletedContacts"
+        ? CONTACT_ORDER
+        : SECTION_ORDER;
     if (
       !Array.isArray(list) ||
-      list.some((k) => !SECTION_ORDER.includes(k as SectionKey)) ||
+      list.some((k) => !allowed.includes(k)) ||
       new Set(list).size !== list.length
     )
       fail(`invalid ${key}`);
   }
   if ((doc.sectionOrder as unknown[]).length !== SECTION_ORDER.length)
     fail("sectionOrder must include all sections");
+  if (
+    Object.hasOwn(doc, "contactOrder") &&
+    (doc.contactOrder as unknown[]).length !== CONTACT_ORDER.length
+  )
+    fail("contactOrder must include all contacts");
   return doc as unknown as CVDocument;
 }
 function lexical(value: unknown, depth = 0): string {
@@ -168,6 +195,9 @@ export function normalizeCV(
   ) {
     const copy = structuredClone(validateDocument(source));
     copy.profile.portfolio ??= link();
+    copy.contactOrder ??= [...CONTACT_ORDER];
+    copy.deletedContacts ??= [];
+    copy.deletedSections ??= [];
     return copy;
   }
   const p = object(source.profile) ? source.profile : {};
@@ -207,6 +237,9 @@ export function normalizeCV(
   }
   doc.sectionOrder = [...SECTION_ORDER];
   doc.hiddenSections = [];
+  doc.contactOrder = [...CONTACT_ORDER];
+  doc.deletedContacts = [];
+  doc.deletedSections = [];
   return validateDocument(doc);
 }
 function stable(value: unknown): unknown {

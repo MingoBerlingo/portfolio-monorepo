@@ -45,3 +45,24 @@ test('legacy documents preserve arbitrary section order and deleted entries acro
  assert.equal(validateDocument(copy),copy);
  assert.notEqual(copy.experiences,legacy.experiences);
 });
+
+test('older saved documents validate unchanged and normalize metadata defaults',()=>{
+ const old=normalizeCV({profile:{email:'retain@example.test'}});
+ for(const key of ['contactOrder','deletedContacts','deletedSections'])delete old[key];
+ assert.equal(validateDocument(old),old);
+ const upgraded=normalizeCV(old);
+ assert.deepEqual(upgraded.contactOrder,['email','phone','location','linkedin','portfolio','github']);
+ assert.deepEqual(upgraded.deletedContacts,[]);assert.deepEqual(upgraded.deletedSections,[]);
+ assert.equal(upgraded.profile.email,'retain@example.test');assert.equal(Object.hasOwn(old,'contactOrder'),false);
+});
+test('contact and deletion metadata roundtrip and reject invalid, duplicate or missing keys',()=>{
+ const doc=normalizeCV({});doc.contactOrder.reverse();doc.deletedContacts=['phone'];doc.deletedSections=['skills'];
+ assert.deepEqual(normalizeCV(doc),doc);
+ for(const [key,value] of [
+  ['contactOrder',['email']],['contactOrder',['email','email','location','linkedin','portfolio','github']],
+  ['contactOrder',['email','phone','location','linkedin','portfolio','unknown']],
+  ['deletedContacts',['unknown']],['deletedContacts',['email','email']],['deletedContacts',null],
+  ['deletedSections',['unknown']],['deletedSections',['skills','skills']],['deletedSections',undefined],
+ ])assert.throws(()=>validateDocument({...doc,[key]:value}));
+ assert.throws(()=>validateDocument({...doc,unexpectedMetadata:[]}));
+});

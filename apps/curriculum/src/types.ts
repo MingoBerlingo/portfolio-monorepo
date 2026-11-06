@@ -7,6 +7,13 @@ export type SectionKey =
   | "publications"
   | "research"
   | "additional";
+export type ContactKey =
+  | "email"
+  | "phone"
+  | "location"
+  | "linkedin"
+  | "portfolio"
+  | "github";
 export type CollectionKey =
   | "experiences"
   | "education"
@@ -64,6 +71,9 @@ export interface CVDocument {
   research: Research[];
   sectionOrder: SectionKey[];
   hiddenSections: SectionKey[];
+  contactOrder?: ContactKey[];
+  deletedContacts?: ContactKey[];
+  deletedSections?: SectionKey[];
 }
 export type ExperienceEntry = Experience;
 export type EducationEntry = Education;

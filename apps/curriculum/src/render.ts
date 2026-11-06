@@ -5,7 +5,7 @@ export interface RenderOptions {
   fontFaces?: Partial<Record<number, string>>;
 }
 import { validateLocale } from "./cms.ts";
-import { normalizeCV } from "./model.ts";
+import { CONTACT_ORDER, normalizeCV } from "./model.ts";
 
 const labels = {
   en: {
@@ -104,6 +104,9 @@ export function renderCV(
     research,
     sectionOrder,
     hiddenSections,
+    contactOrder = CONTACT_ORDER,
+    deletedContacts = [],
+    deletedSections = [],
   } = normalizeCV(source, locale);
   const t = labels[locale];
   const date = (value: string) => {
@@ -278,6 +281,7 @@ export function renderCV(
     (key) =>
       key !== "additional" &&
       !hiddenSections.includes(key) &&
+      !deletedSections.includes(key) &&
       (editable || bodies[key]),
   );
   const content = visible.map((key) => section(key, bodies[key])).join("");
@@ -335,7 +339,24 @@ export function renderCV(
   `
       : ""
   }
-  </style></head><body><main><header><h1>${editable ? `${field("profile.name", profile.name, "Name")} ${field("profile.surname", profile.surname, "Surname")}` : escape(fullName)}</h1><p class="role">${field("profile.jobPosition", profile.jobPosition, "Job position")}</p><div class="contact">${contactText("email", "Mail")}${contactText("phone", "Tel")}${contactText("location", t.location)}${contactLink("linkedin", "LinkedIn")}${contactLink("portfolio", "Portfolio")}${profile.github.url || profile.github.label ? contactLink("github", "GitHub") : ""}</div></header>
+  </style></head><body><main><header><h1>${editable ? `${field("profile.name", profile.name, "Name")} ${field("profile.surname", profile.surname, "Surname")}` : escape(fullName)}</h1><p class="role">${field("profile.jobPosition", profile.jobPosition, "Job position")}</p><div class="contact">${contactOrder
+    .filter((key) => !deletedContacts.includes(key))
+    .map((key) =>
+      key === "email" || key === "phone" || key === "location"
+        ? contactText(
+            key,
+            key === "email" ? "Mail" : key === "phone" ? "Tel" : t.location,
+          )
+        : contactLink(
+            key,
+            key === "linkedin"
+              ? "LinkedIn"
+              : key === "portfolio"
+                ? "Portfolio"
+                : "GitHub",
+          ),
+    )
+    .join("")}</div></header>
   ${content}
   </main></body></html>`;
 }
