@@ -6,7 +6,7 @@ import { applyTextEdit, addBullet, splitBullet, mergeBullet, addEntry, removeEnt
 const $=id=>document.getElementById(id);
 const canvas=$('canvas').attachShadow({mode:'open'});
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-const titles={profile:'Profile & contact',introduction:'Introduction',skills:'Skills & languages',experience:'Experience',education:'Education',publications:'Publications',research:'Research',additional:'Additional info'};
+const titles={profile:'Profile & contact',introduction:'Introduction',skills:'Skills & languages',experience:'Experience',education:'Education',publications:'Publications',research:'Research'};
 const collections={experience:'experiences',education:'education',publications:'publications',research:'research'};
 const state={doc:null,baseline:null,section:'profile',name:'',loading:false,printing:false,rendering:false,details:null,render:0};
 let noticeTimer,canvasObserver,scale=1;
@@ -24,17 +24,18 @@ function updateStatus(){
  $('dirty-dot').classList.toggle('dirty',dirty());
  $('save').disabled=!state.doc||state.loading;$('download').disabled=!state.doc||state.loading||state.printing;
  $('reload').disabled=state.loading;$('locale').disabled=state.loading;$('history').disabled=state.loading;
- const index=state.doc?.sectionOrder.indexOf(state.section);
- $('section-controls').querySelectorAll('input,button').forEach(c=>{c.disabled=state.loading||(c.dataset.order==='up'&&index===0)||(c.dataset.order==='down'&&index===state.doc?.sectionOrder.length-1);});
+ $('section-controls').querySelectorAll('input,button').forEach(c=>{c.disabled=state.loading;});
+ $('sections').querySelectorAll('button').forEach(c=>{c.disabled=state.loading;});
  lockCanvas();
 }
 function historyCount(){try{$('history-count').textContent=listVersions().length;}catch{$('history-count').textContent='!';}}
 function renderNavigation(){
- const keys=['profile',...state.doc.sectionOrder];
- $('sections').innerHTML=keys.map((key,i)=>`<button type="button" data-section="${key}" class="${state.section===key?'active ':''}${state.doc.hiddenSections.includes(key)?'omitted':''}" ${state.section===key?'aria-current="page"':''}><span class="nav-number">${String(i+1).padStart(2,'0')}</span>${titles[key]}</button>`).join('');
+ const keys=['profile',...state.doc.sectionOrder.filter(key=>Object.hasOwn(titles,key))];
+ if(!keys.includes(state.section))state.section='profile';
+ $('sections').innerHTML=keys.map((key,i)=>`<div class="section-nav-row" data-nav-section="${key}"><button type="button" data-section="${key}" class="${state.section===key?'active ':''}${state.doc.hiddenSections.includes(key)?'omitted':''}" ${state.section===key?'aria-current="page"':''}><span class="nav-number">${String(i+1).padStart(2,'0')}</span>${titles[key]}</button>${key==='profile'?'':`<button type="button" class="section-drag" data-section-drag="${key}" aria-label="Reorder ${titles[key]} section" title="Drag to reorder; use Arrow Up or Arrow Down">⠿</button>`}</div>`).join('');
  $('section-select').innerHTML=keys.map(key=>`<option value="${key}" ${state.section===key?'selected':''}>${titles[key]}${state.doc.hiddenSections.includes(key)?' (hidden)':''}</option>`).join('');
  const key=collections[state.section];
- $('section-controls').innerHTML=state.section==='profile'?'':`<label><input id="section-visible" type="checkbox" ${state.doc.hiddenSections.includes(state.section)?'':'checked'}> Include in PDF</label><div class="section-order"><button class="button" type="button" data-order="up" aria-label="Move section up">↑ Up</button><button class="button" type="button" data-order="down" aria-label="Move section down">↓ Down</button></div>${key?`<button type="button" class="add-entry" data-action="add" data-key="${key}">+ Add entry</button>`:''}`;
+ $('section-controls').innerHTML=state.section==='profile'?'':`<label><input id="section-visible" type="checkbox" ${state.doc.hiddenSections.includes(state.section)?'':'checked'}> Include in PDF</label>${key?`<button type="button" class="add-entry" data-action="add" data-key="${key}">+ Add entry</button>`:''}`;
  updateStatus();
 }
 function selectSection(section,scroll=false){
@@ -60,14 +61,14 @@ function renderCanvas(focus){
  if(!state.doc)return;state.rendering=true;lockCanvas();canvasObserver?.disconnect();
  const html=new DOMParser().parseFromString(renderCV(state.doc,state.doc.locale,{editable:true}),'text/html');
  const styles=html.querySelector('style').textContent.replace(/(^|\s)body(?=\s*\{)/g,'$1.cv-body');
- canvas.innerHTML=`<style>:host { display:block; width:834px; } ${styles}</style><div class="cv-body">${html.body.innerHTML}</div>`;
+ canvas.innerHTML=`<style>:host { display:block; width:834px; } [data-section-drag].drag-source { opacity:.45; } [data-section-drag].drag-target { outline:2px solid #5146df; opacity:1; } ${styles}</style><div class="cv-body">${html.body.innerHTML}</div>`;
  state.rendering=false;lockCanvas();resizeCanvas();
  canvasObserver=new ResizeObserver(resizeCanvas);canvasObserver.observe(canvas.querySelector('main'));
  if(focus)focusField(focus.path,focus.line,focus.offset);
  document.fonts.ready.then(resizeCanvas);
 }
 function adopt(doc,name=''){
- validateDocument(doc);state.doc=structuredClone(doc);state.baseline=structuredClone(doc);state.name=name;$('locale').value=doc.locale;
+ validateDocument(doc);const normalized=normalizeCV(doc,doc.locale);state.doc=structuredClone(normalized);state.baseline=structuredClone(normalized);state.name=name;$('locale').value=doc.locale;
  $('empty').hidden=true;$('workspace').hidden=false;renderNavigation();renderCanvas();updateStatus();
 }
 function edited(){updateStatus();resizeCanvas();}
@@ -128,7 +129,44 @@ $('details-form').addEventListener('submit',event=>{
 $('sections').addEventListener('click',event=>{const b=event.target.closest('[data-section]');if(b)selectSection(b.dataset.section,true);});
 $('section-select').addEventListener('change',event=>selectSection(event.target.value,true));
 $('section-controls').addEventListener('change',event=>{if(state.loading||event.target.id!=='section-visible')return;state.doc.hiddenSections=event.target.checked?state.doc.hiddenSections.filter(k=>k!==state.section):[...state.doc.hiddenSections,state.section];renderNavigation();edited();renderCanvas();});
-$('section-controls').addEventListener('click',event=>{if(state.loading)return;const b=event.target.closest('[data-order]'),action=event.target.closest('[data-action]');if(action){handleAction(action.dataset);return;}if(!b)return;const list=state.doc.sectionOrder,i=list.indexOf(state.section),j=b.dataset.order==='up'?i-1:i+1;if(j<0||j>=list.length)return;[list[i],list[j]]=[list[j],list[i]];renderNavigation();edited();renderCanvas();});
+$('section-controls').addEventListener('click',event=>{if(state.loading)return;const action=event.target.closest('[data-action]');if(action)handleAction(action.dataset);});
+// Both surfaces delegate once: canvas contents and navigation are replaced after edits.
+function moveSection(key,target){
+ if(state.loading||state.rendering||key===target)return false;
+ const list=state.doc.sectionOrder,from=list.indexOf(key),to=list.indexOf(target);
+ if(from<0||to<0||key==='profile'||!Object.hasOwn(titles,target))return false;
+ list.splice(from,1);list.splice(to,0,key);state.section=key;
+ renderNavigation();edited();renderCanvas();return true;
+}
+function bindSectionDrag(root){
+ let drag=null;
+ const handles=()=>[...root.querySelectorAll('[data-section-drag]')];
+ const clear=()=>{for(const node of handles())node.classList.remove('drag-source','drag-target');drag=null;};
+ root.addEventListener('keydown',event=>{
+  const handle=event.target.closest('[data-section-drag]');if(!handle)return;
+  if(event.key==='Escape'){clear();return;}
+  if(!['ArrowUp','ArrowDown'].includes(event.key)||state.loading)return;
+  event.preventDefault();const key=handle.dataset.sectionDrag,list=state.doc.sectionOrder.filter(k=>Object.hasOwn(titles,k));
+  const target=list[list.indexOf(key)+(event.key==='ArrowUp'?-1:1)];
+  if(target&&moveSection(key,target)){root.querySelector(`[data-section-drag="${key}"]`)?.focus({preventScroll:true});notify(`${titles[key]} moved ${event.key==='ArrowUp'?'up':'down'}.`);}
+ });
+ root.addEventListener('pointerdown',event=>{
+  const handle=event.target.closest('[data-section-drag]');if(!handle||state.loading||state.rendering||event.button!==0)return;
+  event.preventDefault();handle.setPointerCapture(event.pointerId);drag={key:handle.dataset.sectionDrag,id:event.pointerId,start:event.clientY,target:null};handle.classList.add('drag-source');
+ });
+ root.addEventListener('pointermove',event=>{
+  if(!drag||drag.id!==event.pointerId)return;event.preventDefault();
+  if(Math.abs(event.clientY-drag.start)<6)return;
+  const candidates=handles();
+  const target=candidates.reduce((best,h)=>Math.abs(h.getBoundingClientRect().top+h.getBoundingClientRect().height/2-event.clientY)<(best.distance)?{node:h,distance:Math.abs(h.getBoundingClientRect().top+h.getBoundingClientRect().height/2-event.clientY)}:best,{node:null,distance:Infinity}).node;
+  for(const h of candidates)h.classList.toggle('drag-target',h===target);
+  drag.target=target?.dataset.sectionDrag===drag.key?null:target?.dataset.sectionDrag;
+  if(event.clientY<90)window.scrollBy(0,-18);else if(event.clientY>innerHeight-60)window.scrollBy(0,18);
+ });
+ root.addEventListener('pointerup',event=>{if(!drag||drag.id!==event.pointerId)return;const {key,target}=drag;clear();if(target&&moveSection(key,target)){root.querySelector(`[data-section-drag="${key}"]`)?.focus({preventScroll:true});notify(`${titles[key]} section moved.`);}});
+ root.addEventListener('pointercancel',clear);root.addEventListener('lostpointercapture',clear);
+}
+bindSectionDrag($('sections'));bindSectionDrag(canvas);
 async function loadCMS(locale){
  if(state.loading||!guard()){if(state.doc)$('locale').value=state.doc.locale;return;}
  state.loading=true;updateStatus();notify('');

@@ -9,7 +9,7 @@ const clone = document => {validateDocument(document);return structuredClone(doc
 function field(document,path) {
   if(typeof path!=='string')throw Error('Invalid editable field');
   const parts=path.split('.');
-  const valid=parts[0]==='profile' && (parts.length===2 || parts.length===3 && ['github','linkedin'].includes(parts[1])) || parts.length===3 && Object.hasOwn(templates,parts[0]) && /^(0|[1-9]\d*)$/.test(parts[1]);
+  const valid=parts[0]==='profile' && (parts.length===2 || parts.length===3 && ['github','linkedin','portfolio'].includes(parts[1])) || parts.length===3 && Object.hasOwn(templates,parts[0]) && /^(0|[1-9]\d*)$/.test(parts[1]);
   if(!valid || parts.some(p=>['__proto__','prototype','constructor'].includes(p)))throw Error('Invalid editable field');
   let parent=document;
   for(const key of parts.slice(0,-1)) {if(!parent||!Object.hasOwn(parent,key))throw Error('Invalid editable field');parent=parent[key];}

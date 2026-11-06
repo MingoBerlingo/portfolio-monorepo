@@ -80,8 +80,8 @@ test('reports authentication errors without exposing credentials', async () => {
   await assert.rejects(readCV({ baseURL: 'http://localhost:3000', locale: 'en', token: 'secret', fetcher: async () => new Response('secret', { status: 403 }) }), /403/);
 });
 
-test('starts education on a new printed page when experience is present', () => {
-  assert.match(renderCV(data(), 'en'), /<section class="new-page"><h2>Education/);
+test('allows education to flow naturally after experience', () => {
+  assert.doesNotMatch(renderCV(data(), 'en'), /class="new-page"|break-before: page/);
   const cv = data();
   cv.experiences = [];
   assert.doesNotMatch(renderCV(cv, 'en'), /<section class="new-page">/);
@@ -131,7 +131,7 @@ test('renders changed local copies without changing the imported source', () => 
   assert.equal(source.experiences[0].activities[0].activity, 'Build interfaces');
 });
 
-test('respects reordered and hidden sections including printed page breaks', () => {
+test('respects reordered and hidden sections with natural pagination', () => {
   const working = normalizeCV(data(), 'en');
   working.sectionOrder = ['education', 'experience', 'skills', 'introduction', 'publications', 'research', 'additional'];
   let html = renderCV(working);

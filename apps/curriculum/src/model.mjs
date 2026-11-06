@@ -17,9 +17,9 @@ export function validateDocument(doc) {
  bounded(doc);
  keys(doc,['locale','profile',...Object.keys(entries),'sectionOrder','hiddenSections']);
  if(!['en','it'].includes(doc.locale)) fail('unsupported locale');
- keys(doc.profile,[...profileFields,'github','linkedin']);
+ keys(doc.profile,[...profileFields,'github','linkedin',...(Object.hasOwn(doc.profile,'portfolio')?['portfolio']:[])]);
  profileFields.forEach(k=>text(doc.profile[k]));
- for(const k of ['github','linkedin']) { keys(doc.profile[k],['label','url']);text(doc.profile[k].label);text(doc.profile[k].url); }
+ for(const k of ['github','linkedin',...(Object.hasOwn(doc.profile,'portfolio')?['portfolio']:[])]) { keys(doc.profile[k],['label','url']);text(doc.profile[k].label);text(doc.profile[k].url); }
  for(const [key,fields] of Object.entries(entries)) {
   if(!Array.isArray(doc[key]) || doc[key].length>200) fail(`${key} must contain at most 200 entries`);
   for(const entry of doc[key]) { keys(entry,fields);fields.forEach(k=>text(entry[k])); }
@@ -48,12 +48,12 @@ const link = value => ({label:string(value?.label),url:string(value?.url)});
 export function normalizeCV(source={}, locale=source?.locale ?? 'en') {
  bounded(source);
  if(source?.sectionOrder !== undefined || source?.hiddenSections !== undefined) {
-  validateDocument(source);return JSON.parse(JSON.stringify(source));
+  validateDocument(source);const copy=JSON.parse(JSON.stringify(source));copy.profile.portfolio ??= link();return copy;
  }
  if(!object(source)) fail('source must be an object');
  const p=object(source.profile)?source.profile:{};
  const doc={locale,profile:Object.fromEntries(profileFields.map(k=>[k,k==='presentation'?multiline(p[k]):string(p[k])]))};
- doc.profile.github=link(p.github);doc.profile.linkedin=link(p.linkedin);
+ doc.profile.github=link(p.github);doc.profile.linkedin=link(p.linkedin);doc.profile.portfolio=link(p.portfolio);
  for(const [key,fields] of Object.entries(entries)) {
   const sourceEntries=source[key]?.docs ?? source[key] ?? [];
   if(!Array.isArray(sourceEntries) || sourceEntries.length>200)fail(`invalid ${key}`);

@@ -23,3 +23,10 @@ test('validation rejects malformed, huge and structurally unsafe documents',()=>
  for(const bad of [null,{}, {...doc,locale:'fr'}, {...doc,profile:{...doc.profile,name:3}}, {...doc,experiences:Array(201).fill({})}, {...doc,profile:{...doc.profile,name:'a'.repeat(50001)}}, {...doc,sectionOrder:['research','research']}, {...doc,hiddenSections:['unknown']}]) assert.throws(()=>validateDocument(bad));
  const giant=normalizeCV({});for(const k of ['name','surname','jobPosition','presentation','email','phone','location','skills','languages','additionalInfo'])giant.profile[k]='💡'.repeat(25000); giant.profile.github.label='💡'.repeat(25000); assert.throws(()=>validateDocument(giant));
 });
+
+test('old named history documents upgrade portfolio without losing legacy fields',()=>{
+ const old=normalizeCV({profile:{additionalInfo:'Legacy'}});delete old.profile.portfolio;
+ assert.equal(validateDocument(old),old);
+ const upgraded=normalizeCV(old);assert.deepEqual(upgraded.profile.portfolio,{label:'',url:''});assert.equal(upgraded.profile.additionalInfo,'Legacy');assert.equal(Object.hasOwn(old.profile,'portfolio'),false);
+ assert.throws(()=>validateDocument({...upgraded,profile:{...upgraded.profile,portfolio:{label:'x',url:42}}}));
+});

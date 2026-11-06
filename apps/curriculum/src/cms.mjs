@@ -15,7 +15,7 @@ export async function readCV({ baseURL = 'http://localhost:3000', locale, token,
   }
   const get = async (path, page) => {
     const url = new URL(`${base.pathname.replace(/\/$/, '')}/api/${path}`, base.origin);
-    url.search = new URLSearchParams({ locale, 'fallback-locale': 'none', depth: '0', ...(page ? { page: String(page), limit: '100', sort: path === 'experiences' || path === 'education' ? '-startDate' : '-createdAt' } : {}) });
+    url.search = new URLSearchParams({ locale, 'fallback-locale': 'none', depth: '0', ...(page ? { page: String(page), limit: '100', sort: path === 'experiences' || path === 'education' ? '-startDate' : path === 'research' ? '-date' : '-createdAt' } : {}) });
     const response = await fetcher(url, {
       headers: { ...(token ? { Authorization: `JWT ${token}` } : {}), ...(cookie ? { Cookie: cookie } : {}) },
       signal: AbortSignal.timeout(30_000),
