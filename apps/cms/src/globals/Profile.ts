@@ -1,7 +1,7 @@
 import type { GlobalConfig } from 'payload'
 import { convertLexicalToHTMLAsync } from '@payloadcms/richtext-lexical/html-async'
 import type { SerializedEditorState } from 'lexical'
-import { linkFields } from '../fields/link'
+import { linkFields, validateUrl } from '../fields/link'
 
 export const Profile: GlobalConfig = {
   slug: 'profile',
@@ -30,7 +30,6 @@ export const Profile: GlobalConfig = {
     { name: 'location', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
     { name: 'skills', type: 'textarea', localized: true, access: { read: ({ req }) => Boolean(req.user) } },
     { name: 'languages', type: 'textarea', localized: true, access: { read: ({ req }) => Boolean(req.user) } },
-    { name: 'additionalInfo', type: 'textarea', localized: true, access: { read: ({ req }) => Boolean(req.user) } },
     {
       name: 'name',
       type: 'text',
@@ -63,6 +62,7 @@ export const Profile: GlobalConfig = {
       type: 'email',
       required: true,
     },
+    { name: 'portfolio', type: 'group', fields: [{ name: 'label', type: 'text' }, { name: 'url', type: 'text', validate: validateUrl }], access: { read: ({ req }) => Boolean(req.user) } },
     {
       name: 'github',
       type: 'group',

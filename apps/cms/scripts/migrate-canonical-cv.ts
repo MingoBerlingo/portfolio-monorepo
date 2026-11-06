@@ -17,12 +17,12 @@ const client = new MongoClient(process.env.DATABASE_URI)
 await client.connect()
 try {
   const db = client.db()
-  const names = ['globals', 'experiences', 'education', 'publications', 'research']
+  const names = ['globals', 'experiences', 'educations', 'publications', 'researches']
   const snapshot: Record<string, any[]> = {}
   for (const name of names) snapshot[name] = await db.collection(name).find({}).toArray()
   const curriculum = snapshot.globals.find(doc => doc.globalType === 'curriculum') || {}
   const operations: { collection: string; filter: any; update: any; upsert?: boolean }[] = []
-  for (const [collection, kind] of [['globals', 'profile'], ['experiences', 'experiences'], ['education', 'education']]) {
+  for (const [collection, kind] of [['globals', 'profile'], ['experiences', 'experiences'], ['educations', 'education']]) {
     for (const doc of snapshot[collection].filter(doc => collection !== 'globals' || doc.globalType === 'profile')) {
       const migrated = migrateDocument(kind, doc)
       const next = kind === 'profile' ? profileCurriculumFields(migrated, curriculum) : migrated
@@ -32,7 +32,8 @@ try {
       if (Object.keys(set).length) operations.push({ collection, filter: { _id: doc._id }, update: { $set: set } })
     }
   }
-  for (const collection of ['publications', 'research'] as const) for (const entry of curriculumEntries(curriculum, collection)) {
+  for (const kind of ['publications', 'research'] as const) for (const entry of curriculumEntries(curriculum, kind)) {
+    const collection = kind === 'research' ? 'researches' : kind
     if (!snapshot[collection].some(doc => doc.migrationKey === entry.migrationKey)) operations.push({ collection, filter: { migrationKey: entry.migrationKey }, update: { $setOnInsert: { ...entry, createdAt: new Date(), updatedAt: new Date() } }, upsert: true })
   }
   console.log(`${apply ? 'Apply' : 'Dry run'}: ${operations.length} document updates/inserts. Legacy data retained.`)

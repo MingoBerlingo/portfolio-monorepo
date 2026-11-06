@@ -284,7 +284,7 @@ export interface Experience {
 export interface Education {
   id: string;
   /**
-   * Optional education bullets, one per line (English).
+   * Optional education bullets, one per line in the selected language.
    */
   details?: string | null;
   startDate: string;
@@ -637,7 +637,6 @@ export interface Profile {
   location?: string | null;
   skills?: string | null;
   languages?: string | null;
-  additionalInfo?: string | null;
   name: string;
   surname: string;
   jobPosition: string;
@@ -658,6 +657,10 @@ export interface Profile {
   } | null;
   presentationHtml?: string | null;
   email: string;
+  portfolio?: {
+    label?: string | null;
+    url?: string | null;
+  };
   github: {
     label: string;
     url: string;
@@ -714,13 +717,18 @@ export interface ProfileSelect<T extends boolean = true> {
   location?: T;
   skills?: T;
   languages?: T;
-  additionalInfo?: T;
   name?: T;
   surname?: T;
   jobPosition?: T;
   presentation?: T;
   presentationHtml?: T;
   email?: T;
+  portfolio?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
   github?:
     | T
     | {

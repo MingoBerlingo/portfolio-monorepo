@@ -8,11 +8,12 @@ import { migrateDocument, curriculumEntries } from '../../scripts/canonical-cv-t
 
 test('canonical schemas localize original fields and protect CV-only data', () => {
   for (const schema of [Profile, Experiences, Education]) expect(schema.fields.some(f => 'name' in f && f.name === 'cvTranslation')).toBe(false)
-  for (const name of ['phone', 'location', 'skills', 'languages', 'additionalInfo']) {
+  for (const name of ['phone', 'location', 'skills', 'languages', 'portfolio']) {
     const field = Profile.fields.find(f => 'name' in f && f.name === name) as any
     expect(field.access.read({ req: {} })).toBe(false)
     expect(field.access.read({ req: { user: {} } })).toBe(true)
   }
+  expect(Profile.fields.some(f => 'name' in f && f.name === 'additionalInfo')).toBe(false)
   for (const schema of [Publications, Research]) expect((schema.access!.read as Function)({ req: {} })).toBe(false)
 })
 

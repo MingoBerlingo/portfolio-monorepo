@@ -9,7 +9,7 @@ export const Education: CollectionConfig = {
     read: () => true,
   },
   fields: [
-    { name: 'details', localized: true, type: 'textarea', admin: { description: 'Optional education bullets, one per line (English).' } },
+    { name: 'details', localized: true, type: 'textarea', admin: { description: 'Optional education bullets, one per line in the selected language.' } },
     {
       name: 'startDate',
       type: 'date',

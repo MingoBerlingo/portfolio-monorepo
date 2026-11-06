@@ -14,7 +14,7 @@ try {
       const result = await payload.find({
         collection: slug, locale, fallbackLocale: false, depth: 0,
         overrideAccess: true, limit: 100, page,
-        sort: slug === 'experiences' || slug === 'education' ? '-startDate' : '-createdAt',
+        sort: slug === 'experiences' || slug === 'education' ? '-startDate' : slug === 'research' ? '-date' : '-createdAt',
       })
       docs.push(...result.docs)
       if (!result.hasNextPage) return docs
