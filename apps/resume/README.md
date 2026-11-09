@@ -119,3 +119,11 @@ Use Ctrl instead of ⌘ on Windows/Linux. The `?` button opens this list in the 
 | ? | Show keyboard shortcuts |
 
 Single-key and block-movement shortcuts are disabled while typing. Undo/redo covers the current loaded document and resets on a CMS or saved-version load. Consecutive typing in one field is grouped for 750ms; an entire drag is one action, and cancellation creates no undo step. History is bounded to 100 steps and approximately 16 MiB of serialized snapshots. Named browser versions are independent. Visible undo/redo buttons mirror the shortcuts. Modal text editing retains its native undo behavior.
+
+## Tailor Resume
+
+Open **Tailor Resume** and choose a CMS locale or paste a plain-text Resume. Add the job description and any notes, answer or skip any follow-up questions, then review the estimated match and edit the draft. Use **Save version** to keep a named copy in this browser or **Download PDF** to export the ATS layout.
+
+Set `OPENAI_API_KEY` in the environment that starts Resume Studio. For Vite development it can also go in the ignored `apps/resume/.env.local` file. Restart Resume Studio after changing it. The optional `OPENAI_MODEL` setting defaults to `gpt-4.1-mini` and must support Structured Outputs.
+
+Tailoring sends the job description, notes, clarification answers, and relevant Resume content to OpenAI. CMS contact fields stay local. When you paste a resume, the app sends the text you provide, including any contact details it contains.

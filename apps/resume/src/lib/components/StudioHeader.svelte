@@ -9,7 +9,7 @@
   <div class="flex flex-wrap items-center gap-x-5 gap-y-1 md:gap-x-8">
     <span class="whitespace-nowrap text-lg font-semibold tracking-tight">Resume <span class="font-normal text-stone-500">Studio</span></span>
     <nav aria-label="Resume Studio" class="flex gap-1 text-sm">
-      {#each [{ href: "/", label: "Base Resume" }] as { href, label }}
+      {#each [{ href: "/", label: "Base Resume" }, { href: "/tailor", label: "Tailor Resume" }] as { href, label }}
         <a {href} aria-current={page.url.pathname === href ? "page" : undefined}
           class="whitespace-nowrap rounded-md px-2.5 py-2 text-stone-600 hover:bg-stone-100 aria-[current=page]:bg-indigo-50 aria-[current=page]:font-semibold aria-[current=page]:text-indigo-700">{label}</a>
       {/each}
