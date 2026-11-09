@@ -30,7 +30,7 @@ it('stores native Italian translations while preserving English and array row ID
 
 it('hides private profile fields and independent Resume collections from anonymous users', async () => {
   const profile = await payload.findGlobal({ slug: 'profile', overrideAccess: false })
-  for (const name of ['phone', 'location', 'skills', 'languages', 'additionalInfo']) expect(profile).not.toHaveProperty(name)
+  for (const name of ['phone', 'location', 'skills', 'legacyLanguages', 'digitalSkills', 'professionalSkills', 'languages', 'drivingLicence', 'additionalInfo']) expect(profile).not.toHaveProperty(name)
   for (const collection of ['publications', 'research'] as const) {
     await expect(payload.find({ collection, overrideAccess: false })).rejects.toThrow()
   }

@@ -11,7 +11,11 @@ export const Profile: GlobalConfig = {
   hooks: {
     afterRead: [
       async ({ doc }) => {
-        if (!doc?.presentation) return doc
+        // Legacy migration values may still exist in MongoDB.
+        delete doc.skills
+        delete doc.legacyLanguages
+        delete doc.drivingLicence
+        if (!doc.presentation) return doc
 
         const html = await convertLexicalToHTMLAsync({
           data: doc.presentation as SerializedEditorState,
@@ -28,8 +32,9 @@ export const Profile: GlobalConfig = {
   fields: [
     { name: 'phone', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
     { name: 'location', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
-    { name: 'skills', type: 'textarea', localized: true, access: { read: ({ req }) => Boolean(req.user) } },
-    { name: 'languages', type: 'textarea', localized: true, access: { read: ({ req }) => Boolean(req.user) } },
+    { name: 'digitalSkills', type: 'text', hasMany: true, localized: true, access: { read: ({ req }) => Boolean(req.user) } },
+    { name: 'professionalSkills', type: 'text', hasMany: true, localized: true, access: { read: ({ req }) => Boolean(req.user) } },
+    { name: 'languages', type: 'text', hasMany: true, localized: true, access: { read: ({ req }) => Boolean(req.user) } },
     {
       name: 'name',
       type: 'text',

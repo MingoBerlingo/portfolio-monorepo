@@ -290,6 +290,20 @@ export function normalizeResume(
       ]),
     ),
   };
+  // The editor and saved drafts use editable text. Format the CMS lists at import.
+  const listText = (value: unknown) => Array.isArray(value)
+    ? value.map(string).map((item) => item.trim()).filter(Boolean).join(", ")
+    : string(value);
+  if (Array.isArray(p.languages)) doc.profile.languages = listText(p.languages);
+  if (Array.isArray(p.digitalSkills) || Array.isArray(p.professionalSkills)) {
+    const labels = locale === "it"
+      ? ["Competenze digitali", "Competenze professionali"]
+      : ["Digital skills", "Professional skills"];
+    doc.profile.skills = [listText(p.digitalSkills), listText(p.professionalSkills)]
+      .map((value, index) => value ? `${labels[index]}: ${value}` : "")
+      .filter(Boolean)
+      .join("\n");
+  }
   doc.profile.github = link(p.github);
   doc.profile.linkedin = link(p.linkedin);
   doc.profile.portfolio = link(p.portfolio);

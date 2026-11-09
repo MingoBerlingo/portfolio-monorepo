@@ -8,7 +8,7 @@ import { migrateDocument, resumeEntries } from '../../scripts/canonical-resume-t
 
 test('canonical schemas localize original fields and protect Resume-only data', () => {
   for (const schema of [Profile, Experiences, Education]) expect(schema.fields.some(f => 'name' in f && f.name === 'cvTranslation')).toBe(false)
-  for (const name of ['phone', 'location', 'skills', 'languages', 'portfolio']) {
+  for (const name of ['phone', 'location', 'digitalSkills', 'professionalSkills', 'languages', 'portfolio']) {
     const field = Profile.fields.find(f => 'name' in f && f.name === name) as any
     expect(field.access.read({ req: {} })).toBe(false)
     expect(field.access.read({ req: { user: {} } })).toBe(true)

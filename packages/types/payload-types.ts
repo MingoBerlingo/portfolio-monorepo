@@ -635,8 +635,9 @@ export interface Profile {
   id: string;
   phone?: string | null;
   location?: string | null;
-  skills?: string | null;
-  languages?: string | null;
+  digitalSkills?: string[] | null;
+  professionalSkills?: string[] | null;
+  languages?: string[] | null;
   name: string;
   surname: string;
   jobPosition: string;
@@ -715,7 +716,8 @@ export interface HeroSelect<T extends boolean = true> {
 export interface ProfileSelect<T extends boolean = true> {
   phone?: T;
   location?: T;
-  skills?: T;
+  digitalSkills?: T;
+  professionalSkills?: T;
   languages?: T;
   name?: T;
   surname?: T;

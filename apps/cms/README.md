@@ -81,3 +81,14 @@ Array translation lines align to existing row order; extra translated lines
 become extra rows with the available locale. Review translated row order after
 migration. Publication/research rows match by legacy row ID, then URL, then row
 index; unmatched rows remain separate so text is never discarded.
+
+### Migrate Profile skills and languages
+
+For an existing local CMS, run the migration from `apps/cms` before editing the new fields.
+
+```sh
+pnpm exec tsx scripts/migrate-profile-skills.ts
+pnpm exec tsx scripts/migrate-profile-skills.ts --apply --backup=/absolute/path/new-profile-backup.json
+```
+
+The first command previews the field changes. The second saves a private backup and converts the English and Italian Profile values to lists. The migration preserves populated lists on rerun.
