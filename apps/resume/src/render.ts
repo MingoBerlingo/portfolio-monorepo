@@ -1,4 +1,5 @@
 import { formatResumeDate, formatResumeRange } from "./dates.ts";
+import { skillItems } from "./skills.ts";
 import type { Locale, SectionKey, Publication, Research } from "./types.ts";
 export interface RenderOptions {
   editable?: boolean;
@@ -11,7 +12,7 @@ import { CONTACT_ORDER, normalizeResume } from "./model.ts";
 const labels = {
   en: {
     introduction: "Introduction",
-    skills: "Skills and competencies",
+    skills: "Skills",
     languages: "Languages",
     experience: "Work experience",
     education: "Education",
@@ -24,7 +25,7 @@ const labels = {
   },
   it: {
     introduction: "Introduzione",
-    skills: "Capacità e competenze",
+    skills: "Competenze",
     languages: "Lingue",
     experience: "Esperienza lavorativa",
     education: "Istruzione",
@@ -245,6 +246,7 @@ export function renderResume(
     })
     .join("");
   const fullName = `${profile.name} ${profile.surname}`.trim();
+  const skills = skillItems(profile.skills);
   const bodies: Record<SectionKey, string> = {
     additional: "",
     introduction: block(
@@ -252,11 +254,10 @@ export function renderResume(
       profile.presentation,
       t.introduction,
     ),
-    skills:
-      (profile.languages || editable
-        ? `<p><strong>${t.languages}:</strong> ${field("profile.languages", profile.languages, t.languages)}</p>`
-        : "") +
-      (editable
+    languages: profile.languages || editable
+      ? `<p>${field("profile.languages", profile.languages, t.languages)}</p>`
+      : "",
+    skills: editable
         ? field(
             "profile.skills",
             profile.skills,
@@ -276,12 +277,12 @@ export function renderResume(
                 })
                 .join("\n")}</div>`,
           )
-        : lines(profile.skills)
+        : skills.length ? `<ul class="skills-columns">${skills
             .map((line) => {
               const colon = line.indexOf(":");
-              return `<p>${colon < 0 ? escape(line) : `<strong>${escape(line.slice(0, colon + 1))}</strong>${escape(line.slice(colon + 1))}`}</p>`;
+              return `<li>${colon < 0 ? escape(line) : `<strong>${escape(line.slice(0, colon + 1))}</strong>${escape(line.slice(colon + 1))}`}</li>`;
             })
-            .join("")),
+            .join("")}</ul>` : "",
     experience: experienceHTML,
     education: educationHTML,
     publications: extras(publications, "publications"),
@@ -318,6 +319,8 @@ export function renderResume(
   article { margin-bottom: 3mm; break-inside: avoid; } article:last-child { margin-bottom: 0; }
   .date { font-size: 9pt; break-after: avoid; }
   ul { padding-left: 4mm; margin: 1mm 0 0; } li { margin-bottom: 1mm; break-inside: avoid; }
+  .skills-columns { columns: 4 28mm; column-gap: 6mm; }
+  .skills-columns li { overflow-wrap: anywhere; }
   p { orphans: 3; widows: 3; } a { color: inherit; text-decoration: underline; overflow-wrap: anywhere; } h1,h2,h3,p,li { overflow-wrap: anywhere; }
   @media screen { body { background: #eae9f0; padding: 20px; width: 834px; } main { background: white; padding: 14mm 16mm; width: 794px; max-width: none; min-height: 1123px; box-shadow: 0 2px 8px #22113312; } }
   ${

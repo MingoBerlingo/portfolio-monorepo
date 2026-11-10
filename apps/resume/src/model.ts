@@ -11,6 +11,7 @@ type RecordValue = Record<string, unknown>;
 export const SECTION_ORDER = Object.freeze<SectionKey[]>([
   "introduction",
   "skills",
+  "languages",
   "experience",
   "education",
   "publications",
@@ -183,10 +184,11 @@ export function validateDocument(doc: unknown): ResumeDocument {
     )
       fail(`invalid ${key}`);
   }
-  if (
-    (doc.sectionOrder as unknown[]).length !==
-    SECTION_ORDER.length + customIds.length
-  )
+  const order = doc.sectionOrder as string[];
+  const legacy = !order.includes("languages") &&
+    ![doc.hiddenSections, doc.deletedSections].some((list) =>
+      Array.isArray(list) && list.includes("languages"));
+  if (order.length !== SECTION_ORDER.length + customIds.length - Number(legacy))
     fail("sectionOrder must include all sections");
   if (
     Object.hasOwn(doc, "contactOrder") &&
@@ -276,6 +278,11 @@ export function normalizeResume(
     copy.contactOrder ??= [...CONTACT_ORDER];
     copy.deletedContacts ??= [];
     copy.deletedSections ??= [];
+    if (!copy.sectionOrder.includes("languages")) {
+      copy.sectionOrder.splice(copy.sectionOrder.indexOf("skills") + 1, 0, "languages");
+      if (copy.hiddenSections.includes("skills")) copy.hiddenSections.push("languages");
+      if (copy.deletedSections.includes("skills")) copy.deletedSections.push("languages");
+    }
     copy.contactEntries ??= defaultContactEntries(copy);
     copy.customSections ??= [];
     return copy;
@@ -291,16 +298,12 @@ export function normalizeResume(
     ),
   };
   // The editor and saved drafts use editable text. Format the CMS lists at import.
-  const listText = (value: unknown) => Array.isArray(value)
-    ? value.map(string).map((item) => item.trim()).filter(Boolean).join(", ")
+  const listText = (value: unknown, separator = ", ") => Array.isArray(value)
+    ? value.map(string).map((item) => item.trim()).filter(Boolean).join(separator)
     : string(value);
   if (Array.isArray(p.languages)) doc.profile.languages = listText(p.languages);
   if (Array.isArray(p.digitalSkills) || Array.isArray(p.professionalSkills)) {
-    const labels = locale === "it"
-      ? ["Competenze digitali", "Competenze professionali"]
-      : ["Digital skills", "Professional skills"];
-    doc.profile.skills = [listText(p.digitalSkills), listText(p.professionalSkills)]
-      .map((value, index) => value ? `${labels[index]}: ${value}` : "")
+    doc.profile.skills = [listText(p.digitalSkills, "\n"), listText(p.professionalSkills, "\n")]
       .filter(Boolean)
       .join("\n");
   }

@@ -30,7 +30,7 @@
   let pendingDraft = $state.raw<Result | null>(null);
   let result = $state.raw<Result | null>(null);
 
-  const steps = ["Starting Resume", "Job details", "Job fit", "Review draft"];
+  const steps = ["Upload resume", "Paste job description", "Evaluate job fit", "Review draft"];
   const activeStep = $derived(result ? 3 : step === "source" ? 0 : step === "job" ? 1 : 2);
 
   async function chooseSource(event: SubmitEvent) {
@@ -148,7 +148,7 @@
     {/if}
     {#if fit.sectionSuggestions.length}
       <div>
-        <h3 class="font-semibold">Sections to consider leaving out</h3>
+        <h3 class="font-semibold">Sections or experiences to consider leaving out</h3>
         <ul class="mt-1 list-disc space-y-1 pl-5">
           {#each fit.sectionSuggestions as suggestion}
             <li><strong>{suggestion.section}</strong> — {suggestion.reason}</li>
@@ -157,6 +157,13 @@
       </div>
     {/if}
   </div>
+{/snippet}
+
+{#snippet cvJson(label: string, document: ResumeDocument)}
+  <details class="mt-5 max-w-3xl border-t border-stone-200 pt-4 text-sm">
+    <summary class="cursor-pointer font-medium">{label}</summary>
+    <pre class="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-stone-50 p-4 text-xs text-stone-700">{JSON.stringify(document, null, 2)}</pre>
+  </details>
 {/snippet}
 
 {#if result}
@@ -179,6 +186,7 @@
             {#each draft.changes as change}<li>{change}</li>{/each}
           </ul>
         {/if}
+        {@render cvJson("Generated CV JSON", draft.document)}
       </section>
     {/snippet}
   </ResumeEditor>
@@ -272,6 +280,9 @@
           <summary class="cursor-pointer font-medium">Tailoring prompt</summary>
           <div class="mt-3 whitespace-pre-wrap break-words rounded-lg bg-stone-50 p-4 text-stone-700">{tailorPrompt}</div>
         </details>
+        {#if source === "cms" && cmsResume}
+          {@render cvJson("Source CV JSON", cmsResume)}
+        {/if}
       {/if}
       {#if loading}<p role="status" class="mt-4 text-sm">{step === "source" ? "Loading your CMS resume…" : "Working on your resume…"}</p>{/if}
     </div>

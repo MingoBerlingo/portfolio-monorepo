@@ -14,6 +14,7 @@
   import Icon from "./Icon.svelte";
   import { formatResumeDate, formatResumeRange } from "../../dates.ts";
   import Editable from "./Editable.svelte";
+  import ExperienceBullets from "./ExperienceBullets.svelte";
   type Props = ComponentProps<typeof DragDropProvider>;
   let {
     doc,
@@ -27,6 +28,7 @@
     ontext,
     onsplit,
     onmerge,
+    onreorderbullets,
     ondetails,
     onadd,
     onremove,
@@ -42,6 +44,7 @@
     ontext: (path: string, v: string, line?: number) => void;
     onsplit: (p: string, l: number, o: number) => void;
     onmerge: (p: string, l: number) => void;
+    onreorderbullets: (path: string, value: string) => void;
     ondetails: (type: "dates" | "link", path: string) => void;
     onadd: (key: CollectionKey) => void;
     onremove: (key: CollectionKey, i: number) => void;
@@ -247,14 +250,16 @@
               ? (e as Experience).activities
               : (e as Education).details
           ).split("\n")}
+          {#if collection === "experiences"}
+            <ExperienceBullets path={`${collection}.${i}.${key}`} {bullets} {disabled}
+              {ontext} {onsplit} {onmerge} onreorder={onreorderbullets} />
+          {:else}
           <ul>
             {#each bullets as bullet, line}<Editable
                 tag="li"
                 path={`${collection}.${i}.${key}`}
                 value={bullet}
-                label={collection === "experiences"
-                  ? "Activity"
-                  : "Education detail"}
+                label="Education detail"
                 {line}
                 {disabled}
                 onchange={ontext}
@@ -262,6 +267,7 @@
                 {onmerge}
               />{/each}
           </ul>
+          {/if}
           <button
             class="add-bullet"
             type="button"

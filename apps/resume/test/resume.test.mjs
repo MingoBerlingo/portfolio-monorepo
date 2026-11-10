@@ -133,13 +133,31 @@ test('renders changed local copies without changing the imported source', () => 
 
 test('respects reordered and hidden sections with natural pagination', () => {
   const working = normalizeResume(data(), 'en');
-  working.sectionOrder = ['education', 'experience', 'skills', 'introduction', 'publications', 'research', 'additional'];
+  working.sectionOrder = ['education', 'experience', 'skills', 'languages', 'introduction', 'publications', 'research', 'additional'];
   let html = renderResume(working);
   assert.ok(html.indexOf('<h2>Education') < html.indexOf('<h2>Work experience'));
   assert.doesNotMatch(html, /<section class="new-page">/);
   working.hiddenSections = ['experience', 'skills']; html = renderResume(working);
-  assert.doesNotMatch(html, /Build interfaces|Work experience|Skills and competencies|<strong>Languages:/);
+  assert.doesNotMatch(html, /Build interfaces|Work experience|<h2>Skills/);
+  assert.match(html, /<h2>Languages<\/h2>/);
   assert.match(html, /Design degree/);
+});
+
+test('renders CMS skills as individual bullets and languages as a separate section', () => {
+  const source = { profile: {
+    digitalSkills: ['Figma', 'Adobe suite (Illustrator, Photoshop)'],
+    professionalSkills: ['Product design'],
+    languages: ['Italian (Native)', 'English (C1)'],
+  } };
+  const doc = normalizeResume(source);
+  assert.equal(doc.profile.skills, 'Figma\nAdobe suite (Illustrator, Photoshop)\nProduct design');
+  const expected = /<li>Figma<\/li><li>Adobe suite \(Illustrator, Photoshop\)<\/li><li>Product design<\/li>/;
+  assert.match(renderResume(doc), expected);
+  doc.profile.skills = 'Digital skills: Figma, Adobe suite (Illustrator, Photoshop)\nProfessional skills: Product design';
+  assert.match(renderResume(doc), expected);
+  doc.hiddenSections = ['languages'];
+  assert.doesNotMatch(renderResume(doc), /<h2>Languages<\/h2>|English \(C1\)/);
+  assert.match(renderResume(doc), expected);
 });
 
 test('canonical fixtures render their supplied language content', async () => {

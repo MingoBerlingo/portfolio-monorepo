@@ -2,6 +2,7 @@ export type Locale = "en" | "it";
 export type SectionKey =
   | "introduction"
   | "skills"
+  | "languages"
   | "experience"
   | "education"
   | "publications"

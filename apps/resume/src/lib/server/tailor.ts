@@ -22,7 +22,8 @@ const fields = (...names: string[]) =>
 const link = fields("label", "url");
 const pastedSchema = record({
   profile: record({
-    ...fields("name", "surname", "jobPosition", "presentation", "email", "phone", "location", "skills", "languages").properties,
+    ...fields("name", "surname", "jobPosition", "presentation", "email", "phone", "location", "languages").properties,
+    skills: array(string),
     linkedin: link,
     github: link,
     portfolio: link,
@@ -38,7 +39,7 @@ const pastedSchema = record({
 });
 const changesSchema = record({
   presentation: string,
-  skills: string,
+  skills: array(string),
   experienceChanges: array(record({ index: integer, activities: array(string) })),
 });
 
@@ -52,9 +53,10 @@ type ModelResult = {
   gaps: string[];
   draft: {
     presentation: string;
-    skills: string;
+    skills: string[];
     experienceChanges: { index: number; activities: string[] }[];
   } | {
+    profile: { skills: string[] };
     experiences: (Omit<Experience, "activities"> & { activities: string[] })[];
     customSections: { title: string; content: string }[];
   };
@@ -173,7 +175,8 @@ export async function tailorResume(
     if (!("experienceChanges" in result.draft)) throw Error("Invalid CMS draft");
     document = structuredClone(base);
     if (result.draft.presentation.trim()) document.profile.presentation = result.draft.presentation;
-    if (result.draft.skills.trim()) document.profile.skills = result.draft.skills.trim();
+    const skills = activityText(result.draft.skills);
+    if (skills) document.profile.skills = skills;
     const seen = new Set<number>();
     for (const { index, activities } of result.draft.experienceChanges) {
       if (!Number.isInteger(index) || !document.experiences[index] || seen.has(index))
@@ -186,6 +189,7 @@ export async function tailorResume(
     if (!("experiences" in result.draft)) throw Error("Invalid pasted resume draft");
     document = normalizeResume({
       ...result.draft,
+      profile: { ...result.draft.profile, skills: activityText(result.draft.profile.skills) },
       experiences: result.draft.experiences.map((entry) => ({
         ...entry,
         activities: activityText(entry.activities),
@@ -201,6 +205,6 @@ export async function tailorResume(
   return {
     document: validateDocument(document),
     ...assessment,
-    changes: result.changes.slice(0, 3),
+    changes: result.changes.slice(0, 4),
   };
 }

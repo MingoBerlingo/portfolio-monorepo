@@ -4,7 +4,7 @@
   import { onMount, tick } from "svelte";
   import { beforeNavigate, goto } from "$app/navigation";
   import { normalizeResume, isDirty, defaultContactEntries } from "../../model.ts";
-  import { listVersions, saveVersion, deleteVersion } from "../../history.ts";
+  import { listVersions, saveVersion, deleteVersion, importVersion, MAX_VERSION_IMPORT_BYTES } from "../../history.ts";
   import { applyTextEdit } from "../../inline-model.ts";
   import type {
     ResumeDocument,
@@ -25,6 +25,7 @@
     undoRevision = $state(0),
     name = $state(""),
     versionName = $state(""),
+    pdfName = $state(""),
     zoom = $state("fit"),
     loading = $state(false),
     printing = $state(false),
@@ -32,11 +33,17 @@
     notice = $state(""),
     noticeError = $state(false),
     saveError = $state(""),
+    saveVersions = $state.raw<SavedVersion[]>([]),
     historyError = $state(""),
+    importError = $state(""),
+    importing = $state(false),
     historyCount = $state<string | number>(0),
     versions = $state.raw<SavedVersion[]>([]),
     detailsError = $state("");
+  const conflictingVersion = $derived(saveVersions.find((version) => version.name === versionName.trim()));
+  let importInput: HTMLInputElement;
   let saveDialog: HTMLDialogElement,
+    pdfDialog: HTMLDialogElement,
     historyDialog: HTMLDialogElement,
     detailsDialog: HTMLDialogElement,
     shortcutsDialog: HTMLDialogElement,
@@ -65,7 +72,8 @@
   const baseTitles: Record<string, string> = {
     profile: "Profile & contact",
     introduction: "Introduction",
-    skills: "Skills & languages",
+    skills: "Skills",
+    languages: "Languages",
     experience: "Experience",
     education: "Education",
     publications: "Publications",
@@ -185,15 +193,27 @@
   async function openSave(asNew = false) {
     versionName = asNew ? "" : name;
     saveError = "";
+    refreshSaveVersions();
     saveDialog.showModal();
     await tick();
     document.getElementById("version-name")?.focus();
   }
   function save(e: SubmitEvent) {
     e.preventDefault();
-    if (!doc) return;
+    commitVersion(conflictingVersion ? { replaceId: conflictingVersion.id } : undefined);
+  }
+  function refreshSaveVersions() {
     try {
-      const version = saveVersion(localStorage, doc, versionName);
+      saveVersions = listVersions();
+    } catch {
+      saveVersions = [];
+    }
+  }
+  function commitVersion(resolution?: { replaceId: string } | "numbered") {
+    if (!doc) return;
+    saveError = "";
+    try {
+      const version = saveVersion(localStorage, doc, versionName, Date.now(), resolution);
       baseline = structuredClone(version.document);
       undoHistory?.record(doc);
       undoRevision++;
@@ -202,6 +222,7 @@
       countHistory();
       notify(`“${name}” saved in this browser.`);
     } catch (e) {
+      refreshSaveVersions();
       saveError = `Could not save: ${error(e)}. Your current edits are still here.`;
     }
   }
@@ -215,8 +236,32 @@
     }
   }
   function openHistory() {
+    importError = "";
     showHistory();
     historyDialog.showModal();
+  }
+  async function importFromFile(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file || importing) return;
+    importing = true;
+    importError = "";
+    try {
+      if (file.size > MAX_VERSION_IMPORT_BYTES) throw Error("The JSON file is too large");
+      const version = importVersion(localStorage, await file.text());
+      showHistory();
+      countHistory();
+      notify(`Imported “${version.name}”.`);
+    } catch (e) {
+      importError = `Could not import: ${error(e)}.`;
+    } finally {
+      importing = false;
+    }
+  }
+  function exportVersion(version: SavedVersion) {
+    const blob = new Blob([JSON.stringify(version)], { type: "application/json" });
+    downloadBlob(blob, `${filenameStem(version.name) || "resume"}.json`);
   }
   async function loadVersion(version: SavedVersion) {
     if (!(await confirmDiscard())) return;
@@ -335,10 +380,32 @@
       detailsError = error(e);
     }
   }
-  async function download() {
-    if (!doc || printing) return;
+  async function openDownload() {
+    if (!doc || loading || printing || pdfDialog.open) return;
+    pdfName = name || `resume-${doc.locale}`;
+    pdfDialog.showModal();
+    await tick();
+    document.querySelector<HTMLInputElement>("#pdf-name")?.select();
+  }
+  function filenameStem(value: string) {
+    return value.trim().replace(/[<>:"/\\|?*\u0000-\u001f\u007f]/g, "_").replace(/[.\s]+$/, "");
+  }
+  function downloadBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+  async function download(event: SubmitEvent) {
+    event.preventDefault();
+    if (!doc || loading || printing || !pdfName.trim()) return;
+    const stem = filenameStem(pdfName.trim().replace(/\.pdf$/i, ""));
+    const filename = `${stem || `resume-${doc.locale}`}.pdf`;
     const snapshot = structuredClone(doc);
     printing = true;
+    pdfDialog.close();
     notify("Preparing your PDF…");
     try {
       const r = await fetch("/api/pdf", {
@@ -350,13 +417,7 @@
         const result = await r.json();
         throw Error(result.error || "PDF download failed.");
       }
-      const blob = await r.blob();
-      const url = URL.createObjectURL(blob),
-        a = document.createElement("a");
-      a.href = url;
-      a.download = `resume-${snapshot.locale}.pdf`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      downloadBlob(await r.blob(), filename);
       notify("PDF downloaded.");
     } catch (e) {
       notify(error(e), true);
@@ -467,7 +528,7 @@
       return;
     }
     if (action === "export") {
-      void download();
+      if (!modal) void openDownload();
       return;
     }
     if (!selectedBlock) return;
@@ -526,6 +587,7 @@
     const storage = () => {
       countHistory();
       if (historyDialog.open) showHistory();
+      if (saveDialog.open) refreshSaveVersions();
     };
     window.addEventListener("keydown", keyboard);
     window.addEventListener("beforeunload", unload);
@@ -622,12 +684,12 @@
       id="save"
       class="button"
       disabled={!doc || loading}
-      onclick={() => openSave()}>Save version</button
+      onclick={() => openSave()}>Save</button
     ><button
       id="download"
       class="button primary"
       disabled={!doc || loading || printing}
-      onclick={download}>{#if !printing}<Icon name="download" />{/if}{printing ? "Preparing…" : "Download PDF"}</button
+      onclick={openDownload}>{#if !printing}<Icon name="download" />{/if}{printing ? "Preparing…" : "Download PDF"}</button
     >
   </div>
 </div>
@@ -723,7 +785,7 @@
 <dialog id="save-dialog" bind:this={saveDialog}>
   <form id="save-form" onsubmit={save}>
     <div class="dialog-top">
-      <h2>Save version</h2>
+      <h2>Save</h2>
       <button
         class="icon-button"
         type="button"
@@ -734,16 +796,39 @@
     <label for="version-name">Version name</label><input
       id="version-name"
       bind:value={versionName}
+      oninput={() => { saveError = ""; }}
       required
       maxlength="120"
       autocomplete="off"
       placeholder="e.g. Product designer · Acme"
     />
     <p id="save-error" class="error" hidden={!saveError}>{saveError}</p>
+    {#if conflictingVersion}
+      <p class="mt-2 text-sm text-amber-800" role="status">“{conflictingVersion.name}” already exists. Save replaces it. Save as new keeps both versions.</p>
+    {/if}
     <div class="dialog-actions">
       <button type="button" class="button" onclick={() => saveDialog.close()}
         >Cancel</button
-      ><button class="button primary" type="submit">Save version</button>
+      >
+      {#if conflictingVersion}
+        <button class="button" type="button" onclick={() => commitVersion("numbered")}>Save as new</button>
+      {/if}
+      <button class="button primary" type="submit" disabled={!versionName.trim()}>Save</button>
+    </div>
+  </form>
+</dialog>
+<dialog bind:this={pdfDialog} aria-labelledby="pdf-dialog-title">
+  <form onsubmit={download}>
+    <div class="dialog-top">
+      <h2 id="pdf-dialog-title">Download PDF</h2>
+      <button class="icon-button" type="button" aria-label="Close download dialog"
+        onclick={() => pdfDialog.close()}><Icon name="close" /></button>
+    </div>
+    <label for="pdf-name">File name</label>
+    <input id="pdf-name" bind:value={pdfName} required maxlength="124" autocomplete="off" />
+    <div class="dialog-actions">
+      <button class="button" type="button" onclick={() => pdfDialog.close()}>Cancel</button>
+      <button class="button primary" type="submit" disabled={!pdfName.trim()}>Download</button>
     </div>
   </form>
 </dialog>
@@ -756,13 +841,16 @@
       onclick={() => historyDialog.close()}><Icon name="close" /></button
     >
   </div>
+  <input type="file" accept=".json,application/json" hidden bind:this={importInput} onchange={importFromFile} />
+  <button type="button" class="button" disabled={importing} onclick={() => importInput.click()}>Import JSON</button>
+  {#if importError}<p class="error mt-2" role="alert">{importError}</p>{/if}
   <div id="history-list">
     {#if historyError}<p class="error">
         {historyError}
       </p>{:else if !versions.length}<p class="text-sm text-stone-500">
-        No saved versions yet. Use Save version to keep a named copy for later.
+        No saved versions yet. Use Save to keep a named copy for later.
       </p>{:else}{#each versions as version (version.id)}<article
-          class="mt-3 flex items-center justify-between gap-4 rounded-lg border border-stone-200 p-4"
+          class="mt-3 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-stone-200 p-4"
         >
           <div class="min-w-0">
             <h3 class="break-words text-sm font-semibold">{version.name}</h3>
@@ -778,6 +866,9 @@
               class="button"
               data-load={version.id}
               onclick={() => loadVersion(version)}>Load</button
+            ><button
+              class="button"
+              onclick={() => exportVersion(version)}>Export JSON</button
             ><button
               class="icon-button text-red-600"
               data-delete={version.id}

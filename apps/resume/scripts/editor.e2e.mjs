@@ -64,11 +64,11 @@ const field = (path, line) =>
     `[data-field="${path}"]${line === undefined ? "" : `[data-line="${line}"]`}`,
   );
 const save = async (name) => {
-  await page.getByRole("button", { name: "Save version", exact: true }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await page.getByLabel("Version name").fill(name);
   await page
     .locator("#save-form")
-    .getByRole("button", { name: "Save version", exact: true })
+    .getByRole("button", { name: "Save", exact: true })
     .click();
 };
 try {
@@ -538,11 +538,11 @@ try {
       throw new DOMException("Storage full", "QuotaExceededError");
     };
   });
-  await page.getByRole("button", { name: "Save version", exact: true }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await page.getByLabel("Version name").fill("Cannot save");
   await page
     .locator("#save-form")
-    .getByRole("button", { name: "Save version", exact: true })
+    .getByRole("button", { name: "Save", exact: true })
     .click();
   await page.getByText(/Could not save/).waitFor();
   assert.equal(
@@ -561,6 +561,11 @@ try {
   );
   const downloadPromise = page.waitForEvent("download");
   await page.keyboard.press("Meta+Shift+e");
+  const pdfDialog = page.getByRole("dialog", { name: "Download PDF" });
+  const filename = pdfDialog.getByLabel("File name");
+  assert.equal(await filename.inputValue(), "Acme · Product designer");
+  await filename.fill("Acme application.pdf");
+  await pdfDialog.getByRole("button", { name: "Download", exact: true }).click();
   const download = await downloadPromise;
   await download.saveAs(new URL("editor-edited.pdf", output).pathname);
   const pdfDocument = (await pdfRequestPromise).postDataJSON();
@@ -572,7 +577,7 @@ try {
       .toString(),
     "%PDF-",
   );
-  assert.equal(download.suggestedFilename(), "resume-en.pdf");
+  assert.equal(download.suggestedFilename(), "Acme application.pdf");
   assert.equal(
     await page.locator("#version-status").textContent(),
     "Unsaved changes",

@@ -81,8 +81,8 @@
       offset() === 0
     ) {
       e.preventDefault();
-      const previous = node.parentElement?.querySelector<HTMLElement>(
-        `[data-line="${line - 1}"]`,
+      const previous = document.querySelector<HTMLElement>(
+        `[data-field="${path}"][data-line="${line - 1}"]`,
       );
       const at = previous?.textContent?.length || 0;
       input();

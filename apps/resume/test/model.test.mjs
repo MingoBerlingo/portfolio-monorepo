@@ -35,11 +35,11 @@ test('legacy documents preserve arbitrary section order and deleted entries acro
  const legacy=normalizeResume({profile:{additionalInfo:'Retain me'},experiences:[{company:'Deleted'},{company:'Kept'}]},'it');
  delete legacy.profile.portfolio;
  legacy.sectionOrder=['research','education','skills','additional','publications','introduction','experience'];
- legacy.hiddenSections=['experience','additional'];
+ legacy.hiddenSections=['experience','additional','skills'];
  legacy.experiences.splice(0,1);
  const copy=normalizeResume(legacy);
- assert.deepEqual(copy.sectionOrder,legacy.sectionOrder);
- assert.deepEqual(copy.hiddenSections,legacy.hiddenSections);
+ assert.deepEqual(copy.sectionOrder,['research','education','skills','languages','additional','publications','introduction','experience']);
+ assert.deepEqual(copy.hiddenSections,[...legacy.hiddenSections,'languages']);
  assert.deepEqual(copy.experiences.map(entry=>entry.company),['Kept']);
  assert.equal(copy.profile.additionalInfo,'Retain me');
  assert.equal(validateDocument(copy),copy);

@@ -183,6 +183,71 @@
 .resume-paper li {
   margin-bottom: 1mm;
 }
+.resume-paper .experience-bullet {
+  position: relative;
+}
+.resume-paper .experience-bullet > [contenteditable] {
+  display: block;
+}
+.resume-paper .bullet-tools {
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 0;
+  display: flex;
+  background: white;
+  border: 1px solid #ddd8ee;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+}
+.resume-paper .bullet-tools::before {
+  content: "";
+  position: absolute;
+  inset: 0 100% 0 -7px;
+}
+.resume-paper .experience-bullet:hover > .bullet-tools,
+.resume-paper .experience-bullet:focus-within > .bullet-tools {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+.resume-paper .experience-bullet:hover > .bullet-tools {
+  z-index: 2;
+}
+.resume-paper .bullet-tools button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: #766d8b;
+}
+.resume-paper .bullet-tools button:disabled {
+  opacity: 0.4;
+}
+.resume-paper .bullet-drop-target {
+  background: #eeebff;
+}
+.resume-paper .skills-columns {
+  columns: 4 28mm;
+  column-gap: 6mm;
+}
+.resume-paper .skills-columns li {
+  break-inside: avoid;
+  overflow-wrap: anywhere;
+}
+.resume-paper .skills-editor {
+  position: relative;
+  min-height: 1.4em;
+}
+.resume-paper .skills-editor:has(li):not(:focus-within) > [contenteditable] {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+.resume-paper .skills-editor:focus-within > .skills-columns {
+  display: none;
+}
 .resume-paper .sectors {
   margin-top: 1mm;
 }
@@ -477,10 +542,14 @@ select:disabled {
   z-index: -1;
 }
 
-/* Cross the section gutter beside the heading, above the entry controls. */
+/* Keep the whole section toolbar reachable across the gutter. */
 .resume-paper .section-tools::before {
-  inset: 0 -54px auto 0;
-  height: 22px;
+  inset: 0 -54px 0 0;
+}
+
+/* Entry controls sit in the same gutter and need to remain clickable. */
+.resume-paper .section-block .entry-block > .block-tools {
+  z-index: 31;
 }
 
 /* Keep the moving preview separate from Svelte's reordered source DOM. */

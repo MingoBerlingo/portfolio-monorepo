@@ -41,7 +41,7 @@ test('annotated layout labels contacts, sectors and competency lines without leg
   for(const label of ['Mail','Tel','Location','LinkedIn','Portfolio'])assert.ok(html.includes(`${label}:</span>`));
   assert.match(html,/linkedin.com\/in\/ada/);assert.match(html,/ada.test/);
   assert.match(html,/<strong>Design:<\/strong> Systems/);
-  assert.ok(html.indexOf('<strong>Languages:</strong>') < html.indexOf('<strong>Design:</strong>'));
+  assert.match(html, /<h2>Languages(?:<button[^>]*>[^<]*<\/button>)?<\/h2>/);
   assert.doesNotMatch(html,/Legacy secret|data-section="additional"|data-field="profile.additionalInfo"/);
   if(editable)assert.match(html,/data-section-drag="skills"/);
  }

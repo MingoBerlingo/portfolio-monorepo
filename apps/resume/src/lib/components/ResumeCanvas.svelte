@@ -3,6 +3,7 @@
   import { isSortable } from "@dnd-kit/svelte/sortable";
   import { onMount, type ComponentProps } from "svelte";
   import type { ResumeDocument, SectionKey, CollectionKey } from "../../types.ts";
+  import { skillItems } from "../../skills.ts";
   import {
     applyTextEdit,
     splitBullet,
@@ -44,7 +45,8 @@
   } = $props();
   const titles: Record<string, string> = {
     introduction: "Introduction",
-    skills: "Skills and competencies",
+    skills: "Skills",
+    languages: "Languages",
     experience: "Work experience",
     education: "Education",
     publications: "Publications",
@@ -53,7 +55,8 @@
   };
   const it: Record<string, string> = {
     introduction: "Introduzione",
-    skills: "Capacità e competenze",
+    skills: "Competenze",
+    languages: "Lingue",
     experience: "Esperienza lavorativa",
     education: "Istruzione",
     publications: "Pubblicazioni",
@@ -272,28 +275,33 @@
                     {disabled}
                     onchange={text}
                   />
-                {:else if key === "skills"}<p>
-                    <strong
-                      >{doc.locale === "it" ? "Lingue" : "Languages"}:</strong
-                    >
-                    <Editable
-                      path="profile.languages"
-                      value={doc.profile.languages}
-                      label="Languages"
-                      {disabled}
-                      onchange={text}
-                    />
-                  </p>
+                {:else if key === "languages"}
                   <Editable
-                    tag="div"
-                    path="profile.skills"
-                    value={doc.profile.skills}
-                    label="Skills and competencies"
-                    multiline
-                    formatLabels
+                    path="profile.languages"
+                    value={doc.profile.languages}
+                    label={sectionTitle(key)}
                     {disabled}
                     onchange={text}
                   />
+                {:else if key === "skills"}
+                  <div class="skills-editor">
+                    <ul class="skills-columns">
+                      {#each skillItems(doc.profile.skills) as skill}
+                        {@const colon = skill.indexOf(":")}
+                        <li>{#if colon >= 0}<strong>{skill.slice(0, colon + 1)}</strong>{skill.slice(colon + 1)}{:else}{skill}{/if}</li>
+                      {/each}
+                    </ul>
+                    <Editable
+                      tag="div"
+                      path="profile.skills"
+                      value={doc.profile.skills}
+                      label={sectionTitle(key)}
+                      multiline
+                      formatLabels
+                      {disabled}
+                      onchange={text}
+                    />
+                  </div>
                 {:else if key.startsWith("custom-")}{@const index = (
                     doc.customSections ?? []
                   ).findIndex((section) => section.id === key)}<Editable
@@ -318,6 +326,7 @@
                     ontext={text}
                     onsplit={split}
                     onmerge={merge}
+                    onreorderbullets={(path, value) => onchange(applyTextEdit(doc, path, value))}
                     {ondetails}
                     onadd={(c) => onchange(addEntry(doc, c))}
                     onremove={(c, i) => onchange(removeEntry(doc, c, i))}
