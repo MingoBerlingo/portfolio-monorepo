@@ -5,6 +5,7 @@ import { groupMediaItems, type MediaGridItem } from '../utils/mediaGrid'
 
 /** The subset of a media document the blocks need to render. */
 type MediaDoc = {
+  previewDataURL?: null | string
   url?: null | string
   alt?: null | string
   filename?: null | string
@@ -126,18 +127,21 @@ async function renderCell(value: unknown, populate: PopulateFn | undefined): Pro
 
   if (!url) return ''
 
+  const preview = media.previewDataURL
+    ? ` data-preview="${escapeAttribute(media.previewDataURL)}"`
+    : ''
   const width = typeof media.width === 'number' ? ` width="${media.width}"` : ''
   const height = typeof media.height === 'number' ? ` height="${media.height}"` : ''
 
   if (mimeType.startsWith('image/')) {
     const alt = typeof media.alt === 'string' ? media.alt : (media.filename ?? '')
 
-    return `<img src="${escapeAttribute(url)}" alt="${escapeAttribute(alt)}"${width}${height} loading="lazy" />`
+    return `<img src="${escapeAttribute(url)}" alt="${escapeAttribute(alt)}"${width}${height}${preview} loading="lazy" />`
   }
 
   // Videos play inline like the rest of the site: autoplaying, muted, looping.
   if (mimeType.startsWith('video/')) {
-    return `<video src="${escapeAttribute(url)}"${width}${height} autoplay muted loop playsinline preload="metadata"></video>`
+    return `<video src="${escapeAttribute(url)}"${width}${height}${preview} autoplay muted loop playsinline preload="metadata"></video>`
   }
 
   return ''

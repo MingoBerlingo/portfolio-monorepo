@@ -139,6 +139,9 @@ describe('media file names', () => {
     expect(doc.filename).toBe(`My-Test-Image-${run}.jpg`)
     expect(doc.url).toContain(`/api/media/file/My-Test-Image-${run}.jpg`)
     expect(doc.url).not.toContain('%20')
+    expect(doc.previewDataURL).toMatch(/^data:image\/jpeg;base64,/)
+    const stored = await payload.findByID({ collection: 'media', id: doc.id })
+    expect(stored.previewDataURL).toBe(doc.previewDataURL)
     await expect(fs.access(path.join(staticDir, doc.filename as string))).resolves.toBeUndefined()
   })
 
@@ -274,6 +277,8 @@ describe('media file names', () => {
     expect(updated.filename).toBe(doc.filename)
     expect(updated.url).toBe(doc.url)
     expect(updated.filesize).toBe(replacement.length)
+    expect(updated.previewDataURL).toMatch(/^data:image\/jpeg;base64,/)
+    expect(updated.previewDataURL).not.toBe(doc.previewDataURL)
 
     const onDisk = await fs.readFile(path.join(staticDir, updated.filename as string))
     expect(onDisk.equals(replacement)).toBe(true)

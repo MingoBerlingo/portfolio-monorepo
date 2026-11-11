@@ -166,6 +166,14 @@
 	:global(html[data-theme='dark']) footer {
 		background: var(--color-surface-2);
 	}
+	footer::before {
+		content: '';
+		position: absolute;
+		inset: calc(-1 * var(--radius-xl)) 0 auto;
+		height: var(--radius-xl);
+		background: inherit;
+		pointer-events: none;
+	}
 	footer[data-reveal='true'] {
 		position: sticky;
 		bottom: 0;

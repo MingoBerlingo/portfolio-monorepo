@@ -27,7 +27,14 @@
 			...(hero?.homepageImages ?? []).flatMap((entry) => {
 				const image = entry.image;
 				return typeof image === 'object' && image?.url && image.mimeType?.startsWith('image/')
-					? [{ key: entry.key, src: image.url, alt: entry.alt ?? '' }]
+					? [
+							{
+								key: entry.key,
+								src: image.url,
+								alt: entry.alt ?? '',
+								previewDataURL: image.previewDataURL
+							}
+						]
 					: [];
 			})
 		].reduce<IntroductionImage[]>(
@@ -57,13 +64,27 @@
 							>{:else if token.image && !token.image.src && inlineIcons[token.image.key]}<span
 								class="inline-icon inline-block align-middle text-primary"
 								aria-hidden="true"><Icon name={inlineIcons[token.image.key]} size={32} /></span
-							>{:else if token.image}<img
-								src={token.image.src}
-								alt={token.image.alt}
-								width="120"
-								height="72"
-								class="inline-image"
-							/>{:else}{token.text}{/if}</span
+							>{:else if token.image}<span
+								data-media
+								data-media-state="loading"
+								class="media-frame inline-image"
+							>
+								{#if token.image.previewDataURL}<img
+										data-preview
+										src={token.image.previewDataURL}
+										alt=""
+										aria-hidden="true"
+										class="media-preview"
+									/>{/if}
+								<img
+									src={token.image.src}
+									alt={token.image.alt}
+									width="120"
+									height="72"
+									loading="lazy"
+									decoding="async"
+								/>
+							</span>{:else}{token.text}{/if}</span
 					>{#if !/^[,.;:!?]/.test(paragraph[index + 1]?.text ?? '')}{wordSpace}{/if}
 				{/each}
 			</p>
@@ -180,6 +201,12 @@
 		}
 	}
 
+	.inline-image > img:not([data-preview]) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
 	.inline-image {
 		display: inline-block;
 		width: 1.8em;

@@ -366,3 +366,103 @@ html[data-theme-transition]::view-transition-new(root) {
 html[data-theme-transition]::view-transition {
 	pointer-events: none;
 }
+
+/* Stable shared frame for component media and CMS rich text. */
+.media-frame {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	isolation: isolate;
+	background: var(--color-surface-2);
+	border-radius: inherit;
+}
+.media-frame > :is(img, video):not([data-preview]) {
+	position: relative;
+	z-index: 1;
+}
+.media-frame > .media-preview {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	filter: blur(12px);
+	transform: scale(1.08);
+	border: 0;
+	margin: 0;
+	pointer-events: none;
+}
+.media-frame[data-media-state='loading'] > :is(img, video):not([data-preview]),
+.media-frame[data-media-state='error'] > video {
+	opacity: 0;
+}
+.media-frame > .media-preview {
+	transition: opacity 200ms ease-out;
+}
+.media-frame[data-media-state='ready'] > .media-preview {
+	opacity: 0;
+}
+.media-frame[data-media-state] > :is(img, video):not([data-preview]) {
+	/* Loading opacity must not replace card hover/focus movement. */
+	transition:
+		opacity 200ms ease-out,
+		transform var(--motion-duration-interactive, 200ms) var(--motion-ease-interactive, ease-out),
+		translate var(--motion-duration-interactive, 200ms) var(--motion-ease-interactive, ease-out),
+		scale var(--motion-duration-interactive, 200ms) var(--motion-ease-interactive, ease-out),
+		rotate var(--motion-duration-interactive, 200ms) var(--motion-ease-interactive, ease-out);
+}
+.media-frame[data-media-state='loading']::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	pointer-events: none;
+	background: linear-gradient(100deg, transparent 25%, rgb(255 255 255 / 18%) 50%, transparent 75%);
+	transform: translateX(-100%);
+	animation: media-shimmer 1.6s ease-in-out infinite;
+}
+@keyframes media-shimmer {
+	to {
+		transform: translateX(100%);
+	}
+}
+.rich-text .media-frame {
+	margin-block: 2em;
+	border-radius: var(--radius-xl);
+}
+.rich-text .media-frame > :is(img, video) {
+	margin: 0;
+	display: block;
+	width: 100%;
+}
+.media-layout-row > .media-frame {
+	margin: 0;
+}
+@media (min-width: 40rem) {
+	.media-layout:not(.media-layout--grid) .media-layout-row--columns-2 > .media-frame:only-child {
+		grid-column: span 2;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.media-frame[data-media-state='loading']::after {
+		animation: none;
+		transform: none;
+	}
+	.media-frame[data-media-state] > :is(img, video):not([data-preview]) {
+		transition: none;
+	}
+}
+/* Cover media appears immediately when ready, without a reveal fade. */
+.media-frame[data-media][data-media-instant] > :is(img, video) {
+	transition: none;
+}
+
+/* Metadata reserves the correct video shape; old uploads without it use 16:9. */
+.rich-text .media-frame > video {
+	aspect-ratio: auto 16 / 9;
+}
+@media (prefers-reduced-motion: reduce) {
+	.media-frame > .media-preview {
+		transition: none;
+	}
+}

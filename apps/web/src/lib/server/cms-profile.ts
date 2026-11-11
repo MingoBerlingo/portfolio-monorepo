@@ -1,3 +1,4 @@
+import { prepareMediaHtml } from './media-html';
 import type { Profile } from '@portfolio/types';
 import { cmsQuery } from './cms-client';
 import { sanitize } from './sanitize';
@@ -28,6 +29,8 @@ export async function getProfile(): Promise<Profile> {
 
 	return {
 		...profile,
-		presentationHtml: profile.presentationHtml ? sanitize(profile.presentationHtml) : ''
+		presentationHtml: profile.presentationHtml
+			? prepareMediaHtml(sanitize(profile.presentationHtml))
+			: ''
 	};
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import { mediaLoading } from '$lib/actions/mediaLoading';
 	import { mediaPlayback } from '$lib/actions/mediaPlayback';
 	import '$lib/styles/rich-text.css';
 	import favicon from '$lib/assets/favicon.svg';
@@ -18,8 +19,9 @@
 <div class="isolate min-h-screen bg-background text-foreground-1">
 	<Header />
 	<main
+		use:mediaLoading
 		use:mediaPlayback
-		class="relative z-10 min-h-screen bg-background p-4 pt-14 pb-20 md:p-6 md:pt-20 md:pb-32"
+		class="relative z-10 min-h-screen rounded-b-xl bg-background p-4 pt-14 pb-20 md:p-6 md:pt-20 md:pb-32"
 	>
 		{@render children?.()}
 	</main>
