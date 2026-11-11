@@ -6,7 +6,7 @@ export const mediaPlayback: Action<HTMLElement> = (root) => {
 	const videos = new Map<HTMLVideoElement, { sync: () => void; destroy: () => void }>();
 	const register = (video: HTMLVideoElement) => {
 		if (videos.has(video)) return;
-		const automatic = video.autoplay;
+		const automatic = video.autoplay || video.hasAttribute('data-autoplay');
 		const originalControls = video.controls;
 		let visible = false;
 		let userPaused = false;

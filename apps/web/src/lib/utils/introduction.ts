@@ -1,4 +1,5 @@
 export interface IntroductionImage {
+	previewDataURL?: string | null;
 	key: string;
 	src: string;
 	alt: string;

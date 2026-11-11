@@ -92,3 +92,23 @@ pnpm exec tsx scripts/migrate-profile-skills.ts --apply --backup=/absolute/path/
 ```
 
 The first command previews the field changes. The second saves a private backup and converts the English and Italian Profile values to lists. The migration preserves populated lists on rerun.
+
+### Media loading previews
+
+Image and video uploads automatically store a tiny JPEG in `previewDataURL`.
+Replacing a file regenerates its preview; preview-generation failure clears the
+old value and leaves the original upload usable. Previews are embedded in the
+static website, so no CMS request is needed to display them.
+
+To fill missing previews for existing local media, run from the repository root:
+
+```sh
+pnpm --filter cms backfill:media-previews
+```
+
+The command skips existing previews, preserves original files, logs failed files,
+and exits nonzero if a preview could not be generated. It can be rerun safely.
+Video previews reuse the existing FFmpeg installation and representative-frame
+extraction; image previews use Sharp. The frontend falls back to a neutral shimmer
+when no preview is available, disables shimmer for reduced motion, and exposes
+manual video controls when automatic playback is unavailable.

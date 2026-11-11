@@ -45,6 +45,7 @@ export const Project: CollectionConfig = {
 
             let uploadDoc:
               | {
+                  previewDataURL?: string
                   url?: string
                   mimeType?: string
                   filename?: string
@@ -72,6 +73,10 @@ export const Project: CollectionConfig = {
               return ''
             }
 
+            const preview = uploadDoc.previewDataURL
+              ? ` data-preview="${uploadDoc.previewDataURL.replaceAll('&', '&amp;').replaceAll('\"', '&quot;').replaceAll('<', '&lt;')}"`
+              : ''
+
             if (uploadDoc.mimeType.startsWith('video/')) {
               const width = uploadDoc.width ? ` width="${uploadDoc.width}"` : ''
               const height = uploadDoc.height ? ` height="${uploadDoc.height}"` : ''
@@ -81,12 +86,13 @@ export const Project: CollectionConfig = {
                   : ''
 
               return `
-                <video src="${uploadDoc.url}"${poster}${width}${height} preload="metadata" autoplay muted loop playsinline></video>
+                <video src="${uploadDoc.url}"${poster}${width}${height}${preview} preload="metadata" autoplay muted loop playsinline></video>
               `
             }
 
             if (typeof defaultConverters.upload === 'function') {
-              return defaultConverters.upload(args)
+              const html = await defaultConverters.upload(args)
+              return typeof html === 'string' ? html.replace('<img ', `<img${preview} `) : html
             }
 
             return ''

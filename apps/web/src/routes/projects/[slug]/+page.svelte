@@ -1,16 +1,18 @@
 <script lang="ts">
+	import MediaFrame from '$lib/components/MediaFrame.svelte';
+	import ProjectCard from '$lib/components/ProjectCard.svelte';
+	import ProjectGallery from '$lib/components/ProjectGallery.svelte';
 	import { scrambleExternalLinks } from '$lib/actions/scrambleHover';
 	import ScrambleLinkText from '$lib/components/ScrambleLinkText.svelte';
-	import { entrance } from '$lib/actions/entrance';
 	import Icon from '$lib/components/Icon.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	const project = data.project;
+	let article = $state<HTMLElement>();
+	const project = $derived(data.project);
 
-	const parsedYear = new Date(project.year);
-	const year = Number.isNaN(parsedYear.getTime()) ? project.year : String(parsedYear.getFullYear());
-	const collaborators = project.collaborators?.map((c) => c.name).join(', ');
+	const parsedYear = $derived(new Date(project.year));
+	const year = $derived(Number.isNaN(parsedYear.getTime()) ? project.year : String(parsedYear.getFullYear()));
 
 	function isVideoAsset(
 		asset: { mimeType?: string | null; url?: string | null } | null | undefined
@@ -22,8 +24,8 @@
 	}
 </script>
 
-<article use:entrance class="mx-auto max-w-5xl space-y-10 pb-20">
-	<section data-enter class="pt-8" aria-label="Project intro">
+<article bind:this={article} class="mx-auto max-w-5xl space-y-10 pb-20">
+	<section class="pt-8" aria-label="Project intro">
 		<div class="space-y-5">
 			<div class="flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
 				<p class="text-lg text-foreground-2">{project.shortTitle} • {year}</p>
@@ -52,29 +54,22 @@
 	</section>
 
 	{#if typeof project.videoCover === 'object' && project.videoCover?.url && isVideoAsset(project.videoCover)}
-		<figure data-enter class="overflow-hidden rounded-xl border border-border bg-surface-1">
-			<video
-				src={project.videoCover.url}
-				poster={typeof project.featuredImage === 'object' && project.featuredImage?.url
-					? project.featuredImage.url
-					: undefined}
-				autoplay
-				muted
-				loop
-				playsinline
-				preload="metadata"
-				class="aspect-[16/10] w-full object-cover"
-			></video>
+		<figure class="overflow-hidden rounded-xl border border-border bg-surface-1">
+			<MediaFrame
+				asset={project.videoCover}
+				video
+				eager
+				instant
+				class="block aspect-[16/10] w-full object-cover"
+			/>
 		</figure>
 	{:else if typeof project.featuredImage === 'object' && project.featuredImage?.url}
-		<figure data-enter class="overflow-hidden rounded-xl border border-border bg-surface-1">
-			<img
-				src={project.featuredImage.url}
-				alt={project.featuredImage.alt}
-				width={project.featuredImage.width ?? undefined}
-				height={project.featuredImage.height ?? undefined}
-				loading="lazy"
-				class="aspect-[16/10] w-full object-cover"
+		<figure class="overflow-hidden rounded-xl border border-border bg-surface-1">
+			<MediaFrame
+				asset={project.featuredImage}
+				eager
+				instant
+				class="block aspect-[16/10] w-full object-cover"
 			/>
 		</figure>
 	{/if}
@@ -119,10 +114,18 @@
 		</section>
 	{/if}
 
-	{#if collaborators}
-		<section class="border-t border-border pt-8" aria-label="Collaborators">
-			<p class="text-base text-foreground-3">Collaborators</p>
-			<p class="mt-2 text-lg text-foreground-1">{collaborators}</p>
+	{#if data.suggestedProjects.length}
+		<section class="pt-20 md:pt-28" aria-labelledby="other-projects-heading">
+			<h2 id="other-projects-heading" class="mb-6 font-display text-2xl text-foreground-1">Other projects</h2>
+			<ul class="grid grid-cols-2 gap-4 md:gap-6">
+				{#each data.suggestedProjects as suggestion (suggestion.id)}
+					<li class="min-w-0 list-none"><ProjectCard project={suggestion} /></li>
+				{/each}
+			</ul>
 		</section>
 	{/if}
 </article>
+
+{#key project.id}
+	<ProjectGallery root={article} />
+{/key}

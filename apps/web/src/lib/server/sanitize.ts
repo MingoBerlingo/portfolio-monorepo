@@ -15,10 +15,11 @@ export function sanitize(dirty: string): string {
 			// media layout block emits `<div class="media-layout …">`), which the
 			// web app styles in `app.css`.
 			'*': ['class'],
-			img: ['src', 'alt', 'width', 'height', 'loading'],
+			img: ['src', 'alt', 'width', 'height', 'loading', 'data-preview'],
 			video: [
 				'src',
 				'poster',
+				'data-preview',
 				'width',
 				'height',
 				'preload',
