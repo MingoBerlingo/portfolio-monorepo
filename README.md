@@ -306,3 +306,14 @@ without a drop animation. It pauses offscreen and in hidden tabs, and sleeps
 when the chips settle. Drag a chip to move it, or focus its
 button and press Enter/Space to toss it. Reduced motion shows a static list.
 After CMS edits, rebuild the static site with `pnpm build:site` to publish them.
+
+## Local Resume editor
+
+The separate [Resume Studio app](apps/resume/README.md) loads Italian or
+English content from the CMS, lets you edit the resume layout directly, saves named versions
+with dates in this browser, and downloads the edited copy as PDF.
+
+Run `pnpm dev` for all apps or `pnpm resume:dev` for the editor alone, then open
+`http://localhost:4174`. MongoDB must be running to import fresh content; no CMS browser login is needed. Resume edits
+and browser history stay separate from the CMS and published website. Optional
+`pnpm resume:pdf --locale it` remains available for command-line exports.

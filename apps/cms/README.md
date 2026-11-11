@@ -66,6 +66,33 @@ That's it! The Docker instance will help you get up and running quickly while al
 
 If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
 
+### Canonical Resume migration
+
+Stop the CMS before applying the storage migration. From `apps/cms`, run
+`pnpm exec tsx scripts/migrate-canonical-resume.ts` for a read-only dry run with
+`DATABASE_URI` in the environment or `.env`. Add
+`--apply --backup=/absolute/path/new-resume-backup.json` to apply. The backup must
+be a new file, is written with owner-only permissions before any writes, and
+contains BSON-preserving Extended JSON for all affected collections. Keep it
+private: it contains confidential profile content. No legacy stored fields or
+Resume documents are deleted; the removed schemas only hide them from APIs.
+Re-running skips existing canonical values and imported collection entries.
+Array translation lines align to existing row order; extra translated lines
+become extra rows with the available locale. Review translated row order after
+migration. Publication/research rows match by legacy row ID, then URL, then row
+index; unmatched rows remain separate so text is never discarded.
+
+### Migrate Profile skills and languages
+
+For an existing local CMS, run the migration from `apps/cms` before editing the new fields.
+
+```sh
+pnpm exec tsx scripts/migrate-profile-skills.ts
+pnpm exec tsx scripts/migrate-profile-skills.ts --apply --backup=/absolute/path/new-profile-backup.json
+```
+
+The first command previews the field changes. The second saves a private backup and converts the English and Italian Profile values to lists. The migration preserves populated lists on rerun.
+
 ### Media loading previews
 
 Image and video uploads automatically store a tiny JPEG in `previewDataURL`.

@@ -1,7 +1,7 @@
 import type { GlobalConfig } from 'payload'
 import { convertLexicalToHTMLAsync } from '@payloadcms/richtext-lexical/html-async'
 import type { SerializedEditorState } from 'lexical'
-import { linkFields } from '../fields/link'
+import { linkFields, validateUrl } from '../fields/link'
 
 export const Profile: GlobalConfig = {
   slug: 'profile',
@@ -11,7 +11,11 @@ export const Profile: GlobalConfig = {
   hooks: {
     afterRead: [
       async ({ doc }) => {
-        if (!doc?.presentation) return doc
+        // Legacy migration values may still exist in MongoDB.
+        delete doc.skills
+        delete doc.legacyLanguages
+        delete doc.drivingLicence
+        if (!doc.presentation) return doc
 
         const html = await convertLexicalToHTMLAsync({
           data: doc.presentation as SerializedEditorState,
@@ -26,6 +30,11 @@ export const Profile: GlobalConfig = {
     ],
   },
   fields: [
+    { name: 'phone', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+    { name: 'location', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+    { name: 'digitalSkills', type: 'text', hasMany: true, localized: true, access: { read: ({ req }) => Boolean(req.user) } },
+    { name: 'professionalSkills', type: 'text', hasMany: true, localized: true, access: { read: ({ req }) => Boolean(req.user) } },
+    { name: 'languages', type: 'text', hasMany: true, localized: true, access: { read: ({ req }) => Boolean(req.user) } },
     {
       name: 'name',
       type: 'text',
@@ -37,12 +46,12 @@ export const Profile: GlobalConfig = {
       required: true,
     },
     {
-      name: 'jobPosition',
+      name: 'jobPosition', localized: true,
       type: 'text',
       required: true,
     },
     {
-      name: 'presentation',
+      name: 'presentation', localized: true,
       type: 'richText',
     },
     {
@@ -58,6 +67,7 @@ export const Profile: GlobalConfig = {
       type: 'email',
       required: true,
     },
+    { name: 'portfolio', type: 'group', fields: [{ name: 'label', type: 'text' }, { name: 'url', type: 'text', validate: validateUrl }], access: { read: ({ req }) => Boolean(req.user) } },
     {
       name: 'github',
       type: 'group',

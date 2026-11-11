@@ -73,6 +73,8 @@ export interface Config {
     experiences: Experience;
     education: Education;
     keywords: Keyword;
+    publications: Publication;
+    research: Research;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -85,6 +87,8 @@ export interface Config {
     experiences: ExperiencesSelect<false> | ExperiencesSelect<true>;
     education: EducationSelect<false> | EducationSelect<true>;
     keywords: KeywordsSelect<false> | KeywordsSelect<true>;
+    publications: PublicationsSelect<false> | PublicationsSelect<true>;
+    research: ResearchSelect<false> | ResearchSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -102,7 +106,7 @@ export interface Config {
     hero: HeroSelect<false> | HeroSelect<true>;
     profile: ProfileSelect<false> | ProfileSelect<true>;
   };
-  locale: null;
+  locale: 'en' | 'it';
   user: User & {
     collection: 'users';
   };
@@ -280,10 +284,40 @@ export interface Experience {
  */
 export interface Education {
   id: string;
+  /**
+   * Optional education bullets, one per line in the selected language.
+   */
+  details?: string | null;
   startDate: string;
   endDate: string;
   title: string;
   school: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publications".
+ */
+export interface Publication {
+  id: string;
+  title: string;
+  description?: string | null;
+  url?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "research".
+ */
+export interface Research {
+  id: string;
+  title: string;
+  description?: string | null;
+  url?: string | null;
+  date?: string | null;
+  project?: (string | null) | Project;
   updatedAt: string;
   createdAt: string;
 }
@@ -317,6 +351,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'keywords';
         value: string | Keyword;
+      } | null)
+    | ({
+        relationTo: 'publications';
+        value: string | Publication;
+      } | null)
+    | ({
+        relationTo: 'research';
+        value: string | Research;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -466,6 +508,7 @@ export interface ExperiencesSelect<T extends boolean = true> {
  * via the `definition` "education_select".
  */
 export interface EducationSelect<T extends boolean = true> {
+  details?: T;
   startDate?: T;
   endDate?: T;
   title?: T;
@@ -481,6 +524,30 @@ export interface KeywordsSelect<T extends boolean = true> {
   label?: T;
   showInFooter?: T;
   order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publications_select".
+ */
+export interface PublicationsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  url?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "research_select".
+ */
+export interface ResearchSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  url?: T;
+  date?: T;
+  project?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -568,6 +635,11 @@ export interface Hero {
  */
 export interface Profile {
   id: string;
+  phone?: string | null;
+  location?: string | null;
+  digitalSkills?: string[] | null;
+  professionalSkills?: string[] | null;
+  languages?: string[] | null;
   name: string;
   surname: string;
   jobPosition: string;
@@ -588,6 +660,10 @@ export interface Profile {
   } | null;
   presentationHtml?: string | null;
   email: string;
+  portfolio?: {
+    label?: string | null;
+    url?: string | null;
+  };
   github: {
     label: string;
     url: string;
@@ -640,12 +716,23 @@ export interface HeroSelect<T extends boolean = true> {
  * via the `definition` "profile_select".
  */
 export interface ProfileSelect<T extends boolean = true> {
+  phone?: T;
+  location?: T;
+  digitalSkills?: T;
+  professionalSkills?: T;
+  languages?: T;
   name?: T;
   surname?: T;
   jobPosition?: T;
   presentation?: T;
   presentationHtml?: T;
   email?: T;
+  portfolio?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
   github?:
     | T
     | {

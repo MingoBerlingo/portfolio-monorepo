@@ -16,6 +16,8 @@ import { Keywords } from './collections/Keywords'
 import { Footer } from './globals/Footer'
 import { Hero } from './globals/Hero'
 import { Profile } from './globals/Profile'
+import { Publications } from './collections/Publications'
+import { Research } from './collections/Research'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -29,8 +31,13 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Project, Experiences, Education, Keywords],
+  collections: [Users, Media, Project, Experiences, Education, Keywords, Publications, Research],
   globals: [Footer, Hero, Profile],
+  localization: {
+    locales: [{ label: '🇬🇧 EN', code: 'en' }, { label: '🇮🇹 IT', code: 'it' }],
+    defaultLocale: 'en',
+    fallback: true,
+  },
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

@@ -1,0 +1,578 @@
+@import "tailwindcss";
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/dm-sans.woff2") format("woff2");
+}
+@theme {
+  --font-sans: "DM Sans", Arial, sans-serif;
+  --color-accent: #5146df;
+}
+@layer base {
+  body {
+    @apply m-0 bg-[#f4f4f7] font-sans text-stone-800;
+    font-variant-ligatures: none;
+  }
+  button {
+    @apply cursor-pointer;
+  }
+  button:disabled {
+    @apply cursor-default opacity-40;
+  }
+  button:focus-visible,
+  a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-indigo-600;
+  }
+  select {
+    @apply min-h-10 cursor-pointer rounded-lg border border-stone-200 bg-white py-2 pr-9 pl-3 text-xs;
+  }
+  input[type="checkbox"] {
+    @apply accent-indigo-600;
+  }
+  dialog {
+    @apply w-[420px] max-w-[calc(100vw-32px)] rounded-xl border border-stone-200 p-6 text-stone-800 shadow-2xl;
+    margin: auto;
+  }
+  dialog::backdrop {
+    background: #21193450;
+    backdrop-filter: blur(2px);
+  }
+  dialog label {
+    @apply mt-4 mb-2 block text-xs text-stone-600;
+  }
+  dialog input {
+    @apply min-h-10 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm;
+  }
+  dialog h2 {
+    @apply text-xl font-semibold tracking-tight;
+  }
+  [hidden] {
+    display: none !important;
+  }
+}
+@layer components {
+  .button {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-100 disabled:hover:bg-white;
+  }
+  .button.primary {
+    @apply border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700;
+  }
+  .nav-button {
+    @apply flex items-center gap-2 rounded-lg border-0 bg-transparent px-3 py-3 text-left text-xs text-stone-500 hover:bg-stone-200/50;
+  }
+  .nav-button.active {
+    @apply bg-indigo-100 text-indigo-700 font-semibold;
+  }
+  .nav-button.omitted {
+    @apply text-stone-400 line-through;
+  }
+  .notice {
+    @apply fixed bottom-6 left-1/2 z-50 max-w-[calc(100vw-32px)] -translate-x-1/2 rounded-lg border border-indigo-200 bg-indigo-50 px-5 py-3 text-xs text-indigo-900 shadow-lg;
+  }
+  .error {
+    @apply text-xs text-red-700;
+  }
+  .notice.error {
+    @apply border-red-200 bg-red-50 text-red-800;
+  }
+  .dialog-top {
+    @apply mb-5 flex items-center justify-between gap-4;
+  }
+  .dialog-actions {
+    @apply mt-6 flex justify-end gap-2;
+  }
+  .icon-button {
+    @apply rounded p-1 text-xl leading-none text-stone-500 hover:bg-stone-100;
+  }
+  .history-dialog {
+    @apply w-[540px];
+  }
+  #dirty-dot.dirty {
+    @apply bg-amber-500;
+  }
+  .add-entry > svg,
+  .add-bullet > svg {
+    @apply inline-block align-text-bottom;
+  }
+  .add-entry {
+    @apply rounded-md border border-dashed border-indigo-200 px-3 py-2 text-xs text-indigo-600 hover:bg-indigo-50;
+  }
+}
+/* Paper typography mirrors the standalone print renderer; editor controls never enter PDF data. */
+.resume-paper {
+  background: white;
+  padding: 14mm 16mm;
+  width: 794px;
+  min-height: 1123px;
+  box-shadow: 0 2px 8px #22113312;
+  color: #161616;
+  font:
+    10pt/1.32 "DM Sans",
+    Arial,
+    sans-serif;
+  font-variant-ligatures: none;
+}
+.resume-paper header {
+  margin-bottom: 5mm;
+}
+.resume-paper h1 {
+  font-size: 15pt;
+  font-weight: 700;
+  margin: 0;
+}
+.resume-paper .role {
+  color: #4234ff;
+  font-size: 12pt;
+  margin: 0 0 2mm;
+}
+.resume-paper .contact {
+  font-size: 9pt;
+}
+.resume-paper p {
+  margin: 0 0 1mm;
+}
+.resume-paper .contact p {
+  margin: 0;
+}
+.resume-paper .contact strong {
+  font-weight: 600;
+}
+.resume-paper .contact-label {
+  color: #666;
+}
+.resume-paper .contact-link {
+  font-weight: 600;
+  text-decoration: underline;
+}
+.resume-paper .section-block {
+  position: relative;
+  margin: 0 0 5mm;
+  outline: 1px solid transparent;
+  outline-offset: 7px;
+  border-radius: 2px;
+}
+.resume-paper h2 {
+  color: #4234ff;
+  font-size: 12pt;
+  font-weight: 700;
+  margin: 0 0 1.5mm;
+}
+.resume-paper h3 {
+  font-size: 10pt;
+  font-weight: 700;
+  margin: 0;
+}
+.resume-paper .entry-block {
+  position: relative;
+  margin: 0 0 3mm;
+  outline: 1px solid transparent;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+.resume-paper .date {
+  position: relative;
+  font-size: 9pt;
+}
+.resume-paper ul {
+  list-style: disc;
+  padding-left: 4mm;
+  margin: 1mm 0 0;
+}
+.resume-paper li {
+  margin-bottom: 1mm;
+}
+.resume-paper .experience-bullet {
+  position: relative;
+}
+.resume-paper .experience-bullet > [contenteditable] {
+  display: block;
+}
+.resume-paper .bullet-tools {
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 0;
+  display: flex;
+  background: white;
+  border: 1px solid #ddd8ee;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+}
+.resume-paper .bullet-tools::before {
+  content: "";
+  position: absolute;
+  inset: 0 100% 0 -7px;
+}
+.resume-paper .experience-bullet:hover > .bullet-tools,
+.resume-paper .experience-bullet:focus-within > .bullet-tools {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+.resume-paper .experience-bullet:hover > .bullet-tools {
+  z-index: 2;
+}
+.resume-paper .bullet-tools button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: #766d8b;
+}
+.resume-paper .bullet-tools button:disabled {
+  opacity: 0.4;
+}
+.resume-paper .bullet-drop-target {
+  background: #eeebff;
+}
+.resume-paper .skills-columns {
+  columns: 4 28mm;
+  column-gap: 6mm;
+}
+.resume-paper .skills-columns li {
+  break-inside: avoid;
+  overflow-wrap: anywhere;
+}
+.resume-paper .skills-editor {
+  position: relative;
+  min-height: 1.4em;
+}
+.resume-paper .skills-editor:has(li):not(:focus-within) > [contenteditable] {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+.resume-paper .skills-editor:focus-within > .skills-columns {
+  display: none;
+}
+.resume-paper .sectors {
+  margin-top: 1mm;
+}
+.resume-paper [contenteditable] {
+  outline: 1px solid transparent;
+  border-radius: 2px;
+  min-width: 1em;
+  white-space: pre-wrap;
+}
+.resume-paper span[contenteditable] {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.resume-paper [contenteditable]:hover {
+  outline-color: #c8c5ef;
+}
+.resume-paper [contenteditable]:focus {
+  outline-color: #4234ff;
+  background: #f7f6ff;
+}
+.resume-paper [contenteditable]:empty::before {
+  content: attr(data-placeholder);
+  color: #9995ad;
+  pointer-events: none;
+}
+.resume-paper div[contenteditable]:empty,
+.resume-paper li[contenteditable]:empty {
+  min-height: 1.4em;
+}
+.resume-paper h1,
+.resume-paper h2,
+.resume-paper h3,
+.resume-paper p,
+.resume-paper li,
+.resume-paper div[contenteditable] {
+  overflow-wrap: anywhere;
+}
+.resume-paper .entry-link {
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+}
+.resume-paper .block-tools {
+  position: absolute;
+  top: -4px;
+  left: -37px;
+  right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px;
+  background: white;
+  border: 1px solid #ddd8ee;
+  border-radius: 7px;
+  box-shadow: 0 3px 12px #28203912;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 120ms;
+}
+.resume-paper .section-tools {
+  left: -78px;
+  right: auto;
+  top: -4px;
+}
+.resume-paper .block-tools button {
+  height: 28px;
+  width: 27px;
+  font:
+    16px "DM Sans",
+    sans-serif;
+  border-radius: 4px;
+  color: #766d8b;
+}
+.resume-paper .drag-handle {
+  touch-action: none;
+  cursor: grab;
+}
+.resume-paper .drag-handle:active {
+  cursor: grabbing;
+}
+.resume-paper .block-tools button:hover {
+  background: #eeebff;
+  color: #5146df;
+}
+.resume-paper .block-tools .delete-block:hover {
+  background: #fff0ed;
+  color: #b53a29;
+}
+.resume-paper .section-block:hover > .block-tools,
+.resume-paper .entry-block:hover > .block-tools,
+.resume-paper .selected > .block-tools,
+.resume-paper .block-tools:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+.resume-paper .section-block:hover,
+.resume-paper .section-block.selected {
+  outline-color: #ddd9f7;
+}
+.resume-paper .entry-block:hover,
+.resume-paper .entry-block.selected {
+  outline-color: #d6d0ef;
+}
+.resume-paper .dragging {
+  z-index: 20;
+  opacity: 1;
+  outline-color: #5146df;
+  box-shadow: 0 8px 24px #5146df20;
+  background: #faf9ff;
+}
+.resume-paper .drop-target {
+  outline-color: #5146df;
+}
+.resume-paper .detail-button,
+.resume-paper .add-bullet {
+  font:
+    7pt "DM Sans",
+    sans-serif;
+  color: #625a91;
+  border: 1px solid #dedbe9;
+  border-radius: 3px;
+  background: #faf9ff;
+  padding: 1px 4px;
+  opacity: 0;
+  pointer-events: none;
+  margin-left: 5px;
+}
+.resume-paper .detail-button:focus-visible,
+.resume-paper p:hover > .detail-button,
+.resume-paper p:focus-within > .detail-button,
+.resume-paper .entry-block:hover .detail-button,
+.resume-paper .entry-block:focus-within .detail-button,
+.resume-paper .entry-block:hover > .add-bullet,
+.resume-paper .entry-block:focus-within > .add-bullet {
+  opacity: 1;
+  pointer-events: auto;
+}
+.resume-paper .add-bullet {
+  position: absolute;
+  right: 0;
+  bottom: -12px;
+}
+.resume-paper .add-entry {
+  font-size: 8pt;
+  margin-top: 8px;
+}
+@media (hover: none) {
+  .resume-paper .block-tools button {
+    min-width: 40px;
+    min-height: 44px;
+  }
+  .resume-paper .section-tools {
+    left: -96px;
+  }
+  .resume-paper .block-tools:not(.section-tools) {
+    left: -44px;
+    right: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.resume-paper header,
+.resume-paper .section-block {
+  scroll-margin-top: 110px;
+}
+
+select {
+  /* Carbon ChevronDown and Checkmark paths for browser-rendered select icons. */
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23757575' d='M16 22 6 12 7.4 10.6 16 19.2 24.6 10.6 26 12z'/%3E%3C/svg%3E");
+  appearance: none;
+  background-image: var(--select-chevron);
+  background-size: 16px;
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  padding-right: 2.25rem;
+}
+select:focus-visible {
+  @apply outline-2 outline-offset-2 outline-indigo-600;
+}
+select:disabled {
+  @apply cursor-default opacity-50;
+}
+@supports (appearance: base-select) and selector(select::picker(select)) {
+  select,
+  select::picker(select) {
+    appearance: base-select;
+  }
+  select {
+    @apply gap-3 px-3 transition-colors enabled:hover:bg-stone-50;
+    background-image: none;
+  }
+  select::picker(select) {
+    @apply rounded-lg border border-stone-200 bg-white p-1 text-xs text-stone-800 shadow-lg;
+    margin-block: 4px;
+  }
+  select option {
+    @apply min-h-8 cursor-pointer rounded-md px-2 py-1.5 hover:bg-stone-100 focus-visible:bg-stone-100;
+  }
+  select option:checked {
+    @apply bg-indigo-50 font-medium text-indigo-700;
+  }
+  select::picker-icon,
+  select option:checked::checkmark {
+    content: "";
+    display: block;
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+    background: currentColor;
+    mask: var(--select-chevron) center / contain no-repeat;
+  }
+  select::picker-icon {
+    @apply text-stone-500;
+  }
+  select option:checked::checkmark {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 24 4 15 5.414 13.586 13 21.171 26.586 7.586 28 9 13 24z'/%3E%3C/svg%3E");
+  }
+  select:open::picker-icon {
+    rotate: 180deg;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    select::picker-icon {
+      transition: rotate 150ms ease;
+    }
+  }
+}
+.resume-paper .block-tools button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.resume-paper .section-hidden > h2,
+.resume-paper .section-hidden > .section-body {
+  opacity: 0.42;
+}
+.resume-paper .contact .entry-block {
+  margin: 0;
+}
+.resume-paper .contact .block-tools {
+  flex-direction: column;
+  top: -4px;
+  left: -37px;
+  right: auto;
+}
+
+.resume-paper .detail-button[data-details="link"],
+.resume-paper .detail-button[data-details="dates"] {
+  display: inline-flex;
+  vertical-align: middle;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+
+.resume-paper .selected > .block-tools,
+.resume-paper .block-tools:focus-within {
+  z-index: 30;
+}
+
+.resume-paper .contact-value {
+  font-weight: 600;
+}
+.resume-paper .contact p {
+  position: relative;
+}
+.resume-paper .contact .detail-button[data-details="link"] {
+  position: absolute;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+}
+.resume-paper .contact .detail-button[data-details="link"] svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Bridge the gutter so a slow pointer move never leaves the block/menu hover area. */
+.resume-paper .block-tools::before {
+  content: "";
+  position: absolute;
+  inset: -8px -14px -8px -8px;
+  z-index: -1;
+}
+
+/* Keep the whole section toolbar reachable across the gutter. */
+.resume-paper .section-tools::before {
+  inset: 0 -54px 0 0;
+}
+
+/* Entry controls sit in the same gutter and need to remain clickable. */
+.resume-paper .section-block .entry-block > .block-tools {
+  z-index: 31;
+}
+
+/* Keep the moving preview separate from Svelte's reordered source DOM. */
+.resume-paper .dragging {
+  visibility: hidden;
+  max-height: 180px;
+  overflow: hidden;
+}
+.resume-paper [data-dnd-overlay] {
+  max-height: 180px !important;
+  opacity: 1 !important;
+}
+.resume-paper .drag-preview {
+  max-height: 180px;
+  overflow: hidden;
+  padding: 10px;
+  border: 1px solid #a99ef0;
+  border-radius: 7px;
+  background: white;
+  color: #161616;
+  box-shadow: 0 12px 32px #29204526;
+}
+.resume-paper .drag-preview > .entry-block,
+.resume-paper .drag-preview > .section-block {
+  margin-bottom: 0;
+}

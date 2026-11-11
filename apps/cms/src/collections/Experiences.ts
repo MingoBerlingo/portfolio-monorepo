@@ -15,7 +15,7 @@ export const Experiences: CollectionConfig = {
       required: true,
     },
     {
-      name: 'role',
+      name: 'role', localized: true,
       type: 'text',
       required: true,
     },
@@ -57,7 +57,7 @@ export const Experiences: CollectionConfig = {
       },
       fields: [
         {
-          name: 'industry',
+          name: 'industry', localized: true,
           type: 'text',
           required: true,
         },
@@ -74,7 +74,7 @@ export const Experiences: CollectionConfig = {
       },
       fields: [
         {
-          name: 'activity',
+          name: 'activity', localized: true,
           type: 'textarea',
           required: true,
           admin: {
