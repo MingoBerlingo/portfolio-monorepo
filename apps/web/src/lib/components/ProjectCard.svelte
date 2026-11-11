@@ -1,7 +1,9 @@
 <script lang="ts">
+	import MediaFrame from './MediaFrame.svelte';
 	import { resolve } from '$app/paths';
 
 	type MediaAsset = {
+		previewDataURL?: string | null;
 		url?: string | null;
 		alt?: string | null;
 		width?: number | null;
@@ -55,25 +57,14 @@
 	<div class="overflow-clip rounded-xl border border-border bg-surface-1">
 		<div class="bg-white ring-primary/30 group-focus-visible:ring-2 dark:bg-surface-1">
 			{#if coverAsset?.url && isVideoAsset(coverAsset)}
-				<video
-					src={coverAsset.url}
-					poster={typeof project.featuredImage === 'object' && project.featuredImage?.url
-						? project.featuredImage.url
-						: undefined}
-					autoplay
-					muted
-					loop
-					playsinline
-					preload="metadata"
+				<MediaFrame
+					asset={coverAsset}
+					video
 					class="block aspect-video w-full object-cover transition-transform motion-base group-hover:scale-110 group-focus-visible:scale-110"
-				></video>
+				/>
 			{:else if coverAsset?.url}
-				<img
-					src={coverAsset.url}
-					alt={coverAsset.alt ?? `${project.title} cover`}
-					width={coverAsset.width ?? undefined}
-					height={coverAsset.height ?? undefined}
-					loading="lazy"
+				<MediaFrame
+					asset={{ ...coverAsset, alt: coverAsset.alt ?? `${project.title} cover` }}
 					class="block aspect-video w-full object-cover transition-transform motion-base group-hover:scale-110 group-focus-visible:scale-110"
 				/>
 			{:else}

@@ -14,12 +14,14 @@ const PROJECTS_QUERY = `
 				year
 				isFeatured
 				featuredImage {
+					previewDataURL
 					url
 					alt
 					width
 					height
 				}
 				videoCover {
+					previewDataURL
 					url
 					alt
 					width
@@ -55,12 +57,14 @@ const PROJECT_BY_SLUG_QUERY = `
 				role
 				output
 				featuredImage {
+					previewDataURL
 					url
 					alt
 					width
 					height
 				}
 				videoCover {
+					previewDataURL
 					url
 					alt
 					width

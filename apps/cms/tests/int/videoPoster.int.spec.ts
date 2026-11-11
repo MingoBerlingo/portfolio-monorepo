@@ -5,6 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import ffmpeg from 'fluent-ffmpeg'
 import sharp from 'sharp'
+import { createMediaPreview } from '../../src/utils/mediaPreview'
 import { getVideoPoster, videoThumbnailURL } from '../../src/utils/videoPoster'
 
 const dirs: string[] = []
@@ -71,6 +72,13 @@ describe('video posters', () => {
       { id: 'real', filename: 'clip.webm', mimeType: 'video/webm' },
       dir,
     )
+    const preview = await createMediaPreview(
+      await fs.readFile(path.join(dir, 'clip.webm')),
+      'video/webm',
+    )
+    const previewBytes = Buffer.from(preview!.split(',')[1], 'base64')
+    expect((await sharp(previewBytes).metadata()).width).toBe(32)
+    expect((await sharp(previewBytes).stats()).channels[1].mean).toBeGreaterThan(60)
     const { channels } = await sharp(poster).stats()
     expect(channels[1].mean).toBeGreaterThan(60)
   })

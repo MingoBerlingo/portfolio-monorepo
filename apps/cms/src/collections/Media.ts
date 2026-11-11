@@ -1,5 +1,6 @@
 import type { CollectionConfig, PayloadRequest, SanitizedCollectionConfig } from 'payload'
 import { APIError } from 'payload'
+import { createMediaPreview } from '../utils/mediaPreview'
 import { optimizeVideo } from '../utils/videoOptimization'
 import {
   incrementFilename,
@@ -185,6 +186,20 @@ export const Media: CollectionConfig = {
     beforeChange: [
       async ({ collection, data, operation, originalDoc, req }) => {
         let nextData = data
+        if (req.file) {
+          // Clear stale preview bytes on every replacement, even if generation fails.
+          nextData = { ...nextData, previewDataURL: null }
+          try {
+            const bytes = req.file.data?.length
+              ? Buffer.from(req.file.data)
+              : req.file.tempFilePath
+                ? await fs.readFile(req.file.tempFilePath)
+                : null
+            if (bytes) nextData.previewDataURL = await createMediaPreview(bytes, req.file.mimetype)
+          } catch (error) {
+            req.payload.logger.warn(`[media] Preview unavailable: ${String(error)}`)
+          }
+        }
 
         if (req.file && req.file.mimetype) {
           const mimeType = req.file.mimetype.toLowerCase()
@@ -261,6 +276,12 @@ export const Media: CollectionConfig = {
     ],
   },
   fields: [
+    {
+      name: 'previewDataURL',
+      type: 'textarea',
+      admin: { hidden: true, readOnly: true },
+      access: { create: () => false, update: () => false },
+    },
     {
       name: 'alt',
       type: 'text',
