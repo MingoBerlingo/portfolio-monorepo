@@ -47,7 +47,10 @@ vi.mock('@payloadcms/ui', () => ({
     null,
     { openDrawer: vi.fn(), closeDrawer: state.closeDrawer },
   ],
-  ArrayField: () => React.createElement('div', null, 'Media cards'),
+  ArrayField: () => React.createElement('div', null,
+    'Media cards',
+    React.createElement('button', { className: 'array-field__add-row', onClick: () => { throw new Error('Payload scroll handler must not run') } }, 'Add Media'),
+  ),
 }))
 import { MediaGridWidth, MediaGridEditor } from '../../src/components/MediaLayoutEditor'
 
@@ -56,6 +59,12 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 describe('visual media grid editor', () => {
+  it('adds a media row without invoking Payload document-wide scrolling', () => {
+    render(React.createElement(MediaGridEditor, { path: 'items', field: { name: 'items' } } as never))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Media' }))
+    expect(state.addFieldRow).toHaveBeenCalledWith({ path: 'items', schemaPath: 'items', rowIndex: 1 })
+  })
+
   it('changes the individual item width', () => {
     const { container } = render(
       React.createElement(MediaGridWidth, {

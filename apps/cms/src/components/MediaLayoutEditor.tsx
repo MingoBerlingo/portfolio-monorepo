@@ -39,7 +39,23 @@ export const MediaGridEditor: ArrayFieldClientComponent = (props) => {
   }
 
   return (
-    <div className="media-grid-editor">
+    <div
+      className="media-grid-editor"
+      onClickCapture={(event) => {
+        const target = event.target
+        if (!(target instanceof Element) || !target.closest('button.array-field__add-row')) return
+        // Lexical blocks reuse array row IDs. Payload's document-wide scrollToID
+        // can therefore scroll to a different block when adding a row.
+        event.preventDefault()
+        event.stopPropagation()
+        if (props.readOnly) return
+        addFieldRow({
+          path,
+          schemaPath: props.schemaPath || path,
+          rowIndex: getFields()[path]?.rows?.length || 0,
+        })
+      }}
+    >
       {!props.readOnly && (
         <button className="media-grid-editor__select" type="button" onClick={openDrawer}>
           + Select images or videos
