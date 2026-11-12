@@ -325,6 +325,8 @@ export function normalizeResume(
                 entry?.[k],
                 k === "industries" ? "industry" : "activity",
               )
+            : key === "education" && k === "title" && string(entry.grade).trim()
+              ? [string(entry.title).trim(), string(entry.grade).trim()].filter(Boolean).join(" – ")
             : k === "project" && object(entry?.[k])
               ? string(entry[k].title)
               : string(entry?.[k]),

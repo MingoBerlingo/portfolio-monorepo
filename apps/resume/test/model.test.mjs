@@ -66,3 +66,12 @@ test('contact and deletion metadata roundtrip and reject invalid, duplicate or m
  ])assert.throws(()=>validateDocument({...doc,[key]:value}));
  assert.throws(()=>validateDocument({...doc,unexpectedMetadata:[]}));
 });
+
+test('CMS education grade is appended only on import and saved titles roundtrip', () => {
+ const source = {education:[{title:'Laurea magistrale',grade:'110 / 110 e lode'},{title:'Diploma'}]};
+ const doc = normalizeResume(source, 'it');
+ assert.equal(doc.education[0].title, 'Laurea magistrale – 110 / 110 e lode');
+ assert.equal(doc.education[1].title, 'Diploma');
+ assert.equal(source.education[0].title, 'Laurea magistrale');
+ assert.deepEqual(normalizeResume(doc), doc);
+});

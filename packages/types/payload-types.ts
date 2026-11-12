@@ -291,6 +291,10 @@ export interface Education {
   startDate: string;
   endDate: string;
   title: string;
+  /**
+   * Optional. Shown beside the education title in Resume Studio only, for example 110 / 110 e lode.
+   */
+  grade?: string | null;
   school: string;
   updatedAt: string;
   createdAt: string;
@@ -512,6 +516,7 @@ export interface EducationSelect<T extends boolean = true> {
   startDate?: T;
   endDate?: T;
   title?: T;
+  grade?: T;
   school?: T;
   updatedAt?: T;
   createdAt?: T;

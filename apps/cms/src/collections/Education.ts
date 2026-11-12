@@ -38,6 +38,13 @@ export const Education: CollectionConfig = {
       required: true,
     },
     {
+      name: 'grade',
+      label: 'Graduation grade',
+      localized: true,
+      type: 'text',
+      admin: { description: 'Optional. Shown beside the education title in Resume Studio only, for example 110 / 110 e lode.' },
+    },
+    {
       name: 'school',
       type: 'text',
       required: true,
