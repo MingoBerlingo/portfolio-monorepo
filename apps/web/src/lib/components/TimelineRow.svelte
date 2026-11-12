@@ -15,7 +15,7 @@
 
 <div
 	class={cn(
-		'text-base flex flex-col gap-1 pb-3 text-foreground-1 sm:grid sm:grid-cols-[120px_1fr_auto] sm:items-center sm:gap-6 sm:pb-4',
+		'text-base flex flex-col gap-1 pb-3 text-foreground-1 sm:grid sm:grid-cols-[120px_1fr_auto] sm:items-start sm:gap-6 sm:pb-4',
 		!isFirst && 'border-t border-border pt-3 sm:pt-4'
 	)}
 >
