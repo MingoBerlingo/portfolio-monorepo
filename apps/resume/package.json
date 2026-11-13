@@ -19,6 +19,7 @@
     "@sveltejs/adapter-node": "^5.5.8",
     "@sveltejs/kit": "^2.43.5",
     "carbon-icons-svelte": "^13.9.0",
+    "pdfjs-dist": "^6.5.438",
     "playwright": "1.55.1",
     "svelte": "^5.39.6"
   },

@@ -54,7 +54,7 @@ In this checkout the conversion has been applied, and a second dry run reports z
 
 ## Working on a version
 
-1. Choose **🇬🇧 EN / 🇮🇹 IT** and load from CMS.
+1. Open **Base Resume** from the home page and load a saved version, or choose **🇬🇧 EN / 🇮🇹 IT** and click **Load master resume**. The CMS is not loaded automatically.
 2. Click text directly on the paper to edit it. Empty fields have faint editor-only placeholders. Paragraphs accept multiline text; each bullet can be edited separately. Enter splits a bullet and Backspace at its start merges it with the previous one.
 3. Hover over dates or links for their compact editing controls. Hover or select a section, entry or contact row to reveal its controls on the left. Drag or use the up/down arrows to reorder. Main sections use an eye button to hide/show: hidden sections remain dimmed in the editor and are omitted from PDF. Entries and contacts use bin buttons; removed contact rows can be restored from the sidebar. Link details use a pen icon. Keyboard users can press Space on a drag handle, use arrow keys, then Space to drop or Escape to cancel. Use **Add entry** for new entries. On narrow screens, choose a section from the compact selector.
 4. Use **Fit**, **100%** or **125%** to adjust the paper zoom. All text edits update the working copy immediately; there is no separate form and preview.
@@ -127,3 +127,13 @@ Open **Tailor Resume** and choose a CMS locale or paste a plain-text Resume. Add
 Set `OPENAI_API_KEY` in the environment that starts Resume Studio. For Vite development it can also go in the ignored `apps/resume/.env.local` file. Restart Resume Studio after changing it. The optional `OPENAI_MODEL` setting defaults to `gpt-4.1-mini` and must support Structured Outputs.
 
 Tailoring sends the job description, notes, clarification answers, and relevant Resume content to OpenAI. CMS contact fields stay local. When you paste a resume, the app sends the text you provide, including any contact details it contains.
+
+## Stress Test
+
+Open **Stress Test**, choose a PDF, the master resume or a saved browser version, and paste the job description. The review covers PDF text extraction and reading order, job requirements and supporting evidence, grammar and punctuation, and terminology consistency. Local checks supplement AI findings for experience-bullet punctuation and common terminology variants.
+
+The report opens beside the existing editor on wide screens and above it on smaller screens. Edit manually, save a named version, export the resume PDF or download the report as Markdown. Changes mark the report out of date until rerun. Reports themselves are not saved in browser History.
+
+PDF imports retain the original PDF for comparison and transcribe its text into Resume Studio’s layout. Reruns inspect a PDF generated from the edited copy while retaining the original extraction evidence. Uploads must be text-based PDFs of up to 10 MB and 12 pages. Scanned PDFs require OCR before import. ATS findings describe observable extraction and content structure, not a guarantee of compatibility with any particular recruiting system.
+
+Configure `OPENAI_API_KEY` on the server. Stress Test uses `OPENAI_STRESS_MODEL`, then `OPENAI_MODEL`, or defaults to `gpt-5.4-mini`. It sends extracted PDF text (including any contact details in that text) and the job description to OpenAI with `store: false`. PDF parsing happens locally. No uploaded PDF or report is written to the CMS.

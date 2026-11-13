@@ -16,7 +16,8 @@
   import { shortcutFor } from "../../shortcuts.ts";
   import Icon from "$lib/components/Icon.svelte";
   import ResumeCanvas from "$lib/components/ResumeCanvas.svelte";
-  let { initialDocument, overview }: { initialDocument?: ResumeDocument; overview?: Snippet } = $props();
+  let { initialDocument, overview, review, ondocumentchange }: { initialDocument?: ResumeDocument; overview?: Snippet; review?: Snippet; ondocumentchange?: (document: ResumeDocument) => void } = $props();
+  $effect(() => { if (doc) ondocumentchange?.(doc); });
   let doc = $state.raw<ResumeDocument | null>(null),
     baseline = $state.raw<ResumeDocument | null>(null),
     locale = $state<Locale>("en"),
@@ -577,7 +578,7 @@
     if (initialDocument) {
       adopt(initialDocument);
       baseline = null;
-    } else void loadCMS("en");
+    } else showHistory();
     const unload = (e: BeforeUnloadEvent) => {
       if (dirty) {
         e.preventDefault();
@@ -586,7 +587,7 @@
     };
     const storage = () => {
       countHistory();
-      if (historyDialog.open) showHistory();
+      if (historyDialog.open || !doc) showHistory();
       if (saveDialog.open) refreshSaveVersions();
     };
     window.addEventListener("keydown", keyboard);
@@ -622,7 +623,7 @@
       id="locale"
       bind:value={locale}
       disabled={loading || Boolean(initialDocument)}
-      onchange={() => loadCMS(locale)}
+      onchange={() => { if (doc) void loadCMS(locale); }}
       ><option value="en">🇬🇧 EN</option><option value="it">🇮🇹 IT</option
       ></select
     >
@@ -635,7 +636,7 @@
   <div class="flex gap-2">
     {#if !initialDocument}
       <button id="reload" class="button" disabled={loading} onclick={() => loadCMS(locale)}>
-        <Icon name="refresh" /> Load from CMS
+        <Icon name="refresh" /> Load master resume
       </button>
     {/if}
     <button
@@ -702,7 +703,7 @@
 >
   {notice}
 </p>
-<main class="mx-auto max-w-[1550px] p-3 md:p-7">
+<main class="mx-auto max-w-[1550px] p-3 md:p-7" class:review-workspace={Boolean(review)}>
   {#if doc}<div
       id="workspace"
       class="grid min-w-0 items-start gap-5 lg:grid-cols-[160px_minmax(0,1fr)]"
@@ -766,9 +767,21 @@
         id="empty-load"
         disabled={loading}
         onclick={() => loadCMS(locale)}
-        >{loading ? "Loading…" : "Load from CMS"}</button
+        >{loading ? "Loading…" : "Load master resume"}</button
       >
+      <div class="mx-auto mt-8 max-w-2xl text-left">
+        <h2 class="mb-3 text-lg font-semibold">Saved versions</h2>
+        {#if historyError}<p role="alert" class="error">{historyError}</p>
+        {:else if !versions.length}<p class="text-sm text-stone-500">No saved versions yet. Load the master resume to get started.</p>
+        {:else}{#each versions as version (version.id)}
+          <article class="mt-3 flex items-center justify-between gap-4 rounded-lg border border-stone-200 p-4">
+            <div><h3 class="font-semibold">{version.name}</h3><p class="text-xs text-stone-500">{new Date(version.savedAt).toLocaleString()} · {version.document.locale.toUpperCase()}</p></div>
+            <button class="button" disabled={loading} onclick={() => loadVersion(version)}>Load {version.name}</button>
+          </article>
+        {/each}{/if}
+      </div>
     </div>{/if}
+  {#if review}<aside class="review-panel">{@render review()}</aside>{/if}
 </main>
 <dialog bind:this={discardDialog} aria-labelledby="discard-title" aria-describedby="discard-description">
   <h2 id="discard-title">Discard unsaved changes?</h2>
@@ -986,3 +999,11 @@
     </div>
   </form>
 </dialog>
+
+<style>
+  @media (min-width: 1280px) {
+    .review-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; align-items: start; }
+    .review-panel { position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow: auto; }
+  }
+  @media (max-width: 1279px) { .review-panel { grid-row: 1; margin-bottom: 24px; } .review-workspace { display: grid; } }
+</style>

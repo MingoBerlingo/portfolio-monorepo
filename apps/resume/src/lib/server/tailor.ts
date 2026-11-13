@@ -20,7 +20,7 @@ const record = (properties: Record<string, object>) => ({
 const fields = (...names: string[]) =>
   record(Object.fromEntries(names.map((name) => [name, string])));
 const link = fields("label", "url");
-const pastedSchema = record({
+export const pastedSchema = record({
   profile: record({
     ...fields("name", "surname", "jobPosition", "presentation", "email", "phone", "location", "languages").properties,
     skills: array(string),
