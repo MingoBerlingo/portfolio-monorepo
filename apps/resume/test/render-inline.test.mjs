@@ -1,16 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeResume} from '../src/model.ts';
+import {normalizeResume, defaultContactEntries} from '../src/model.ts';
 import {renderResume} from '../src/render.ts';
 const document=()=>normalizeResume({profile:{name:'Ada'},experiences:[{role:'Designer',company:'Studio',activities:'First\n\nThird'}],education:[{}],publications:[{}],research:[{}]},'en');
 test('editable canvas exposes canonical fields, stable bullet indexes and contextual controls',()=>{
  const html=renderResume(document(),'en',{editable:true});
- for(const path of ['profile.name','profile.surname','profile.jobPosition','profile.presentation','profile.skills','profile.languages','profile.email','profile.phone','profile.location','profile.portfolio.label','profile.linkedin.label','experiences.0.company','experiences.0.role','education.0.title','education.0.school','publications.0.description']) assert.ok(html.includes(`data-field="${path}"`),path);
+ for(const path of ['profile.name','profile.surname','profile.jobPosition','profile.presentation','profile.skills','profile.languages','contactEntries.0.text','contactEntries.1.text','contactEntries.2.text','contactEntries.4.text','contactEntries.3.text','experiences.0.company','experiences.0.role','education.0.title','education.0.school','publications.0.description']) assert.ok(html.includes(`data-field="${path}"`),path);
  assert.match(html,/contenteditable="plaintext-only" role="textbox" aria-label=/);
  assert.match(html,/data-field="experiences.0.activities"[^>]*data-line="1"[^>]*><\/li>/);
  assert.match(html,/data-action="bullet-add" data-path="experiences.0.activities"/);
  assert.match(html,/data-details="dates" data-path="education.0"/);
- assert.match(html,/data-details="link" data-path="profile.linkedin"/);
+ assert.match(html,/data-field="contactEntries.3.text"/);
  assert.match(html,/data-entry="research.0"/);
  for(const action of ['up','down','remove'])assert.ok(html.includes(`data-action="${action}" data-key="research" data-index="0"`));
  assert.match(html,/data-multiline="true"/);
@@ -34,10 +34,10 @@ test('editable content and custom font URLs cannot inject markup or scripts',()=
 });
 
 test('annotated layout labels contacts, sectors and competency lines without legacy additional section',()=>{
- const doc=document();Object.assign(doc.profile,{email:'ada@example.test',phone:'123',location:'Rome',skills:'Design: Systems\nTools: Figma',languages:'English',additionalInfo:'Legacy secret',linkedin:{label:'',url:'https://linkedin.com/in/ada'},portfolio:{label:'',url:'https://ada.test'}});doc.experiences[0].industries='Web\nPrint';
+ const doc=document();Object.assign(doc.profile,{email:'ada@example.test',phone:'123',location:'Rome',skills:'Design: Systems\nTools: Figma',languages:'English',additionalInfo:'Legacy secret',linkedin:{label:'',url:'https://linkedin.com/in/ada'},portfolio:{label:'',url:'https://ada.test'}});doc.experiences[0].industries='Web\nPrint';doc.contactEntries=defaultContactEntries(doc);
  for(const editable of [false,true]) {
   const html=renderResume(doc,'en',{editable});
-  assert.match(html,/Sectors:<\/span> /);assert.match(html,editable ? /<strong><span[^>]*data-field="profile.email"/ : /<strong>ada@example.test<\/strong>/);assert.match(html,/Web, Print/);
+  assert.match(html,/Sectors:<\/span> /);assert.match(html,editable ? /<strong><span[^>]*data-field="contactEntries.0.text"/ : /<strong>ada@example.test<\/strong>/);assert.match(html,/Web, Print/);
   for(const label of ['Mail','Tel','Location','LinkedIn','Portfolio'])assert.ok(html.includes(`${label}:</span>`));
   assert.match(html,/linkedin.com\/in\/ada/);assert.match(html,/ada.test/);
   assert.match(html,/<strong>Design:<\/strong> Systems/);
@@ -45,11 +45,11 @@ test('annotated layout labels contacts, sectors and competency lines without leg
   assert.doesNotMatch(html,/Legacy secret|data-section="additional"|data-field="profile.additionalInfo"/);
   if(editable)assert.match(html,/data-section-drag="skills"/);
  }
- assert.match(renderResume(doc,'it'),/Settore:<\/span>/);assert.match(renderResume(doc,'it'),/Località:<\/span>/);
+ assert.match(renderResume(doc,'it'),/Settore:<\/span>/);const italian={...doc,locale:'it'};italian.contactEntries=defaultContactEntries(italian);assert.match(renderResume(italian,'it'),/Località:<\/span>/);
 });
 
-test('edited profile link labels remain visible in canvas and print',()=>{
- const doc=document();doc.profile.portfolio={label:'My selected work',url:'https://ada.test'};
+test('edited contact link labels remain visible in canvas and print',()=>{
+ const doc=document();Object.assign(doc.contactEntries.find(entry=>entry.id==='portfolio'),{text:'My selected work',url:'https://ada.test'});
  for(const editable of [true,false])assert.match(renderResume(doc,'en',{editable}),/>My selected work</);
 });
 
@@ -62,7 +62,7 @@ test('editable skills keep replacement tokens literal and escape markup',()=>{
 
 test('contact metadata controls order and deletion without erasing values',()=>{
  const doc=document();Object.assign(doc.profile,{email:'retain@example.test',phone:'12345',location:'Rome',github:{label:'GitHub name',url:'https://github.com/ada'}});
- doc.contactOrder=['github','location','phone','email','linkedin','portfolio'];doc.deletedContacts=['phone'];
+ doc.contactOrder=['github','location','phone','email','linkedin','portfolio'];doc.deletedContacts=['phone'];delete doc.contactEntries;
  for(const editable of [false,true]){
   const html=renderResume(doc,'en',{editable});
   assert.ok(html.indexOf('GitHub:</span>')<html.indexOf('Location:</span>'));
