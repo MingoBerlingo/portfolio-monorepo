@@ -173,6 +173,13 @@
       <section aria-labelledby="fit-heading" class="border-b border-stone-200 bg-white px-4 py-5 md:px-7">
         {@render progress()}
         <h1 id="fit-heading" class="mb-3 text-lg font-semibold">Review draft</h1>
+        <details class="group mb-3 max-w-3xl rounded-lg border border-stone-200">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+            Job description
+            <span class="group-open:rotate-180"><Icon name="down" /></span>
+          </summary>
+          <p class="whitespace-pre-wrap break-words px-3 pb-3 text-sm leading-relaxed text-stone-600">{job}</p>
+        </details>
         <details class="group max-w-3xl rounded-lg border border-stone-200">
           <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-semibold [&::-webkit-details-marker]:hidden">
             {draft.score}% estimated match
